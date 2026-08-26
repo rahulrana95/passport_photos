@@ -9,8 +9,20 @@ import type { WorkerScope } from './analysis-client.types';
  * worker global exists. The entry file is then a single call, which is the
  * only part of this that a unit test cannot reach.
  */
-export const startAnalysisWorker = (scope: WorkerScope, detector: Detector): void => {
-  const handle = createRequestHandler(detector, (response) => {
+const awaitedDetector = (source: Detector | Promise<Detector>): Detector => ({
+  detectLandmarks: async (buffer) => (await source).detectLandmarks(buffer),
+  segment: async (buffer) => (await source).segment(buffer),
+});
+
+export const startAnalysisWorker = (
+  scope: WorkerScope,
+  detector: Detector | Promise<Detector>,
+): void => {
+  // The listener is attached synchronously and the detector awaited per
+  // request. Awaiting it first would drop any message posted during the model
+  // load — which is precisely when the first one arrives, because the load
+  // only starts because someone chose a photo.
+  const handle = createRequestHandler(awaitedDetector(detector), (response) => {
     scope.postMessage(response);
   });
 

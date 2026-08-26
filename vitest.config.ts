@@ -39,6 +39,11 @@ export default defineConfig({
         // because there is no worker global to attach to. Same reasoning as
         // src/app/** above: entry points are wiring, not logic.
         'src/analysis/analysis.worker.ts',
+        // The dynamic import of the MediaPipe bundle, and nothing else.
+        // Importing it under jsdom would instantiate a WebAssembly runtime
+        // that has no business being in a unit test. Everything that decides
+        // anything is in detector.factory.ts, with this injected.
+        'src/analysis/mediapipe-module.loader.ts',
         // The axe wrapper is thin test-support glue and is verified by its own
         // test. Everything else under src/testing IS covered: the fixture
         // generator is load-bearing, and a bug there would silently corrupt

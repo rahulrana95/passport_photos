@@ -1,26 +1,41 @@
 import { AnalysisError } from './analysis-error.utils';
+import { importMediaPipe } from './mediapipe-module.loader';
+import { createMediaPipeDetector } from './mediapipe-detector';
 import type { Detector } from './analysis-protocol.types';
+import type { MediaPipeModules } from './mediapipe-detector';
 
 /**
- * Builds the detector the worker runs on.
+ * Loads the MediaPipe bundle only when a detector is actually built.
  *
- * The real MediaPipe backend arrives in PR #17. Until then this returns a
- * detector that reports itself unavailable rather than throwing at module
- * load: a factory that threw would kill the worker on startup, and every
- * request would then surface as `worker-crashed` — the wrong diagnosis, and
- * one that would send the next person looking at the message plumbing instead
- * of at the missing model.
- *
- * This is the single seam PR #17 replaces.
+ * A dynamic import, and that is the whole point: a static one would pull the
+ * bundle into whatever chunk imports this file, and the 15 MB behind it would
+ * then sit on the critical path of every country page carrying our search
+ * traffic. Nothing here loads until someone chooses a photo.
  */
-export const createDetector = (): Detector => {
+export type LoadMediaPipe = () => Promise<MediaPipeModules>;
+
+/**
+ * A detector that reports itself unavailable on every call.
+ *
+ * Returned rather than thrown when the runtime cannot start, so the failure
+ * arrives through the normal protocol path. Throwing here would take the
+ * worker down with it and every request would surface as `worker-crashed` —
+ * the wrong diagnosis, and one that sends the next person to read the message
+ * plumbing instead of find the missing model.
+ */
+export const createUnavailableDetector = (message: string): Detector => {
   const unavailable = (): Promise<never> =>
-    Promise.reject(
-      new AnalysisError(
-        'detector-unavailable',
-        'The analysis models are not available in this build.',
-      ),
-    );
+    Promise.reject(new AnalysisError('detector-unavailable', message));
 
   return { detectLandmarks: unavailable, segment: unavailable };
+};
+
+export const createDetector = async (load: LoadMediaPipe = importMediaPipe): Promise<Detector> => {
+  try {
+    return await createMediaPipeDetector(await load());
+  } catch {
+    return createUnavailableDetector(
+      'The face-detection engine could not start in this browser. Checks cannot run here.',
+    );
+  }
 };

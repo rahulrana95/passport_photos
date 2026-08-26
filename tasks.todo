@@ -912,33 +912,87 @@ NOTE
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #17 — Face landmark detection
-Branch: feat/face-landmarks            Depends on: #16               Status: TODO
+Branch: feat/face-landmarks            Depends on: #16               Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   MediaPipe Face Landmarker behind the detector interface from PR #15.
 
+MEASURED COST OF A FIRST CHECK — the number that shapes the UI
+  WASM runtime   11.76 MB raw -> 3.42 MB gzipped
+  Landmark model  3.76 MB raw -> 3.33 MB gzipped (float16; barely compresses)
+  --------------------------------------------------------------
+  Total          15.52 MB raw -> 6.75 MB gzipped, less again with brotli
+
+  All of it lazy, so LCP is untouched and the client bundle stayed at 948 KB
+  with no MediaPipe in any chunk — verified, not assumed. But it is also the
+  whole of the wait before a first result, which is why the loader reports real
+  progress rather than a spinner, why the Cache API copy matters so much, and
+  why warming on pointerenter is worth building.
+
+SELF-HOSTED, NOT GOOGLE'S CDN
+  A privacy decision before a performance one. The product's claim is that the
+  photo never leaves the device; a third-party request from the checker page
+  would mean Google sees an IP and a timestamp correlatable with "this person
+  is checking a passport photo". Serving the same bytes from our own origin
+  leaves nothing to explain, and removes a DNS lookup, a TLS handshake and
+  somebody else's uptime from the critical path.
+
+  scripts/fetch-models.mjs populates public/models at build time: the runtime
+  is copied from node_modules so it can never drift from the installed API,
+  and the model is downloaded and verified against a pinned SHA-256. Pinned by
+  content, not just URL — the URL is mutable and belongs to somebody else, and
+  a model that silently changed would move every measurement this product
+  makes without a single test failing. Output is gitignored.
+
 IMPLEMENTS
-  [ ] Lazy model load, Cache API persistence, load-progress events
-  [ ] GPU delegate with CPU/WASM fallback
-  [ ] Extract landmarks, blendshapes, transformation matrix
-  [ ] Typed result with a confidence score
+  [x] Lazy model load, Cache API persistence, load-progress events
+  [x] GPU delegate with CPU fallback
+  [x] Landmarks, blendshapes and pose recovered from the transformation matrix
+  [x] Typed result with a confidence score
+  [x] Face selection separated from the model adapter, so the "which face"
+      decision is testable on its own
 
 EDGE CASES
-  [ ] No face detected
-  [ ] Multiple faces — choose the largest and warn, never guess silently
-  [ ] Face too small, or cropped by the frame edge
-  [ ] Extreme yaw/pitch where landmarks are unreliable
-  [ ] Sunglasses, masks, heavy shadow
-  [ ] Model download fails, is slow, or the user is offline
-  [ ] WebGL/WebGPU unavailable => CPU path must still complete
-  [ ] Cache API throws in private browsing
-  [ ] Two loads racing on a fast double-click
+  [x] No face detected
+  [x] Multiple faces — largest wins, and the caller is told there were others.
+      numFaces is 2 rather than 1 on purpose: asking for one lets the model
+      pick by confidence, so a sharply-focused bystander can beat the subject.
+  [x] Face too small to measure — below 15% of frame height a one-pixel
+      landmark error is several millimetres of head height, larger than any
+      specification tolerance
+  [x] Face touching the frame edge, where landmarks are extrapolated
+  [x] Extreme yaw/roll, with the threshold deliberately generous: it decides
+      whether measuring is worth doing, not whether the rule passes
+  [x] Model download fails, is slow, or the user is offline
+  [x] A truncated model refused rather than loaded — a short model produces
+      silently wrong landmarks, far worse than failing
+  [x] WebGL unavailable => CPU path, asserted
+  [x] Cache API absent, throwing on open, throwing on read, and failing on
+      quota — four separate tests, because private browsing does all four
+  [x] Two loads racing on a double-click share one request
+  [x] A failed load does not poison the retry
 
-SEO
-  [ ] Model fetch must never block LCP; warm on pointerenter over the dropzone
+  DEFERRED, with reasons
+  [ ] Sunglasses, masks and heavy shadow — these are rules about what the
+      model returns, not about the adapter, and they belong to the rule engine
+      (#21) where they can be worded for the user. The adapter's job is to
+      decline when measurement is unreliable, which it does.
+  [ ] Warm on pointerenter over the dropzone — needs the dropzone (#26).
+  [ ] Integration with the real model in a browser — needs a page that runs an
+      analysis (#26).
 
 TESTS
-  Unit against recorded fixtures. Integration with the real model, one case.
+  124 tests across the analysis module, 100% coverage with no suppressions.
+  The MediaPipe modules are injected, so the adapter is fully tested without a
+  WebAssembly runtime; only the dynamic import itself is excluded, alone in a
+  file that does nothing else.
+
+  Worth recording: the column-major matrix read was wrong the first time. In a
+  column-major 4x4, element (0,1) is at index 4 and (2,0) at index 2, and the
+  row-major intuition puts them at 1 and 8. Both are plausible, and both still
+  look like a rotation — the error surfaces only as a head reported as tilted
+  when it is turned. The fix names the axes it reads, and the test builds its
+  matrices row by row and transposes once.
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #18 — Person segmentation and crown detection

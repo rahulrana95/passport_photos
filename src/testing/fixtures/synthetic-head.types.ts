@@ -38,9 +38,17 @@ export interface SyntheticHeadFixture {
   readonly spec: SyntheticHeadSpec;
 }
 
-/** RGBA pixel buffer, the shape the analysis pipeline consumes. */
+/**
+ * RGBA pixel buffer, the shape the analysis pipeline consumes.
+ *
+ * The backing store is a plain ArrayBuffer, not the wider ArrayBufferLike a
+ * bare Uint8ClampedArray allows. Every buffer here is allocated locally, and
+ * saying so lets one be handed straight to an ImageData — the alternative is
+ * copying up to ten megabytes on every detection to satisfy a possibility that
+ * never occurs.
+ */
 export interface PixelBuffer {
   readonly width: number;
   readonly height: number;
-  readonly data: Uint8ClampedArray;
+  readonly data: Uint8ClampedArray<ArrayBuffer>;
 }

@@ -6,7 +6,10 @@ import react from 'eslint-plugin-react';
 // FlatCompat — the eslintrc shim cannot serialise the plugin graph on ESLint 10
 // and crashes with a circular-structure error.
 const eslintConfig = [
-  { ignores: ['.next/**', 'coverage/**', 'storybook-static/**', 'playwright-report/**', 'test-results/**', 'next-env.d.ts'] },
+  // public/models is 34MB of prebuilt MediaPipe runtime, fetched at build time
+  // and gitignored. Linting somebody else's minified WASM glue produces
+  // thousands of errors about code we neither wrote nor can change.
+  { ignores: ['public/models/**', '.next/**', 'coverage/**', 'storybook-static/**', 'playwright-report/**', 'test-results/**', 'next-env.d.ts'] },
 
   ...nextCoreWebVitals,
   ...nextTypescript,
