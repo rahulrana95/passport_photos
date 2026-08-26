@@ -15,12 +15,14 @@
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "test:seo": "node --experimental-strip-types scripts/assert-seo.ts",
-    "test:storybook": "test-storybook",
     "test:lighthouse": "lhci autorun",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "lint:fix": "eslint . --fix && stylelint \"src/**/*.css\" --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test:visual": "npm run build-storybook && playwright test --project=stories",
+    "test:visual:update": "npm run build-storybook && playwright test --project=stories --update-snapshots",
+    "test:visual:report": "playwright show-report"
   },
   "dependencies": {
     "@mantine/core": "^9.5.2",
@@ -36,7 +38,6 @@
     "@storybook/addon-a11y": "^10.5.10",
     "@storybook/addon-docs": "^10.5.10",
     "@storybook/nextjs-vite": "^10.5.10",
-    "@storybook/test-runner": "^0.24.4",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.5.2",
