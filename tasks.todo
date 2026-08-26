@@ -768,6 +768,63 @@ NOTE
   Local builds passed only because .env.local is present and gitignored.
 
 ───────────────────────────────────────────────────────────────────────────────
+PR #15a — CI gate repair, and the accessibility defect it uncovered
+Branch: feat/lighthouse-budgets         Depends on: #15               Status: DONE
+───────────────────────────────────────────────────────────────────────────────
+  Unplanned, inserted rather than numbered, so the plan below keeps its
+  numbering. PR #15 got the build running on CI for the first time since #2;
+  the jobs behind it then failed for their own reasons, each one a gate that
+  had never actually executed.
+
+DESCRIPTION
+  Three CI jobs were decorative. This makes them real, and fixes what they
+  found the moment they ran.
+
+IMPLEMENTS
+  [x] @lhci/cli installed. The budgets job ran `lhci autorun` with the package
+      never added, so it exited 127 every time.
+  [x] lighthouserc.cjs with thresholds calibrated against a measured run —
+      performance 1.00, LCP 0.5s, CLS 0, TBT 0ms — rather than guessed. A
+      budget that fails on the day it lands teaches everyone to mute the job.
+  [x] test:e2e builds Storybook first. The Playwright config serves
+      storybook-static for every project, not just the stories one, so the app
+      specs could never start on a clean checkout. CI's separate story step is
+      now redundant and removed.
+  [x] app/icon.svg. Chrome's automatic /favicon.ico request was 404ing on every
+      page load and counting against best-practices.
+  [x] eslint-plugin-react declared directly, and react/no-multi-comp scoped to
+      *.tsx. Adding one .cjs file at the root took the whole lint suite down:
+      the rule reached a file eslint-config-next's globs do not cover, where
+      the borrowed plugin was unregistered.
+
+  ACCESSIBILITY DEFECT (found by the gate, on its first real run)
+  [x] --tk-text-tertiary was 4.34:1 on white — below WCAG AA. Lighthouse saw
+      only that one, because it measures what the single page it visits
+      happens to render. Measuring every pair found three more: status-warn at
+      3.94:1 on sunken, status-pass at 4.40:1, status-manual at 4.49:1.
+  [x] All four re-solved in HSL, hue and saturation preserved, darkened until
+      each clears 4.5:1 against the darkest surface it can land on.
+  [x] token-contrast.test.ts asserts every foreground token against every
+      surface, in all three theme states — 72 pairs, independent of whether a
+      component using them exists yet. Verified by reverting a token and
+      watching it fail.
+  [x] A separate assertion that the primary > secondary > tertiary hierarchy
+      survives, so a future contrast fix cannot silently flatten it.
+
+STILL OPEN — the visual suite is not yet reproducible
+  [ ] --tk-font-mono is `ui-monospace, 'SF Mono', Menlo, monospace`, which
+      resolves to whatever the machine has. Six of the sixteen baselines this
+      PR regenerates changed only because the container was rebuilt, not
+      because any design changed. Until the fonts are self-hosted, a green
+      visual job proves the renderer matched itself, not that the UI is right.
+      Owed its own PR.
+
+TESTS
+  Unit: contrast maths against published values, and the token invariant.
+  All gates green locally: typecheck, lint, 698+ unit tests at 100% coverage,
+  build, validate:specs, test:seo, 129 Playwright specs, lhci.
+
+───────────────────────────────────────────────────────────────────────────────
 PR #16 — Image ingestion: decode, EXIF orientation, downscale
 Branch: feat/image-ingestion           Depends on: #15               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────

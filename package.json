@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings=0 && stylelint \"src/**/*.css\"",
     "test:unit": "vitest run",
-    "test:e2e": "playwright test",
+    "test:e2e": "npm run build-storybook && playwright test",
     "test:seo": "node --experimental-strip-types scripts/assert-seo.ts",
     "test:lighthouse": "lhci autorun",
     "storybook": "storybook dev -p 6006",
@@ -38,6 +38,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.62.1",
     "@storybook/addon-a11y": "^10.5.10",
     "@storybook/addon-docs": "^10.5.10",
@@ -53,6 +54,7 @@
     "axe-core": "^4.13.0",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.3.3",
+    "eslint-plugin-react": "^7.37.5",
     "jsdom": "^30.0.1",
     "msw": "^2.15.0",
     "msw-storybook-addon": "^2.0.7",
