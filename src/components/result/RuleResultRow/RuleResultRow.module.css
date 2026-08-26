@@ -1,0 +1,56 @@
+.row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--tk-space-2xs);
+  align-items: start;
+  padding: var(--tk-space-xs);
+  border: 1px solid var(--tk-border-default);
+  border-radius: var(--tk-radius-md);
+  background: var(--tk-surface);
+}
+
+/* The status colour is applied to the icon only, and always alongside the text
+   label below. Under forced-colors every status token collapses to CanvasText,
+   so the icon shape and the label are what actually carry the meaning. */
+.icon {
+  flex: none;
+  margin-block-start: 0.1rem;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-space-3xs);
+  min-inline-size: 0;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tk-space-3xs) var(--tk-space-2xs);
+  align-items: baseline;
+}
+
+.label {
+  font-weight: 600;
+  color: var(--tk-text-primary);
+}
+
+.statusLabel {
+  font-size: var(--tk-text-xs);
+  color: var(--tk-text-secondary);
+}
+
+.measurement {
+  font-family: var(--tk-font-mono);
+  font-size: var(--tk-text-xs);
+  color: var(--tk-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.fix {
+  margin: 0;
+  font-size: var(--tk-text-sm);
+  line-height: 1.5;
+  color: var(--tk-text-primary);
+}

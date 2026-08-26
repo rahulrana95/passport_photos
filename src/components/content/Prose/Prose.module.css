@@ -1,0 +1,70 @@
+/**
+ * Typographic rules for long-form ranking content.
+ *
+ * Styles are applied to descendant elements with :where() so they carry zero
+ * specificity: the content below is written as plain semantic HTML by page
+ * authors, and any component placed inside must be able to override without a
+ * specificity fight.
+ */
+
+.prose {
+  color: var(--tk-text-primary);
+  font-size: var(--tk-text-md);
+  line-height: 1.65;
+}
+
+.constrained {
+  max-inline-size: var(--tk-measure);
+}
+
+.prose :where(h2) {
+  margin-block: var(--tk-space-lg) var(--tk-space-2xs);
+  font-size: var(--tk-text-xl);
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.prose :where(h3) {
+  margin-block: var(--tk-space-md) var(--tk-space-3xs);
+  font-size: var(--tk-text-lg);
+  line-height: 1.3;
+  text-wrap: balance;
+}
+
+.prose :where(p) {
+  margin-block: 0 var(--tk-space-xs);
+}
+
+.prose :where(ul, ol) {
+  margin-block: 0 var(--tk-space-xs);
+  padding-inline-start: var(--tk-space-sm);
+}
+
+.prose :where(li) {
+  margin-block-end: var(--tk-space-3xs);
+}
+
+.prose :where(a) {
+  color: var(--tk-accent);
+  text-underline-offset: 2px;
+}
+
+.prose :where(strong) {
+  font-weight: 600;
+}
+
+.prose :where(code) {
+  padding: 0.1em 0.32em;
+  border-radius: var(--tk-radius-sm);
+  background: var(--tk-sunken);
+  font-family: var(--tk-font-mono);
+  font-size: 0.9em;
+}
+
+.prose :where(:first-child) {
+  margin-block-start: 0;
+}
+
+.prose :where(:last-child) {
+  margin-block-end: 0;
+}

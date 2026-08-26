@@ -1,0 +1,59 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-space-2xs);
+  max-inline-size: var(--tk-measure);
+}
+
+.heading {
+  margin: 0;
+  font-size: var(--tk-text-xl);
+  color: var(--tk-text-primary);
+  text-wrap: balance;
+}
+
+.item {
+  border: 1px solid var(--tk-border-default);
+  border-radius: var(--tk-radius-md);
+  background: var(--tk-surface);
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tk-space-2xs);
+  padding: var(--tk-space-xs);
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--tk-text-primary);
+  list-style: none;
+}
+
+/* Safari renders its own disclosure triangle without this. */
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+.summary:focus-visible {
+  outline: 2px solid var(--tk-accent);
+  outline-offset: -2px;
+  border-radius: var(--tk-radius-md);
+}
+
+.marker {
+  flex: none;
+  color: var(--tk-text-secondary);
+  transition: transform var(--tk-duration-fast) var(--tk-easing-standard);
+}
+
+.item[open] .marker {
+  transform: rotate(180deg);
+}
+
+.answer {
+  margin: 0;
+  padding: 0 var(--tk-space-xs) var(--tk-space-xs);
+  color: var(--tk-text-secondary);
+  line-height: 1.6;
+}
