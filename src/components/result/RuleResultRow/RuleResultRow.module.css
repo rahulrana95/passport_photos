@@ -14,7 +14,7 @@
    so the icon shape and the label are what actually carry the meaning. */
 .icon {
   flex: none;
-  margin-block-start: 0.1rem;
+  margin-block-start: var(--tk-optical-nudge);
 }
 
 .body {

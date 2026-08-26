@@ -2,6 +2,10 @@
 
 ## Read this first, every session
 
+0. **Any UI work — a component, a page, a stylesheet, a token, anything with a
+   className — starts by loading the `design-system` skill, and ends by loading
+   `ui-craft`.** They are in `.claude/skills/`. The lint rules catch violations
+   of the token system; the skills carry the judgement the linter cannot.
 1. Read `tasks.todo`. It is the single source of delivery truth.
 2. Identify the lowest-numbered task with status `TODO`.
 3. Confirm the previous task is **merged** before starting. Never stack PRs.
