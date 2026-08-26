@@ -1,0 +1,32 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-space-2xs);
+  max-width: var(--tk-measure);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--tk-text-3xl);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--tk-text-primary);
+  text-wrap: balance;
+}
+
+.description {
+  margin: 0;
+  font-size: var(--tk-text-lg);
+  line-height: 1.5;
+  color: var(--tk-text-secondary);
+}
+
+@media (width <= 48em) {
+  .title {
+    font-size: var(--tk-text-2xl);
+  }
+
+  .description {
+    font-size: var(--tk-text-md);
+  }
+}

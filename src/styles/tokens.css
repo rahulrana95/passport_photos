@@ -1,0 +1,120 @@
+/**
+ * THE SINGLE SOURCE OF DESIGN VALUES.
+ *
+ * Raw values are declared as --tk-* here and nowhere else. Mantine reads them
+ * through the cssVariablesResolver in src/theme/mantine-theme.config.ts, and
+ * every *.module.css references var(--tk-*). A colour literal outside this file
+ * is a stylelint error.
+ *
+ * Three theme states must work, not two:
+ *   1. explicit light  -> [data-mantine-color-scheme='light']
+ *   2. explicit dark   -> [data-mantine-color-scheme='dark']
+ *   3. system default  -> no attribute at all, only prefers-color-scheme
+ * A token defined only inside an attribute selector breaks state 3.
+ */
+
+:root {
+  /* Surfaces and text — light is the base declaration */
+  --tk-ground: #f1f4f3;
+  --tk-surface: #fff;
+  --tk-sunken: #e7ecea;
+  --tk-text-primary: #101c1a;
+  --tk-text-secondary: #3b4e4a;
+  --tk-text-tertiary: #6b7d79;
+  --tk-border-default: #d3dbd8;
+  --tk-border-strong: #bfcac6;
+
+  /* Brand */
+  --tk-accent: #0e6e62;
+  --tk-accent-soft: #dcede9;
+  --tk-accent-contrast: #fff;
+
+  /* Rule outcomes. Deliberately separate from the brand accent, and never the
+     only signal — every status is paired with an icon and a label. */
+  --tk-status-pass: #2c7a4b;
+  --tk-status-warn: #a8631a;
+  --tk-status-fail: #a8401c;
+  --tk-status-manual: #5a6b8c;
+
+  /* Spacing */
+  --tk-space-3xs: 0.25rem;
+  --tk-space-2xs: 0.5rem;
+  --tk-space-xs: 0.75rem;
+  --tk-space-sm: 1rem;
+  --tk-space-md: 1.5rem;
+  --tk-space-lg: 2rem;
+  --tk-space-xl: 3rem;
+  --tk-space-2xl: 4rem;
+
+  /* Type scale */
+  --tk-font-body: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tk-font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+  --tk-text-xs: 0.75rem;
+  --tk-text-sm: 0.875rem;
+  --tk-text-md: 1rem;
+  --tk-text-lg: 1.125rem;
+  --tk-text-xl: 1.5rem;
+  --tk-text-2xl: 2rem;
+  --tk-text-3xl: 2.75rem;
+
+  /* Radius, shadow, motion, layering */
+  --tk-radius-sm: 2px;
+  --tk-radius-md: 6px;
+  --tk-radius-lg: 12px;
+  --tk-shadow-sm: 0 1px 2px rgb(16 28 26 / 5%);
+  --tk-shadow-md: 0 4px 16px -8px rgb(16 28 26 / 25%);
+  --tk-duration-fast: 120ms;
+  --tk-duration-base: 200ms;
+  --tk-easing-standard: cubic-bezier(0.2, 0, 0.2, 1);
+  --tk-layer-header: 100;
+  --tk-layer-overlay: 200;
+  --tk-layer-toast: 300;
+
+  /* Layout */
+  --tk-container-max: 72rem;
+  --tk-measure: 68ch;
+}
+
+/* State 3: system default, no attribute stamped. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-mantine-color-scheme='light']) {
+    --tk-ground: #0b1312;
+    --tk-surface: #131e1c;
+    --tk-sunken: #0f1917;
+    --tk-text-primary: #e3ebe8;
+    --tk-text-secondary: #a9bbb6;
+    --tk-text-tertiary: #7a8c88;
+    --tk-border-default: #253431;
+    --tk-border-strong: #33463f;
+    --tk-accent: #45c2af;
+    --tk-accent-soft: #123430;
+    --tk-accent-contrast: #06201c;
+    --tk-status-pass: #56b87c;
+    --tk-status-warn: #d69a4a;
+    --tk-status-fail: #e0805a;
+    --tk-status-manual: #8fa2c4;
+    --tk-shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
+    --tk-shadow-md: 0 4px 16px -8px rgb(0 0 0 / 80%);
+  }
+}
+
+/* States 1 and 2: an explicit choice must beat the OS preference either way. */
+[data-mantine-color-scheme='dark'] {
+  --tk-ground: #0b1312;
+  --tk-surface: #131e1c;
+  --tk-sunken: #0f1917;
+  --tk-text-primary: #e3ebe8;
+  --tk-text-secondary: #a9bbb6;
+  --tk-text-tertiary: #7a8c88;
+  --tk-border-default: #253431;
+  --tk-border-strong: #33463f;
+  --tk-accent: #45c2af;
+  --tk-accent-soft: #123430;
+  --tk-accent-contrast: #06201c;
+  --tk-status-pass: #56b87c;
+  --tk-status-warn: #d69a4a;
+  --tk-status-fail: #e0805a;
+  --tk-status-manual: #8fa2c4;
+  --tk-shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
+  --tk-shadow-md: 0 4px 16px -8px rgb(0 0 0 / 80%);
+}
