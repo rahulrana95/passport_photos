@@ -1,0 +1,866 @@
+###############################################################################
+#  PASSPORT PHOTO CHECKER — DELIVERY PLAN
+#  One task = one PR. Branch fresh from `main`. Never start N+1 before N merges.
+#  Last updated: 2026-08-26
+###############################################################################
+
+═══════════════════════════════════════════════════════════════════════════════
+ GLOBAL ENGINEERING RULES  (apply to EVERY PR — CI enforces, not reviewers)
+═══════════════════════════════════════════════════════════════════════════════
+
+BRANCHING
+  - `git checkout main && git pull && git checkout -b <type>/<slug>` for every PR.
+  - One PR is never based on another. If N+1 needs N, wait for the merge.
+  - Squash-merge only. Branch deleted on merge.
+
+TYPESCRIPT — 100%
+  - strict, noUncheckedIndexedAccess, exactOptionalPropertyTypes,
+    noImplicitOverride, noFallthroughCasesInSwitch, verbatimModuleSyntax.
+  - `any` is a lint error. `as` casts are a lint error except in *.test.ts.
+  - Every public function has an explicit return type.
+  - Zero `@ts-expect-error` without an issue link in the comment.
+
+FILE LAYOUT — one thing per file
+  - One component per file. Component file contains ONLY the component.
+  - Props/domain types live in a sibling `*.types.ts`. Never inline interfaces.
+  - Constants live in `*.constants.ts`. Pure helpers in `*.utils.ts`.
+  - Co-located per component: Foo.tsx, Foo.types.ts, Foo.test.tsx, Foo.stories.tsx
+  - BANNED filenames: utils.ts, types.ts, helpers.ts, index.ts re-export barrels.
+
+NO HARDCODED VALUES — anywhere
+  - No colour literals in components. Semantic CSS custom properties only.
+  - No magic numbers. Thresholds, sizes, timings, limits => *.constants.ts.
+  - No route strings. Use typed route builders from routes.constants.ts.
+  - No copy strings in components. Pull from a content module (i18n-ready).
+  - CI: custom ESLint rules `no-raw-color`, `no-magic-number`, `no-literal-route`.
+
+CSS — one place
+  - All tokens in src/styles/tokens.css. Tailwind reads them via @theme inline.
+  - No `dark:` prefixes in components; theme swaps CSS variables only.
+  - Component styles are Tailwind utilities composed from tokens. No ad-hoc hex.
+  - Print styles centralised in src/styles/print.css (this product gets printed).
+
+TESTING — every PR, no exceptions
+  - Unit:        Vitest + React Testing Library. 100% statements/branches/
+                 functions/lines. CI fails under threshold.
+  - A11y:        axe-core assertion in every component test.
+  - Storybook:   a story per meaningful state (default, each variant, loading,
+                 error, empty, mobile viewport, long-content overflow).
+  - Screenshots: @storybook/test-runner (Playwright) captures every story.
+                 Diffs fail CI.
+  - Integration: Playwright specs against real routes, desktop + mobile.
+  - Mocking:     MSW for network (model CDN). Fixture-driven fakes for the Web
+                 Worker and MediaPipe — see PR #10. There is NO backend API in
+                 this product, so the thing that actually needs mocking is the
+                 worker + WASM model layer, not HTTP.
+  - NOTE: 100% branch coverage on GPU/CPU fallback paths is only reachable
+    because of the fake model layer. Any genuinely unreachable branch needs an
+    /* c8 ignore */ WITH a comment saying why. Reviewer rejects bare ignores.
+
+SEO — a first-class acceptance criterion, not a follow-up
+  - Every route is statically generated (SSG) or ISR. Nothing client-only.
+  - Every page: unique <title>, meta description, canonical, OG + Twitter tags.
+  - All content that should rank is in the server-rendered HTML. The checker is
+    interactive, but the requirements tables, FAQs and source citations are not.
+  - All navigation is real <a href>. No JS-only routing for crawlable links.
+  - Structured data validated in CI (JSON-LD schema tests).
+  - Lighthouse CI budget gate: LCP < 1.2s, CLS < 0.1, TBT < 200ms.
+  - PR template has an SEO checklist. Cannot merge unticked.
+
+DEFINITION OF DONE
+  [ ] typecheck clean   [ ] lint clean   [ ] unit 100%   [ ] stories added
+  [ ] screenshots reviewed   [ ] integration green   [ ] a11y clean
+  [ ] SEO checklist ticked   [ ] Lighthouse budgets pass   [ ] docs updated
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ PHASE 1 — FOUNDATION
+═══════════════════════════════════════════════════════════════════════════════
+
+───────────────────────────────────────────────────────────────────────────────
+PR #1 — Repository foundation, engineering standards and delivery plan
+Branch: chore/repo-foundation          Depends on: —                Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  The rulebook and the plan, before any application code exists. Nothing here
+  ships to users; everything here decides whether the next 29 PRs stay clean.
+
+IMPLEMENTS
+  [ ] tasks.todo (this file) as the single source of delivery truth
+  [ ] README.md — what the product is, the non-negotiables, how to run it
+  [ ] CONTRIBUTING.md — the global rules above, expanded with examples
+  [ ] CLAUDE.md — agent protocol: read tasks.todo first, one PR per task
+  [ ] .github/pull_request_template.md with the Definition of Done checklist
+      and a mandatory SEO section
+  [ ] .github/workflows/ci.yml — typecheck, lint, unit+coverage gate, build,
+      storybook build, test-runner screenshots, Playwright, Lighthouse CI
+  [ ] .github/CODEOWNERS, .editorconfig, .gitignore, .nvmrc (pin Node 22)
+  [ ] LICENSE, SECURITY.md (biometric-data posture stated explicitly)
+  [ ] Branch protection notes: require CI green, require 1 review, linear history
+
+EDGE CASES
+  [ ] CI must fail — not warn — when coverage drops below 100%
+  [ ] Concurrency group cancels superseded runs so stale jobs don't block merges
+  [ ] Workflow permissions set to read-only by default, elevated per-job
+  [ ] Node version pinned identically in .nvmrc, CI matrix and package.json
+  [ ] Playwright browsers cached in CI or every run pays the download
+  [ ] Storybook build must not be allowed to pass with a11y violations
+  [ ] Dependabot/Renovate configured but grouped, so it can't flood the queue
+
+SEO
+  n/a — but the PR template's SEO checklist created here gates every later PR.
+
+TESTS
+  CI self-test: a deliberately failing fixture proves the coverage gate bites.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #2 — Next.js app scaffold, strict TypeScript, lint and test harness
+Branch: chore/app-scaffold             Depends on: #1                Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  The empty-but-correct application. One page, rendered server-side, proving
+  every tool in the chain runs in CI.
+
+IMPLEMENTS
+  [ ] Next.js 16 App Router, TypeScript strict per the global rules
+  [ ] Tailwind CSS 4, PostCSS, path aliases (@/…)
+  [ ] ESLint flat config + Prettier; custom rules: no-raw-color,
+      no-magic-number, no-literal-route, one-component-per-file,
+      filename-convention, no-barrel-files
+  [ ] Vitest + RTL + jsdom + axe matcher; v8 coverage at 100% thresholds
+  [ ] Playwright config: chromium + webkit, desktop + Pixel viewports
+  [ ] Storybook 8 with the theme decorator (light/dark toolbar switch)
+  [ ] @storybook/test-runner wired to capture screenshots per story
+  [ ] MSW installed and initialised for both test and Storybook environments
+  [ ] Zod-validated env module — build fails on a missing/invalid variable
+
+EDGE CASES
+  [ ] Storybook and Next must share the same Tailwind/token pipeline or stories
+      lie about production appearance
+  [ ] jsdom lacks canvas, OffscreenCanvas, Worker and WebGL — register stubs now
+      or every later test file re-invents them
+  [ ] MSW service worker must not leak into the production bundle
+  [ ] Coverage must exclude generated files but NOT source, or the gate is fake
+  [ ] Playwright webServer race: build must complete before specs start
+  [ ] Deterministic screenshots — freeze fonts, disable animations, fixed seed
+
+SEO
+  [ ] Root layout sets lang, dir, viewport, theme-color and metadataBase
+  [ ] Verify `next build` emits static HTML containing real text (curl the file)
+
+TESTS
+  Smoke test on the root route; one primitive story to prove the screenshot
+  runner and the theme decorator both work.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #3 — Design token system and global stylesheet
+Branch: feat/design-tokens             Depends on: #2                Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  Every colour, space, radius, shadow, duration and type step, defined once.
+  This is what makes "no hardcoded values" enforceable rather than aspirational.
+
+IMPLEMENTS
+  [ ] tokens.css — raw --tk-* values for light, dark and system-default
+  [ ] @theme inline mapping --color-* : var(--tk-*)
+  [ ] Semantic layer: surface, text-primary/secondary/tertiary, border-default,
+      status-pass / status-warn / status-fail (distinct from brand accent)
+  [ ] Type scale, spacing scale, radius scale, shadow scale, z-index scale,
+      motion durations and easings
+  [ ] print.css — the print sheet must render correctly on paper
+  [ ] No-flash theme init script; next-themes with attribute="data-theme"
+  [ ] Token documentation page in Storybook
+
+EDGE CASES
+  [ ] Three theme states, not two: explicit light, explicit dark, and unstamped
+      system default. A token defined only under [data-theme] breaks the third.
+  [ ] prefers-contrast / forced-colors mode must stay legible
+  [ ] prefers-reduced-motion disables every transition
+  [ ] Status colours must be distinguishable for colour-blind users — pass/fail
+      must never be conveyed by colour alone (icon + text required)
+  [ ] Print: backgrounds are dropped by default; cut guides must survive
+  [ ] Theme flash on first paint (test with throttled CPU)
+
+SEO
+  [ ] theme-color meta per colour scheme
+  [ ] Tokens must not introduce render-blocking CSS beyond the critical file
+
+TESTS
+  Unit: token resolution helper. Storybook: swatch pages in both themes.
+  Screenshots: token page in light, dark, and forced-colors.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #4 — Constants, typed routes and content module
+Branch: feat/constants-and-routes      Depends on: #3                Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  The other half of "no hardcoded values": strings, routes and numbers.
+
+IMPLEMENTS
+  [ ] site.constants.ts — name, domain, social handles, default OG image
+  [ ] routes.constants.ts — typed builders, e.g. countryPhotoRoute(iso, doc)
+  [ ] measurement.constants.ts — DPI defaults, mm/inch factors, tolerances
+  [ ] analysis.constants.ts — every detection threshold, named and commented
+  [ ] limits.constants.ts — max upload bytes, max pixels, worker timeout
+  [ ] content/ — all user-facing copy, keyed, ready for i18n
+  [ ] Legal copy: the "we check against the published spec, the authority
+      decides" disclaimer as a single reusable constant
+
+EDGE CASES
+  [ ] Route builders must reject unknown country/document at compile time
+  [ ] Trailing-slash policy decided once and encoded in the builder
+  [ ] Copy keys must fail the build when referenced but missing
+  [ ] Threshold constants need units in the name (…Mm, …Px, …Ratio, …Ms)
+  [ ] Locale-aware number/unit formatting — never string-concatenate units
+
+SEO
+  [ ] Canonical URL builder lives here; every page uses it, none hand-rolls one
+
+TESTS
+  Unit: exhaustive route-builder cases including invalid input.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #5 — Core UI primitives
+Branch: feat/ui-primitives             Depends on: #4                Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  Button, Card, Badge, Alert, Skeleton, ProgressBar, Tooltip, VisuallyHidden,
+  Icon. Built once, reused by every later PR.
+
+IMPLEMENTS
+  [ ] One component per file with sibling .types.ts, .test.tsx, .stories.tsx
+  [ ] Variant props typed as unions, never strings
+  [ ] Polymorphic `as` support where it avoids nested interactive elements
+  [ ] Forwarded refs, full native prop pass-through
+
+EDGE CASES
+  [ ] Focus-visible ring on every interactive element, visible in both themes
+  [ ] Disabled buttons must not be focusable but must stay announced
+  [ ] Long text overflow: truncation vs wrap decided per component, tested
+  [ ] RTL layout correctness
+  [ ] Skeleton dimensions must match the real content exactly (zero CLS)
+  [ ] Tooltip on touch devices (no hover) needs a tap affordance
+  [ ] Nested interactive elements (link inside card) must not produce invalid DOM
+
+SEO
+  [ ] Buttons that navigate must render as <a href>, not <button onClick>
+
+TESTS
+  Unit + axe per component. Stories for every variant and state.
+  Screenshots in light/dark/mobile.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #6 — SEO infrastructure
+Branch: feat/seo-infrastructure        Depends on: #5                Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  The machinery every page will use. Built before any real page exists, so no
+  page can be created without it.
+
+IMPLEMENTS
+  [ ] buildMetadata() factory — title, description, canonical, OG, Twitter,
+      robots directives, per-route overrides
+  [ ] JSON-LD builders: WebApplication, FAQPage, BreadcrumbList, HowTo,
+      Organization — each typed, each schema-validated
+  [ ] app/sitemap.ts, app/robots.ts
+  [ ] Dynamic OG image route (static generation, not runtime)
+  [ ] hreflang + x-default emitter (structure now, locales later)
+
+EDGE CASES
+  [ ] Canonical must be absolute and must match the trailing-slash policy
+  [ ] Title length guardrail — warn in dev over ~60 chars, description ~155
+  [ ] Sitemap 50,000-URL limit and index-file split
+  [ ] lastmod must reflect the spec's lastVerified date, not the build time
+  [ ] Utility routes must be noindex, and must be absent from the sitemap
+  [ ] JSON-LD FAQ content must match visible page content or Google penalises
+  [ ] OG image must not 404 for any generated route
+  [ ] robots.txt must not block the model CDN needed for rendering checks
+
+SEO
+  This PR *is* the SEO PR. Add a CI test that curls every built route and
+  asserts title, description, canonical and one JSON-LD block are present.
+
+TESTS
+  Unit: metadata factory and every JSON-LD builder against schema fixtures.
+  Integration: crawl the built output, assert per-route tags.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #7 — Layout shell: header, footer, breadcrumbs, theme toggle
+Branch: feat/layout-shell              Depends on: #6                Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  The server-rendered frame. Also the internal-linking surface, which is doing
+  more SEO work than it looks like.
+
+IMPLEMENTS
+  [ ] Header with real anchor navigation, mobile menu, theme toggle
+  [ ] Footer with country and document-type link columns (internal link graph)
+  [ ] Breadcrumb component wired to the BreadcrumbList JSON-LD builder
+  [ ] Skip-to-content link
+  [ ] Error boundary and Suspense fallback per route segment
+  [ ] 404 and 500 pages
+
+EDGE CASES
+  [ ] Mobile menu must be crawlable — links present in HTML even when collapsed
+  [ ] Theme toggle must not cause a flash or a hydration mismatch
+  [ ] Breadcrumb structured data must exactly mirror the visible trail
+  [ ] Footer with 40+ country links must not bloat every page — consider a
+      curated subset plus a full index page
+  [ ] Keyboard trap in the mobile menu
+  [ ] Header must not shift layout when the theme toggle hydrates
+
+SEO
+  [ ] Every nav item a real <a href>; verify by parsing static HTML in CI
+  [ ] 404 returns a genuine 404 status, not a soft 200
+
+TESTS
+  Unit + axe. Stories for open/closed menu, both themes. Playwright: keyboard
+  navigation, skip link, 404 status code.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ PHASE 2 — DOMAIN CORE
+═══════════════════════════════════════════════════════════════════════════════
+
+───────────────────────────────────────────────────────────────────────────────
+PR #8 — PhotoSpec schema, Zod validation, registry (US, UK, Schengen)
+Branch: feat/photospec-registry        Depends on: #7                Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  The country requirement model. This registry is the moat; the schema decides
+  how painful the next 37 countries will be.
+
+IMPLEMENTS
+  [ ] PhotoSpec type + Zod schema (print, digital, headHeight, eyeLine,
+      background, glasses, headCovering, expression, aiEditingPolicy,
+      maxAgeMonths, source, lastVerified)
+  [ ] Registry with lookup by (countryIso, documentType)
+  [ ] Schengen base spec + per-member-state override merge
+  [ ] Build-time validation: every spec parsed, contradictions rejected
+  [ ] Staleness helper — flags specs older than the re-verification window
+
+EDGE CASES
+  [ ] Overlapping/contradictory bands (min > max) must fail the build
+  [ ] Head-height expressed as mm in one country and % of frame in another —
+      normalise at the boundary, store both, never convert ad hoc later
+  [ ] Schengen override merge must be deep and must not silently drop keys
+  [ ] Unknown country/document => typed not-found, never a partial object
+  [ ] Specs must be immutable at runtime (deep freeze in dev)
+  [ ] Two documents in one country with different rules (passport vs visa)
+  [ ] Countries with multiple accepted sizes
+  [ ] Every spec MUST carry a source URL — build fails without one
+
+SEO
+  [ ] lastVerified feeds sitemap lastmod and the visible "verified on" line
+
+TESTS
+  Unit: schema validation, merge logic, staleness, every seeded spec parses.
+  Fixture: a deliberately invalid spec proves the build gate works.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #9 — Unit conversion and measurement utilities
+Branch: feat/measurement-utils         Depends on: #8                Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  Pure functions converting between mm, inches, pixels and DPI, and evaluating
+  a measurement against a spec band. Small PR, disproportionate blast radius.
+
+IMPLEMENTS
+  [ ] mm <-> inch <-> px conversions at a given DPI
+  [ ] Band evaluation returning pass/fail plus the delta needed to pass
+  [ ] Aspect-ratio helpers, safe rounding policy
+
+EDGE CASES
+  [ ] Floating-point drift — round once, at the boundary, consistently
+  [ ] Non-integer DPI values
+  [ ] Zero or negative dimensions
+  [ ] Very large values overflowing canvas limits
+  [ ] Rounding must never turn a passing measurement into a failing one
+  [ ] Locale decimal separators when formatting for display
+
+SEO  n/a
+
+TESTS
+  Unit with property-based cases across the full plausible range.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #10 — Worker infrastructure, typed protocol and the fake-model test layer
+Branch: feat/worker-infrastructure     Depends on: #9                Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  The Web Worker plus its typed request/response protocol — and the fixture
+  layer that lets every later PR reach 100% coverage without loading 5MB of
+  WASM in a unit test. This is the mocking story for this product.
+
+IMPLEMENTS
+  [ ] Worker bootstrap with OffscreenCanvas
+  [ ] Discriminated-union message protocol, correlation IDs, typed both ways
+  [ ] Progress reporting, cancellation, timeout
+  [ ] Structured error propagation across the boundary
+  [ ] Detector interface so the real MediaPipe backend and a deterministic fake
+      backend are interchangeable
+  [ ] Fixture library: landmark sets and segmentation masks for ~30 real cases
+  [ ] Storybook decorator + Vitest setup that inject the fake backend
+
+EDGE CASES
+  [ ] Worker fails to start (CSP, blocked, private mode) => graceful fallback
+  [ ] Worker crashes mid-task => restart and surface a real error
+  [ ] Cancellation arrives after completion => must not resolve twice
+  [ ] Out-of-memory on very large images
+  [ ] Structured-clone failures on non-transferable payloads
+  [ ] Safari lacks some OffscreenCanvas features — feature-detect, don't assume
+  [ ] Two analyses in flight; the stale one must be discarded, not rendered
+  [ ] Transferred ArrayBuffers are detached — never reuse after posting
+
+SEO
+  [ ] Worker and models must be lazy — zero bytes on first paint
+
+TESTS
+  Unit: protocol, correlation, cancellation, timeout, crash recovery.
+  Integration: real worker round-trip in Playwright.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #11 — Image ingestion: decode, EXIF orientation, downscale
+Branch: feat/image-ingestion           Depends on: #10               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  Turning whatever the user gives us into a normalised bitmap. More failure
+  modes live here than anywhere else in the product.
+
+IMPLEMENTS
+  [ ] File validation (type, size, dimensions) before decode
+  [ ] EXIF parse; apply orientation; strip EXIF from output
+  [ ] Downscale to the analysis working size, keep the original for output
+  [ ] Typed decode-failure reasons with user-facing guidance
+
+EDGE CASES
+  [ ] HEIC/HEIF — the default iPhone format, and browsers cannot decode it.
+      Either ship a WASM decoder or detect and give exact conversion steps.
+      Getting this wrong loses a large share of the target audience.
+  [ ] All eight EXIF orientation values, including the mirrored ones
+  [ ] Images with no EXIF at all
+  [ ] CMYK JPEGs, 16-bit PNGs, images with alpha, progressive JPEGs
+  [ ] Animated GIF/WebP — take frame one
+  [ ] Dimensions beyond the browser's canvas limit (~16,384px)
+  [ ] Corrupt, truncated or zero-byte files
+  [ ] Extension lying about content — sniff the magic bytes
+  [ ] Colour profiles: convert to sRGB or measured colours will be wrong
+  [ ] Memory spikes on 48MP phone photos
+  [ ] EXIF capture date used for the recency hint; absent on screenshots
+
+SEO  n/a
+
+TESTS
+  Unit against a fixture set covering every case above. Integration: real
+  uploads through the UI in Playwright.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ PHASE 3 — THE ANALYSIS ENGINE
+═══════════════════════════════════════════════════════════════════════════════
+
+───────────────────────────────────────────────────────────────────────────────
+PR #12 — Face landmark detection
+Branch: feat/face-landmarks            Depends on: #11               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  MediaPipe Face Landmarker behind the detector interface from PR #10.
+
+IMPLEMENTS
+  [ ] Lazy model load, Cache API persistence, load-progress events
+  [ ] GPU delegate with CPU/WASM fallback
+  [ ] Extract landmarks, blendshapes, transformation matrix
+  [ ] Typed result with a confidence score
+
+EDGE CASES
+  [ ] No face detected
+  [ ] Multiple faces — choose the largest and warn, never guess silently
+  [ ] Face too small, or cropped by the frame edge
+  [ ] Extreme yaw/pitch where landmarks are unreliable
+  [ ] Sunglasses, masks, heavy shadow
+  [ ] Model download fails, is slow, or the user is offline
+  [ ] WebGL/WebGPU unavailable => CPU path must still complete
+  [ ] Cache API throws in private browsing
+  [ ] Two loads racing on a fast double-click
+
+SEO
+  [ ] Model fetch must never block LCP; warm on pointerenter over the dropzone
+
+TESTS
+  Unit against recorded fixtures. Integration with the real model, one case.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #13 — Person segmentation and crown detection
+Branch: feat/segmentation-crown        Depends on: #12               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  THE RISKIEST PR IN THE PROJECT. Landmarks stop at the hairline, so crown-to-
+  chin — the most common rejection reason — depends entirely on this working.
+  Build the hard-case test set BEFORE the implementation.
+
+IMPLEMENTS
+  [ ] Segmentation model behind the detector interface
+  [ ] Mask cleanup: morphological close, largest-connected-component, hole fill
+  [ ] Crown estimation from the cleaned mask
+  [ ] Per-result confidence, surfaced when low
+
+EDGE CASES
+  [ ] Dark hair against a dark background — the classic failure
+  [ ] Bald and shaved heads (crown is skin, not hair)
+  [ ] Hats, turbans, hijabs, kippahs — crown of covering vs crown of head
+  [ ] Voluminous or curly hair: the spec means the skull, not the hair halo
+  [ ] Hair leaving the top of the frame entirely
+  [ ] Hair blending into clothing of a similar colour
+  [ ] Mask noise, speckle and holes
+  [ ] Earrings, glasses arms and jewellery attaching to the mask
+  [ ] Someone else's head partly in frame
+  [ ] Low-contrast or underexposed source
+
+SEO  n/a
+
+TESTS
+  A curated set of ~30 real photos spanning every case above, each with a
+  hand-measured ground-truth crown Y. Assert error within tolerance. This
+  fixture set is a project asset — document how to extend it.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #14 — Geometry engine
+Branch: feat/geometry-engine           Depends on: #13               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  Landmarks plus crown plus spec, in. Millimetre measurements and the crop
+  rectangle, out. Pure functions — no imaging, fully unit-testable.
+
+IMPLEMENTS
+  [ ] Head height (crown→chin), eye-line height, horizontal centring
+  [ ] Roll from the inter-ocular line; yaw/pitch from the transform matrix
+  [ ] Ideal crop rectangle satisfying the spec, plus achievability check
+
+EDGE CASES
+  [ ] Crown above the top edge, or chin below the bottom edge
+  [ ] Required crop extends outside the source image
+  [ ] Source resolution too low to crop at the spec's DPI
+  [ ] Extreme source aspect ratios
+  [ ] Head correctly sized but positioned so no valid crop exists
+  [ ] Rounding must be consistent with PR #9's policy
+
+SEO  n/a
+
+TESTS
+  Unit across synthetic geometries plus every fixture from PR #13.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #15 — Image quality analysis
+Branch: feat/quality-analysis          Depends on: #14               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  Background, shadow, sharpness, exposure and resolution checks over the
+  segmentation mask.
+
+IMPLEMENTS
+  [ ] Background uniformity: luminance and chroma standard deviation
+  [ ] Background colour against the spec's accepted range
+  [ ] Shadow detection via background luminance gradient
+  [ ] Sharpness via Laplacian variance over the face region
+  [ ] Exposure: histogram clipping percentage and mean face luminance
+  [ ] Resolution sufficiency against the spec
+
+EDGE CASES
+  [ ] Patterned, textured or gradient studio backgrounds
+  [ ] White clothing against a white background — segmentation bleed
+  [ ] Subject's hair the same tone as the background
+  [ ] Deliberate vignetting from a phone camera
+  [ ] Motion blur vs shallow depth of field — both blur, only one is the fault
+  [ ] Bright but valid exposure vs genuinely clipped highlights
+  [ ] Upscaled low-resolution images that "meet" pixel counts but are soft
+  [ ] Very small background area when the crop is tight
+  [ ] Skin tone must never influence the exposure verdict — test across a
+      diverse fixture set, this is a fairness requirement not a nice-to-have
+
+SEO  n/a
+
+TESTS
+  Unit against a labelled fixture set, explicitly including diverse skin tones,
+  lighting conditions and background types.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #16 — Rule engine and compliance report model
+Branch: feat/rule-engine               Depends on: #15               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  Measurements plus spec, in. A typed, ordered, human-readable verdict out —
+  where every failure carries a physical action the user can take.
+
+IMPLEMENTS
+  [ ] Rule definitions with id, severity, confidence and evaluator
+  [ ] Verdicts: pass / fail / warning / manual-check / undetectable
+  [ ] Fix instructions computed from the delta ("move ~30cm closer")
+  [ ] Overall verdict aggregation and rule ordering by importance
+  [ ] Manual checklist for glasses, head covering and recency
+
+EDGE CASES
+  [ ] Detection failed entirely — must not report "pass" by omission
+  [ ] Low-confidence results must degrade to manual-check, never to pass
+  [ ] Contradictory rules resolved deterministically
+  [ ] Fix instructions must stay correct when two rules interact (moving closer
+      fixes head height but may break the eye line)
+  [ ] Never emit "guaranteed to pass" anywhere in the model or copy
+  [ ] All messages come from the content module — i18n-ready, no literals
+
+SEO  n/a
+
+TESTS
+  Unit: every rule, every verdict state, aggregation, message resolution.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ PHASE 4 — OUTPUT
+═══════════════════════════════════════════════════════════════════════════════
+
+───────────────────────────────────────────────────────────────────────────────
+PR #17 — Annotated overlay renderer
+Branch: feat/overlay-renderer          Depends on: #16               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+IMPLEMENTS
+  [ ] Canvas overlay: crop rectangle, crown/chin span, allowed band shading,
+      eye line, centre line
+  [ ] Legend, and export of the annotated image as PNG
+EDGE CASES
+  [ ] devicePixelRatio scaling — must stay crisp on retina
+  [ ] Annotation contrast over both very light and very dark photographs
+  [ ] Portrait vs landscape sources
+  [ ] Overlay must remain legible at mobile widths
+  [ ] Redraw on container resize without re-running analysis
+TESTS  Unit on the draw-instruction builder; screenshot stories over fixtures.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #18 — Crop and encode pipeline (mozjpeg byte budget)
+Branch: feat/crop-encode               Depends on: #17               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+IMPLEMENTS
+  [ ] Exact-millimetre crop at the spec's DPI from the full-resolution original
+  [ ] mozjpeg encode with binary-search quality to fit the byte ceiling
+  [ ] Write correct JFIF density (DPI) metadata into the output
+  [ ] sRGB conversion; strip all EXIF including GPS
+EDGE CASES
+  [ ] Byte ceiling unreachable even at minimum quality => explain, don't fail
+  [ ] Source smaller than the required output — never upscale silently
+  [ ] Binary search must terminate; cap iterations
+  [ ] DPI metadata is a common rejection cause — assert it in tests
+  [ ] Non-square specs, and specs with different print vs digital sizes
+  [ ] GPS EXIF must be stripped — privacy requirement, test it explicitly
+TESTS  Unit on the search; integration asserting real byte size and DPI headers.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #19 — Print sheet generator
+Branch: feat/print-sheet               Depends on: #18               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+IMPLEMENTS
+  [ ] 4x6in, 10x15cm and A4 layouts, tiled with cut guides
+  [ ] Copy count computed per sheet size and photo size
+  [ ] Download as JPEG and as print-ready PDF
+EDGE CASES
+  [ ] Printer non-printable margins
+  [ ] Photo larger than the sheet
+  [ ] Rounding leaving an unusable partial column
+  [ ] Cut guides must survive "background graphics off" printing
+  [ ] Physical size must be exact when printed at 100% — verify against a ruler
+TESTS  Unit on layout maths; screenshot stories per sheet size.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #20 — PDF compliance report
+Branch: feat/pdf-report                Depends on: #19               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+IMPLEMENTS
+  [ ] Per-rule results, measurements, annotated image, spec source and date
+  [ ] The legal disclaimer, verbatim from the content module
+EDGE CASES
+  [ ] Font embedding and non-Latin names
+  [ ] Long failure lists spanning pages
+  [ ] File size with an embedded photo
+  [ ] Must never contain the words "guaranteed" or "approved"
+TESTS  Unit on document construction; integration asserting text extraction.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ PHASE 5 — INTERFACE
+═══════════════════════════════════════════════════════════════════════════════
+
+───────────────────────────────────────────────────────────────────────────────
+PR #21 — Upload zone and file input
+Branch: feat/upload-zone               Depends on: #20               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+IMPLEMENTS
+  [ ] Drag-and-drop, click-to-browse, paste-from-clipboard
+  [ ] Mobile capture attribute for direct camera use
+  [ ] Model warm-up on pointerenter
+  [ ] Inline validation errors with recovery guidance
+EDGE CASES
+  [ ] Multiple files dropped; folder dropped; non-image dropped
+  [ ] dragleave firing on child elements (the classic flicker bug)
+  [ ] Keyboard and screen-reader operable without a mouse
+  [ ] Drop outside the zone must not navigate the browser away
+  [ ] Re-uploading while an analysis is in flight
+  [ ] iOS Safari camera capture quirks
+TESTS  Unit + axe; stories for idle/hover/dragging/error; Playwright real upload.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #22 — Result panel
+Branch: feat/result-panel              Depends on: #21               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+IMPLEMENTS
+  [ ] Overall verdict, per-rule rows with measurement and fix instruction
+  [ ] Annotated overlay, download actions, manual checklist
+  [ ] Progress and error states
+EDGE CASES
+  [ ] Zero CLS — reserve the panel's height before results arrive
+  [ ] aria-live announcement when analysis completes
+  [ ] Pass/fail must never rely on colour alone
+  [ ] Long rule lists on small screens
+  [ ] Analysis cancelled or superseded
+  [ ] Slow devices: progress must actually move, not sit at 0%
+TESTS  Unit + axe; stories for all-pass, mixed, all-fail, error, loading.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #23 — Country page template and static generation
+Branch: feat/country-pages             Depends on: #22               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+IMPLEMENTS
+  [ ] /[country]/[document] route with generateStaticParams over the registry
+  [ ] Checker above the fold; requirements table, sources, FAQ below
+  [ ] Per-page metadata and FAQ/HowTo/Breadcrumb JSON-LD
+  [ ] Visible "verified on <date>" with the source link
+EDGE CASES
+  [ ] Unknown country/document must 404 with a real status code
+  [ ] Requirements text must be in the server HTML, not injected on the client
+  [ ] Near-duplicate content across 40 countries — vary genuinely, canonicalise
+  [ ] Countries with several accepted sizes
+  [ ] ISR revalidation when a spec is updated
+  [ ] Long country names breaking the title-length guardrail
+SEO
+  [ ] This is the primary ranking surface. CI asserts, per generated route:
+      title, description, canonical, JSON-LD, H1, and the requirements table
+      all present in the static HTML.
+TESTS  Unit on the template; integration crawling every generated route.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #24 — Dimension and problem route families
+Branch: feat/alt-route-families        Depends on: #23               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+IMPLEMENTS
+  [ ] /2x2-inch-photo, /35x45mm-photo, /50x70mm-photo, /600x600-photo,
+      /resize-photo-to-240kb
+  [ ] /why-was-my-passport-photo-rejected, /passport-photo-checker,
+      /passport-photo-head-size, /passport-photo-background-check
+  [ ] Cross-linking between dimension pages and the countries that use them
+EDGE CASES
+  [ ] One dimension serving many countries — list them, avoid thin content
+  [ ] Overlap with country pages must not create duplicate-content penalties
+  [ ] Reverse-mode ("why was I rejected") needs its own entry flow, not a redirect
+TESTS  Integration asserting cross-links and per-route metadata.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ PHASE 6 — SCALE AND LAUNCH
+═══════════════════════════════════════════════════════════════════════════════
+
+───────────────────────────────────────────────────────────────────────────────
+PR #25 — Registry expansion to 40 countries
+Branch: feat/registry-40               Depends on: #24               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  The grind, and the moat. Every spec verified against the issuing authority's
+  own page, with the URL and the date recorded. No spec enters without a source.
+EDGE CASES
+  [ ] Authority pages that state requirements only in a PDF
+  [ ] Rules differing for applications filed abroad
+  [ ] Child and infant exemptions
+  [ ] Countries permitting or requiring glasses
+  [ ] Non-white background requirements (light grey, cream, light blue)
+  [ ] Countries that mandate a physical print and reject digital entirely
+TESTS  Every spec parses; a snapshot test catches accidental edits.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #26 — Analytics and event tracking
+Branch: feat/analytics                 Depends on: #25               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+IMPLEMENTS
+  [ ] Page views, tool starts, per-rule failure rates, downloads, country mix
+  [ ] Traffic by country — the metric that decides whether ads work
+EDGE CASES
+  [ ] NEVER transmit the image, landmarks, or any biometric derivative
+  [ ] Consent gating for EU visitors before any non-essential tracking
+  [ ] Bot filtering; tracking failures must never break the app
+TESTS  Unit on the payload builder, asserting no image-derived field can leak.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #27 — Performance hardening and CI budgets
+Branch: perf/budgets                   Depends on: #26               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+IMPLEMENTS
+  [ ] Lighthouse CI gate: LCP < 1.2s, CLS < 0.1, TBT < 200ms
+  [ ] Bundle-size budget per route; model bytes excluded from initial load
+  [ ] Verify zero model bytes before file selection
+EDGE CASES
+  [ ] Mid-range mobile CPU throttling in the test profile
+  [ ] Cold cache vs warm cache runs measured separately
+  [ ] Font loading strategy must not shift layout
+TESTS  Lighthouse CI on a representative route sample, failing the build.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #28 — Accessibility audit pass
+Branch: a11y/audit                     Depends on: #27               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+IMPLEMENTS
+  [ ] Full keyboard path through upload → analysis → download
+  [ ] Screen-reader review of results; meaningful alt text on the overlay
+  [ ] Contrast verified in both themes and forced-colors mode
+EDGE CASES
+  [ ] Canvas results are invisible to screen readers — a text equivalent is
+      mandatory, not optional
+  [ ] Focus management when the result panel appears
+  [ ] Reduced-motion path through every transition
+TESTS  axe on every route; manual VoiceOver/NVDA checklist recorded in the PR.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #29 — Legal, privacy and disclaimer surfaces
+Branch: feat/legal-pages               Depends on: #28               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+IMPLEMENTS
+  [ ] Privacy policy stating plainly that no image is ever transmitted
+  [ ] Terms, disclaimer, and the "how to verify nothing is uploaded" page
+  [ ] Cookie/consent notice if analytics requires one
+EDGE CASES
+  [ ] Wording must never imply guaranteed acceptance
+  [ ] GDPR biometric-data position stated explicitly
+  [ ] Disclaimer must appear on every result, not only on the legal page
+TESTS  Integration asserting the disclaimer renders with every result.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #30 — Ads integration and launch checklist
+Branch: chore/launch                   Depends on: #29               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+IMPLEMENTS
+  [ ] Ad slots placed without harming CLS or LCP
+  [ ] Search Console and sitemap submission; analytics verified
+  [ ] Launch content: the 2026 AI-photo-rules explainer
+EDGE CASES
+  [ ] Ad slots must reserve height or CLS collapses
+  [ ] Ads must never appear beside the biometric image in a way implying
+      endorsement or data sharing
+  [ ] AdSense rejects thin tool pages — confirm every route has real content
+  [ ] Re-run Lighthouse after ads; budgets still apply
+TESTS  Lighthouse with ads enabled; CLS assertion on ad-bearing routes.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ PARKED — deliberately not in v1
+═══════════════════════════════════════════════════════════════════════════════
+  - Live camera capture with a real-time guidance overlay  (strong v1.1)
+  - Background replacement, only where aiEditingPolicy allows  (v1.1)
+  - Glasses detection via a small ONNX classifier  (v1.1, manual until then)
+  - Shadow-on-face detection  (v1.1)
+  - Any server-side processing                    NEVER
+  - Face retouching, smoothing or beautification  NEVER
+  - Accounts, uploads or stored photos            NEVER
+  - Guaranteeing acceptance                       NEVER

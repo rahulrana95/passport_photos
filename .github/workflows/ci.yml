@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Cancel superseded runs so a stale job never blocks a merge.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Chromium is provisioned by the Playwright action; never re-download it.
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "0"
+
+jobs:
+  # The application does not exist until PR #2. Every job below is guarded on
+  # package.json so this workflow is valid and green from PR #1 onward, and
+  # activates automatically the moment the scaffold lands.
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      app: ${{ steps.check.outputs.app }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        run: |
+          if [ -f package.json ]; then
+            echo "app=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "app=false" >> "$GITHUB_OUTPUT"
+            echo "No package.json yet — application jobs skipped (expected until PR #2)."
+          fi
+
+  verify:
+    needs: detect
+    if: needs.detect.outputs.app == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Unit tests and coverage gate
+        # Thresholds live in the Vitest config at 100%. This step fails, it does
+        # not warn, when coverage drops below them.
+        run: npm run test:unit -- --coverage
+      - name: Build
+        run: npm run build
+      - name: Assert static HTML contains real content
+        # Guards the core SEO invariant: what should rank must be server-rendered.
+        run: npm run test:seo
+
+  visual:
+    needs: detect
+    if: needs.detect.outputs.app == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Build Storybook
+        run: npm run build-storybook
+      - name: Story screenshots and a11y
+        run: npm run test:storybook
+      - name: Integration tests
+        run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: failure-artifacts
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  budgets:
+    needs: detect
+    if: needs.detect.outputs.app == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Lighthouse budgets
+        run: npm run test:lighthouse
