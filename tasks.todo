@@ -468,7 +468,7 @@ IMPLEMENTS
   [x] --tk-optical-nudge: the one sub-grid value, named rather than silenced
 
 PR #9 — SEO infrastructure
-Branch: feat/seo-infrastructure        Depends on: #5                Status: TODO
+Branch: feat/seo-infrastructure        Depends on: #5                Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   The machinery every page will use. Built before any real page exists, so no
@@ -529,7 +529,7 @@ IMPLEMENTS
   [x] Hard constraint recorded: no ads on the checker page (#34)
 
 PR #11 — Layout shell: header, footer, breadcrumbs, theme toggle
-Branch: feat/layout-shell              Depends on: #10                Status: TODO
+Branch: feat/layout-shell              Depends on: #10                Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   The server-rendered frame. Also the internal-linking surface, which is doing
@@ -604,7 +604,7 @@ EDGE CASES
       is collected" would be false.
 
 PR #13 — PhotoSpec schema, Zod validation, registry (US, UK, Schengen)
-Branch: feat/photospec-registry        Depends on: #12                Status: TODO
+Branch: feat/photospec-registry        Depends on: #12                Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   The country requirement model. This registry is the moat; the schema decides
@@ -659,7 +659,7 @@ TESTS
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #14 — Unit conversion and measurement utilities
-Branch: feat/measurement-utils         Depends on: #13                Status: TODO
+Branch: feat/measurement-utils         Depends on: #13                Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   Pure functions converting between mm, inches, pixels and DPI, and evaluating
@@ -700,7 +700,7 @@ TESTS
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #15 — Worker infrastructure, typed protocol and the fake-model test layer
-Branch: feat/worker-infrastructure     Depends on: #14                Status: TODO
+Branch: feat/worker-infrastructure     Depends on: #14                Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   The Web Worker plus its typed request/response protocol — and the fixture
@@ -708,31 +708,64 @@ DESCRIPTION
   WASM in a unit test. This is the mocking story for this product.
 
 IMPLEMENTS
-  [ ] Worker bootstrap with OffscreenCanvas
-  [ ] Discriminated-union message protocol, correlation IDs, typed both ways
-  [ ] Progress reporting, cancellation, timeout
-  [ ] Structured error propagation across the boundary
-  [ ] Detector interface so the real MediaPipe backend and a deterministic fake
-      backend are interchangeable
-  [ ] Fixture library: landmark sets and segmentation masks for ~30 real cases
-  [ ] Storybook decorator + Vitest setup that inject the fake backend
+  [x] Worker entry point, bootstrap and a browser worker factory that
+      feature-detects rather than assuming Worker exists
+  [x] Discriminated-union message protocol, correlation IDs, typed both ways
+  [x] Progress reporting, cancellation, timeout
+  [x] Structured error propagation across the boundary — structured clone drops
+      the prototype and stack, so errors are serialised to a branchable code
+  [x] Detector interface so the real MediaPipe backend and a deterministic fake
+      backend are interchangeable. createDetector() is the single seam PR #17
+      replaces; until then it reports detector-unavailable rather than throwing
+      at module load, which would misreport every request as worker-crashed
+  [x] Fake detector deriving landmarks from each fixture's generation spec, so
+      ground truth is exact by construction rather than measured
+  [x] Fake worker running the real handler in memory, with failToStart,
+      crashOnNextMessage and neverRespond to reach the failure paths
+  [ ] DEFERRED to #16 — OffscreenCanvas bootstrap. It belongs with image
+      ingestion, where there is something to decode and draw; adding it here
+      would be untestable scaffolding with no caller.
+  [ ] DEFERRED to #26 — Storybook decorator injecting the fake backend. There
+      is no analysis UI to decorate yet. The Vitest side needs no setup: the
+      fake is injected through createWorker, by construction.
 
 EDGE CASES
-  [ ] Worker fails to start (CSP, blocked, private mode) => graceful fallback
-  [ ] Worker crashes mid-task => restart and surface a real error
-  [ ] Cancellation arrives after completion => must not resolve twice
-  [ ] Out-of-memory on very large images
-  [ ] Structured-clone failures on non-transferable payloads
-  [ ] Safari lacks some OffscreenCanvas features — feature-detect, don't assume
-  [ ] Two analyses in flight; the stale one must be discarded, not rendered
-  [ ] Transferred ArrayBuffers are detached — never reuse after posting
+  [x] Worker fails to start (CSP, blocked, private mode) => typed
+      worker-unavailable, not a raw TypeError
+  [x] Worker crashes mid-task => in-flight requests fail, listeners detached,
+      the instance dropped, and the next call builds a fresh one
+  [x] Cancellation arrives after completion => must not resolve twice. Every
+      pending request settles exactly once, whatever path reaches it
+  [x] Two analyses in flight; the stale one must be discarded, not rendered
+  [x] A worker-reported cancellation settles the promise rather than leaving
+      the caller waiting out the timeout
+  [x] A cancellation mid-analysis stops the work at the next checkpoint rather
+      than being noticed only at the end — on a phone that is seconds of
+      blocked work for a screen the user has already left
+  [ ] DEFERRED to #16 — out-of-memory on large images, structured-clone
+      failures, and detached ArrayBuffers after transfer. All three are
+      properties of the payload, and there is no image decoding yet to produce
+      one. The error codes (out-of-memory) are already in the protocol.
+  [ ] DEFERRED to #16 — Safari OffscreenCanvas feature detection, with the
+      OffscreenCanvas work itself.
 
 SEO
-  [ ] Worker and models must be lazy — zero bytes on first paint
+  [x] Worker created lazily on first use, never at module load, and referenced
+      through new URL() so the bundler emits it as its own chunk — zero bytes
+      on first paint
 
 TESTS
-  Unit: protocol, correlation, cancellation, timeout, crash recovery.
-  Integration: real worker round-trip in Playwright.
+  Unit: protocol, correlation, cancellation, timeout, crash recovery, the fake
+  detector's own fidelity, and the fake worker's own contract. 100% coverage.
+  [ ] DEFERRED to #26 — real worker round-trip in Playwright. It needs a page
+      that runs an analysis, and the first one lands with the checker UI.
+
+NOTE
+  This PR also fixes CI, which had been red on every run since PR #2 and was
+  never checked. The build refuses to start without an origin — deliberately,
+  since a missing one produces relative canonicals and de-indexes the site —
+  and the workflow supplied none, so every job after the build was skipped.
+  Local builds passed only because .env.local is present and gitignored.
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #16 — Image ingestion: decode, EXIF orientation, downscale

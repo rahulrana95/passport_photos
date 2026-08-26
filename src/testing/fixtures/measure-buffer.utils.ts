@@ -65,3 +65,22 @@ export const clippedPixelRatio = (buffer: PixelBuffer): number => {
   }
   return clipped / pixelCount;
 };
+
+/**
+ * Exact byte-for-byte comparison of two buffers.
+ *
+ * Used to identify which fixture a buffer came from. Nothing cheaper is safe:
+ * most of the corpus shares dimensions and background level, so any summary
+ * statistic collides across fixtures and silently identifies the wrong one.
+ * Generation is deterministic, so equality here is identity.
+ */
+export const buffersAreIdentical = (a: PixelBuffer, b: PixelBuffer): boolean => {
+  if (a.width !== b.width) return false;
+  if (a.height !== b.height) return false;
+  if (a.data.length !== b.data.length) return false;
+
+  for (let index = 0; index < a.data.length; index += 1) {
+    if (a.data[index] !== b.data[index]) return false;
+  }
+  return true;
+};

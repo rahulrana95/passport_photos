@@ -34,6 +34,11 @@ export default defineConfig({
         // App Router entry points render as Server Components; they are covered
         // by the Playwright suite in e2e/ rather than in jsdom.
         'src/app/**',
+        // The worker entry point. It is one call into startAnalysisWorker,
+        // which is itself fully covered; the entry cannot be imported in jsdom
+        // because there is no worker global to attach to. Same reasoning as
+        // src/app/** above: entry points are wiring, not logic.
+        'src/analysis/analysis.worker.ts',
         // The axe wrapper is thin test-support glue and is verified by its own
         // test. Everything else under src/testing IS covered: the fixture
         // generator is load-bearing, and a bug there would silently corrupt

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   clippedPixelRatio,
   findBottommostSubjectRow,
+  buffersAreIdentical,
   findTopmostSubjectRow,
   luminanceAt,
   meanLuminance,
@@ -78,5 +79,32 @@ describe('a truncated buffer', () => {
 
   it('counts missing pixels as clipped-dark rather than throwing', () => {
     expect(clippedPixelRatio(truncated)).toBe(1);
+  });
+});
+
+describe('buffersAreIdentical', () => {
+  it('accepts two buffers with the same dimensions and the same pixels', () => {
+    expect(buffersAreIdentical(uniformBuffer(4, 4, 90), uniformBuffer(4, 4, 90))).toBe(true);
+  });
+
+  it('rejects a differing width', () => {
+    expect(buffersAreIdentical(uniformBuffer(4, 4, 90), uniformBuffer(5, 4, 90))).toBe(false);
+  });
+
+  it('rejects a differing height', () => {
+    expect(buffersAreIdentical(uniformBuffer(4, 4, 90), uniformBuffer(4, 5, 90))).toBe(false);
+  });
+
+  it('rejects a data array of the wrong length for its own dimensions', () => {
+    const truncated: PixelBuffer = { width: 4, height: 4, data: new Uint8ClampedArray(8) };
+
+    expect(buffersAreIdentical(uniformBuffer(4, 4, 90), truncated)).toBe(false);
+  });
+
+  it('rejects a single differing pixel', () => {
+    const altered = uniformBuffer(4, 4, 90);
+    altered.data[0] = 91;
+
+    expect(buffersAreIdentical(uniformBuffer(4, 4, 90), altered)).toBe(false);
   });
 });
