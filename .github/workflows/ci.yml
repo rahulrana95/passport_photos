@@ -17,6 +17,14 @@ env:
   # Chromium is provisioned by the Playwright action; never re-download it.
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "0"
 
+  # The build refuses to run without an origin, deliberately: a missing one
+  # silently produces relative canonicals and de-indexes the site. CI has no
+  # deployment to derive one from, so it supplies its own. A reserved .invalid
+  # host (RFC 2606) is absolute enough for the SEO assertions and impossible to
+  # mistake for something deployable — unlike a placeholder domain someone
+  # might later believe was real.
+  NEXT_PUBLIC_SITE_URL: https://ci.invalid
+
 jobs:
   # The application does not exist until PR #2. Every job below is guarded on
   # package.json so this workflow is valid and green from PR #1 onward, and
