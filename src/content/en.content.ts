@@ -38,6 +38,15 @@ export const EN_CONTENT: ContentTree = {
     downloadPrintSheet: 'Download print sheet',
     downloadReport: 'Download report',
   },
+  errors: {
+    notFoundTitle: 'That page does not exist',
+    notFoundBody:
+      'The link may be out of date, or the country you are looking for is not covered yet. Start from the checker and pick your document from there.',
+    notFoundAction: 'Go to the photo checker',
+    unexpectedTitle: 'Something went wrong on our side',
+    unexpectedBody:
+      'Your photo was not affected — nothing is ever uploaded, so nothing was lost. Try again, and if it keeps happening the details below will help us fix it.',
+  },
   legal: {
     acceptanceDisclaimer:
       'We check your photo against the issuing authority’s published specification. The final decision always belongs to that authority.',

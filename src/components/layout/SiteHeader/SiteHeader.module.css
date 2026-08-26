@@ -1,0 +1,175 @@
+.header {
+  border-block-end: 1px solid var(--tk-border-default);
+  background: var(--tk-surface);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tk-space-2xs);
+  max-inline-size: var(--tk-container-max);
+  margin-inline: auto;
+  padding: var(--tk-space-2xs) var(--tk-space-sm);
+}
+
+@media (width >= 48em) {
+  .inner {
+    gap: var(--tk-space-sm);
+  }
+}
+
+.brand {
+  /* min-inline-size:0 lets a flex child shrink below its content width, which
+     is what allows the ellipsis instead of pushing the controls off-screen.
+     Without it the brand refuses to shrink and the theme toggle overflows the
+     viewport on a narrow phone. */
+  min-inline-size: 0;
+  overflow: hidden;
+  font-family: var(--tk-font-body);
+  font-size: var(--tk-text-sm);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--tk-text-primary);
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (width >= 48em) {
+  .brand {
+    font-size: var(--tk-text-md);
+  }
+}
+
+/* The theme control lives in the disclosure panel on a phone and in the header
+   bar on a wider screen. Only one is ever displayed, so the accessibility tree
+   never sees two of them, and the brand keeps its full width on mobile instead
+   of being truncated to make room. */
+.desktopActions {
+  display: none;
+}
+
+.mobileActions {
+  display: flex;
+  justify-content: flex-start;
+  padding: var(--tk-space-2xs);
+  border-block-start: 1px solid var(--tk-border-default);
+}
+
+@media (width >= 48em) {
+  .desktopActions {
+    display: block;
+  }
+
+  .mobileActions {
+    display: none;
+  }
+}
+
+.actions {
+  /* Never shrinks: the controls must stay reachable, so the brand gives way. */
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--tk-space-3xs);
+}
+
+@media (width >= 48em) {
+  .actions {
+    gap: var(--tk-space-2xs);
+  }
+}
+
+/* Desktop navigation. Hidden below the small breakpoint, where the disclosure
+   below takes over — but both render the same links into the HTML. */
+.desktopNav {
+  display: none;
+}
+
+.navList {
+  display: flex;
+  align-items: center;
+  gap: var(--tk-space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navLink {
+  font-size: var(--tk-text-sm);
+  color: var(--tk-text-secondary);
+  text-decoration: none;
+}
+
+.navLink:hover {
+  color: var(--tk-accent);
+}
+
+.navLink[aria-current='page'] {
+  color: var(--tk-text-primary);
+  font-weight: 600;
+}
+
+/* Mobile disclosure. Native <details>, so the links exist in the static HTML
+   whether or not it is open, and it needs no JavaScript at all. */
+.mobileNav {
+  display: block;
+}
+
+.mobileSummary {
+  display: flex;
+  align-items: center;
+  gap: var(--tk-space-3xs);
+  padding: var(--tk-space-3xs) var(--tk-space-2xs);
+  border: 1px solid var(--tk-border-default);
+  border-radius: var(--tk-radius-md);
+  color: var(--tk-text-primary);
+  font-size: var(--tk-text-sm);
+  cursor: pointer;
+  list-style: none;
+}
+
+.mobileSummary::-webkit-details-marker {
+  display: none;
+}
+
+.mobileSummary:focus-visible {
+  outline: 2px solid var(--tk-accent);
+  outline-offset: 2px;
+}
+
+.mobilePanel {
+  position: absolute;
+  inset-inline: var(--tk-space-2xs);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-space-3xs);
+  margin-block-start: var(--tk-space-3xs);
+  padding: var(--tk-space-2xs);
+  border: 1px solid var(--tk-border-default);
+  border-radius: var(--tk-radius-md);
+  background: var(--tk-surface);
+  box-shadow: var(--tk-shadow-md);
+}
+
+.mobileList {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.mobilePanel .navLink {
+  padding: var(--tk-space-2xs);
+  font-size: var(--tk-text-md);
+}
+
+@media (width >= 48em) {
+  .desktopNav {
+    display: block;
+  }
+
+  .mobileNav {
+    display: none;
+  }
+}

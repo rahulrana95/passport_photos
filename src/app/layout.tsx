@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
+import { SiteFooter } from '@/components/layout/SiteFooter/SiteFooter';
+import { SiteHeader } from '@/components/layout/SiteHeader/SiteHeader';
+import { SkipLink } from '@/components/layout/SkipLink/SkipLink';
 import { AppProviders } from '@/components/providers/AppProviders';
 import { env } from '@/config/env.config';
 import { DEFAULT_LOCALE, SITE_DESCRIPTION, SITE_NAME } from '@/constants/site.constants';
@@ -26,7 +29,12 @@ const RootLayout = ({ children }: { readonly children: React.ReactNode }): React
       <ColorSchemeScript defaultColorScheme="auto" />
     </head>
     <body>
-      <AppProviders>{children}</AppProviders>
+      <AppProviders>
+        <SkipLink />
+        <SiteHeader />
+        {children}
+        <SiteFooter />
+      </AppProviders>
     </body>
   </html>
 );

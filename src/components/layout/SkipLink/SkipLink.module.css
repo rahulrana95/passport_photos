@@ -1,0 +1,26 @@
+/**
+ * Visible only when focused. Positioned rather than hidden with display:none,
+ * because a display-none link cannot be reached by the keyboard at all — which
+ * defeats the entire purpose.
+ */
+.link {
+  position: absolute;
+  inset-inline-start: var(--tk-space-2xs);
+  inset-block-start: var(--tk-space-2xs);
+  z-index: 100;
+  padding: var(--tk-space-2xs) var(--tk-space-xs);
+  border-radius: var(--tk-radius-md);
+  background: var(--tk-accent);
+  color: var(--tk-accent-contrast);
+  font-size: var(--tk-text-sm);
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-200%);
+  transition: transform var(--tk-duration-fast) var(--tk-easing-standard);
+}
+
+.link:focus-visible {
+  transform: translateY(0);
+  outline: 2px solid var(--tk-text-primary);
+  outline-offset: 2px;
+}
