@@ -47,6 +47,24 @@ const eslintConfig = [
   },
 
   {
+    // Constants files and fixture builders are where transcribed values live.
+    //
+    // no-magic-numbers exists to stop unexplained numbers appearing inside
+    // logic. A file whose entire content is a named catalogue — the eight EXIF
+    // orientation values, the leading bytes of a PNG, the fields of a JFIF
+    // segment — is the place those numbers are supposed to be, and each is
+    // already named and sourced by its own declaration. Requiring
+    // `const ZERO_X_FF = 0xff` there would say strictly less than the
+    // specification reference above it.
+    //
+    // Deliberately narrow: *.utils.ts and every component file stay covered,
+    // which is why the format signatures were moved out of magic-bytes.utils.ts
+    // rather than the rule relaxed around them.
+    files: ['**/*.constants.ts', 'src/testing/fixtures/**/*.ts'],
+    rules: { 'no-magic-numbers': 'off' },
+  },
+
+  {
     // Scoped to TSX, and the plugin registered here rather than borrowed.
     //
     // Both matter. Applied to every file, the rule reached config files that

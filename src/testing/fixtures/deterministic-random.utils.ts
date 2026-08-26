@@ -10,10 +10,12 @@
  * The literals below are mulberry32's own published constants. Extracting them
  * into named exports would make the algorithm harder to recognise and harder to
  * check against the reference, not easier — they have no meaning individually.
- * This is the only place in the codebase where a bare numeric literal is
- * defensible, and it is scoped to this function alone.
+ *
+ * The lint exemption that allows them is no longer a disable comment here: it
+ * is scoped in eslint.config.mjs to constants files and this fixtures
+ * directory, alongside the format signatures and the EXIF orientation domain,
+ * which are transcribed values for the same reason.
  */
-/* eslint-disable no-magic-numbers */
 export const createDeterministicRandom = (seed: number): (() => number) => {
   let state = seed >>> 0;
 
@@ -25,7 +27,6 @@ export const createDeterministicRandom = (seed: number): (() => number) => {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 };
-/* eslint-enable no-magic-numbers */
 
 /** Maps the unit interval onto a symmetric range about zero. */
 const UNIT_TO_SIGNED_SCALE = 2;
