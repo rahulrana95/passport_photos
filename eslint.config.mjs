@@ -1,5 +1,6 @@
 import nextCoreWebVitals from 'eslint-config-next/core-web-vitals';
 import nextTypescript from 'eslint-config-next/typescript';
+import react from 'eslint-plugin-react';
 
 // eslint-config-next v16 ships native flat configs. Do not route these through
 // FlatCompat — the eslintrc shim cannot serialise the plugin graph on ESLint 10
@@ -42,7 +43,21 @@ const eslintConfig = [
         'error',
         { patterns: [{ group: ['**/index'], message: 'Import the module directly; barrel files are banned.' }] },
       ],
+    },
+  },
 
+  {
+    // Scoped to TSX, and the plugin registered here rather than borrowed.
+    //
+    // Both matter. Applied to every file, the rule reached config files that
+    // eslint-config-next's globs do not cover, and ESLint refused to run at all
+    // because the react plugin was unregistered for them — a lint suite taken
+    // down by adding a .cjs file at the root. Declaring eslint-plugin-react
+    // directly closes the other half: a rule we rely on should not depend on
+    // what another preset happens to bundle transitively.
+    files: ['**/*.tsx'],
+    plugins: { react },
+    rules: {
       // --- One component per file -------------------------------------------
       'react/no-multi-comp': ['error', { ignoreStateless: false }],
     },

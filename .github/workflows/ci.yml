@@ -92,13 +92,15 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - run: npx playwright install --with-deps chromium webkit
-      - name: Integration tests
+      - name: Integration tests and story screenshots
+        # One command, both projects. test:e2e builds Storybook first because
+        # the Playwright config serves storybook-static for every project, not
+        # only the stories one — running the app specs alone still needs it.
+        #
+        # This is also the gate on the screenshots themselves: every story, in
+        # every theme and viewport, compared against its committed baseline. A
+        # UI change cannot land without a human looking at the diff.
         run: npm run test:e2e
-      - name: Story screenshots
-        # Compares every story, in every theme and viewport, against the
-        # committed baselines. A UI change cannot land without a human looking
-        # at the diff.
-        run: npm run test:visual
       - name: Screenshot gallery is in sync
         # The gallery is generated. If a baseline was added or removed without
         # regenerating it, the browsable index silently stops matching reality.
