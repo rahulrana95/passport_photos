@@ -35,10 +35,25 @@ NO HARDCODED VALUES — anywhere
   - CI: custom ESLint rules `no-raw-color`, `no-magic-number`, `no-literal-route`.
 
 CSS — one place
-  - All tokens in src/styles/tokens.css. Tailwind reads them via @theme inline.
-  - No `dark:` prefixes in components; theme swaps CSS variables only.
-  - Component styles are Tailwind utilities composed from tokens. No ad-hoc hex.
+  - All tokens in src/styles/tokens.css. Mantine reads them via the
+    cssVariablesResolver in src/theme/mantine-theme.config.ts.
+  - Component styles are CSS Modules referencing var(--tk-*). No Tailwind.
+  - A colour literal outside tokens.css is a stylelint error (color-no-hex).
   - Print styles centralised in src/styles/print.css (this product gets printed).
+
+MANTINE — where it may and may not be used
+  - Mantine components are Client Components. Using them for static content
+    would ship a hydration bundle for text that never changes and blow the LCP
+    budget across the whole ranking surface.
+  - USE Mantine for: the checker tool — dropzone, modal, tabs, combobox,
+    progress, buttons.
+  - DO NOT use Mantine for: headings, body copy, requirements tables, FAQs,
+    breadcrumbs, footer links. Those are plain semantic HTML + CSS Modules,
+    rendered as Server Components.
+  - FAQs are native <details>/<summary>, never a JS accordion — the answer text
+    must be in the static HTML and must not cause layout shift.
+  - Country navigation is a grid of real <a href>, never a Select that
+    navigates. The internal link graph across 150 pages is doing real work.
 
 TESTING — every PR, no exceptions
   - Unit:        Vitest + React Testing Library. 100% statements/branches/
@@ -74,12 +89,29 @@ DEFINITION OF DONE
 
 
 ═══════════════════════════════════════════════════════════════════════════════
+ SETTLED STACK DECISIONS
+═══════════════════════════════════════════════════════════════════════════════
+  Framework    Next.js 16 App Router, RSC-first, statically generated
+  UI library   Mantine 9 (CSS Modules + CSS variables, no runtime CSS-in-JS)
+  Styling      CSS Modules + src/styles/tokens.css. NO Tailwind.
+  Hosting      Vercel
+  Vision       MediaPipe Tasks Vision, behind the swappable detector interface
+               from PR #10. If the PR #13 ground-truth set shows segmentation
+               failing on dark hair or head coverings, an ONNX model can be
+               substituted without touching anything downstream.
+  Encoding     jSquash (mozjpeg) for the byte-budget JPEG path
+  Validation   Zod 4
+  Testing      Vitest + RTL + axe-core · Playwright · Storybook 10 + test-runner
+               · MSW for the model CDN
+
+
+═══════════════════════════════════════════════════════════════════════════════
  PHASE 1 — FOUNDATION
 ═══════════════════════════════════════════════════════════════════════════════
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #1 — Repository foundation, engineering standards and delivery plan
-Branch: chore/repo-foundation          Depends on: —                Status: TODO
+Branch: chore/repo-foundation          Depends on: —                Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   The rulebook and the plan, before any application code exists. Nothing here
@@ -115,21 +147,21 @@ TESTS
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #2 — Next.js app scaffold, strict TypeScript, lint and test harness
-Branch: chore/app-scaffold             Depends on: #1                Status: TODO
+Branch: chore/app-scaffold             Depends on: #1                Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   The empty-but-correct application. One page, rendered server-side, proving
   every tool in the chain runs in CI.
 
 IMPLEMENTS
-  [ ] Next.js 16 App Router, TypeScript strict per the global rules
-  [ ] Tailwind CSS 4, PostCSS, path aliases (@/…)
+  [x] Next.js 16 App Router, TypeScript strict per the global rules
+  [x] Mantine 9 + PostCSS preset + CSS Modules, path aliases (@/…)
   [ ] ESLint flat config + Prettier; custom rules: no-raw-color,
       no-magic-number, no-literal-route, one-component-per-file,
       filename-convention, no-barrel-files
   [ ] Vitest + RTL + jsdom + axe matcher; v8 coverage at 100% thresholds
   [ ] Playwright config: chromium + webkit, desktop + Pixel viewports
-  [ ] Storybook 8 with the theme decorator (light/dark toolbar switch)
+  [x] Storybook 10 with the theme decorator (light/dark toolbar switch)
   [ ] @storybook/test-runner wired to capture screenshots per story
   [ ] MSW installed and initialised for both test and Storybook environments
   [ ] Zod-validated env module — build fails on a missing/invalid variable
@@ -161,8 +193,8 @@ DESCRIPTION
   This is what makes "no hardcoded values" enforceable rather than aspirational.
 
 IMPLEMENTS
-  [ ] tokens.css — raw --tk-* values for light, dark and system-default
-  [ ] @theme inline mapping --color-* : var(--tk-*)
+  [x] tokens.css — raw --tk-* values for light, dark and system-default (#3 seeded in #2)
+  [ ] Mantine cssVariablesResolver mapping --mantine-* onto --tk-* (seeded in #2, extend here)
   [ ] Semantic layer: surface, text-primary/secondary/tertiary, border-default,
       status-pass / status-warn / status-fail (distinct from brand accent)
   [ ] Type scale, spacing scale, radius scale, shadow scale, z-index scale,
@@ -224,14 +256,19 @@ PR #5 — Core UI primitives
 Branch: feat/ui-primitives             Depends on: #4                Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
-  Button, Card, Badge, Alert, Skeleton, ProgressBar, Tooltip, VisuallyHidden,
-  Icon. Built once, reused by every later PR.
+  SCOPE REDUCED by the Mantine decision. Mantine already ships Button, Card,
+  Badge, Alert, Skeleton, Progress and Tooltip, so this task no longer builds
+  primitives. It configures the theme and builds only what Mantine has no
+  answer for.
 
 IMPLEMENTS
+  [ ] Extend the Mantine theme: component defaults via theme.components so no
+      call site passes the same props twice
+  [ ] Server-Component content primitives (plain HTML + CSS Modules): Prose,
+      RequirementsTable, FaqList using native <details>/<summary>
+  [ ] App-specific components Mantine cannot provide: RuleResultRow,
+      CountryLinkGrid
   [ ] One component per file with sibling .types.ts, .test.tsx, .stories.tsx
-  [ ] Variant props typed as unions, never strings
-  [ ] Polymorphic `as` support where it avoids nested interactive elements
-  [ ] Forwarded refs, full native prop pass-through
 
 EDGE CASES
   [ ] Focus-visible ring on every interactive element, visible in both themes

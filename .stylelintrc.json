@@ -1,0 +1,35 @@
+{
+  "extends": "stylelint-config-standard",
+  "rules": {
+    "color-no-hex": [
+      true,
+      {
+        "message": "Colours belong in src/styles/tokens.css. Reference var(--tk-*) instead."
+      }
+    ],
+    "custom-property-pattern": null,
+    "selector-class-pattern": null,
+    "declaration-property-value-no-unknown": true,
+    "media-feature-range-notation": "context",
+    "value-keyword-case": [
+      "lower",
+      {
+        "ignoreProperties": [
+          "/^--tk-font/",
+          "font-family",
+          "font"
+        ]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "src/styles/tokens.css"
+      ],
+      "rules": {
+        "color-no-hex": null
+      }
+    }
+  ]
+}

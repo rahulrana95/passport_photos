@@ -1,0 +1,36 @@
+@import url('./tokens.css');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light dark;
+}
+
+body {
+  /* The host paints its own background behind the document, so this must be
+     an explicit token — a transparent body borrows the wrong theme. */
+  background: var(--tk-ground);
+  color: var(--tk-text-primary);
+  font-family: var(--tk-font-body);
+  margin: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--tk-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
