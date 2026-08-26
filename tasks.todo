@@ -611,24 +611,44 @@ DESCRIPTION
   how painful the next 37 countries will be.
 
 IMPLEMENTS
-  [ ] PhotoSpec type + Zod schema (print, digital, headHeight, eyeLine,
-      background, glasses, headCovering, expression, aiEditingPolicy,
-      maxAgeMonths, source, lastVerified)
-  [ ] Registry with lookup by (countryIso, documentType)
-  [ ] Schengen base spec + per-member-state override merge
-  [ ] Build-time validation: every spec parsed, contradictions rejected
-  [ ] Staleness helper — flags specs older than the re-verification window
+  [x] PhotoSpec Zod schema with required provenance, plus a `verification`
+      field — see below, it is the most important thing in this task
+  [x] Registry keyed by country:document, parsed and frozen at module load
+  [x] Schengen base spec authored as a RATIO, because that is the unit the
+      standard publishes, plus a deep-merge for per-state overrides
+  [x] Validation at registry construction: a malformed or duplicate spec throws
+      before anything can serve it. `npm run validate:specs` in CI.
+  [x] Staleness helper with an injected clock, so no test can go flaky by
+      crossing the boundary on a particular day
+  [x] findSpecIn takes its registry, keeping the lookup a pure function
+
+  NEW CONCEPT — `verification: 'verified' | 'provisional'`
+  A spec nobody has checked against the issuing authority's own page is
+  PROVISIONAL and is not served. All four seeded specs are provisional: the
+  values were authored from known figures, but the build environment cannot
+  reach travel.state.gov or gov.uk, so nothing has been confirmed at source.
+  Presenting an unverified government requirement as authoritative is the exact
+  failure this product exists to prevent, so it is a state in the type system
+  rather than a caveat in a comment.
+  CONSEQUENCE: no country page will render until a human verifies a spec and
+  flips the flag. That is intentional.
 
 EDGE CASES
-  [ ] Overlapping/contradictory bands (min > max) must fail the build
-  [ ] Head-height expressed as mm in one country and % of frame in another —
-      normalise at the boundary, store both, never convert ad hoc later
-  [ ] Schengen override merge must be deep and must not silently drop keys
-  [ ] Unknown country/document => typed not-found, never a partial object
-  [ ] Specs must be immutable at runtime (deep freeze in dev)
-  [ ] Two documents in one country with different rules (passport vs visa)
-  [ ] Countries with multiple accepted sizes
-  [ ] Every spec MUST carry a source URL — build fails without one
+  [x] Inverted bands rejected: head height, eye line and digital edge sizes
+  [x] Head height normalised once at the registry boundary and returned in BOTH
+      units, with the authored unit preserved so a citation can quote what the
+      authority actually published rather than our conversion of it
+  [x] Deep merge for Schengen overrides. A shallow spread would replace the
+      whole print or background object when a state overrides one field of it,
+      silently dropping every sibling key — the spec would still parse, it
+      would just be wrong.
+  [x] Typed not-found that distinguishes an unknown country from an unsupported
+      document, so the page can say the right thing
+  [x] Deep-frozen at registry construction
+  [x] Two documents in one country (us:passport and us:visa both seeded)
+  [x] alternativePrintSizes for authorities accepting more than one
+  [x] Source URL required by the schema; a spec without one fails to parse
+  [x] Duplicate country:document pairs throw rather than silently overwriting
 
 SEO
   [ ] lastVerified feeds sitemap lastmod and the visible "verified on" line

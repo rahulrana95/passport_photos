@@ -57,6 +57,12 @@ jobs:
         run: npm run test:unit -- --coverage
       - name: Build
         run: npm run build
+      - name: Validate photo specifications
+        # Every value is a claim about a government requirement. The registry
+        # parses each spec at module load and throws, so a malformed or
+        # unsourced one stops the deploy rather than surfacing as a wrong
+        # number on a live page.
+        run: npm run validate:specs
       - name: Assert static HTML contains real content
         # Guards the core SEO invariant: what should rank must be server-rendered.
         run: npm run test:seo
