@@ -118,3 +118,34 @@
   --tk-shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
   --tk-shadow-md: 0 4px 16px -8px rgb(0 0 0 / 80%);
 }
+
+/**
+ * Windows High Contrast / forced-colors. The OS replaces colours wholesale, so
+ * the job here is to hand control over cleanly rather than fight it. System
+ * keywords are used so the user's own contrast choices win.
+ */
+@media (forced-colors: active) {
+  :root {
+    --tk-ground: Canvas;
+    --tk-surface: Canvas;
+    --tk-sunken: Canvas;
+    --tk-text-primary: CanvasText;
+    --tk-text-secondary: CanvasText;
+    --tk-text-tertiary: GrayText;
+    --tk-border-default: CanvasText;
+    --tk-border-strong: CanvasText;
+    --tk-accent: LinkText;
+    --tk-accent-soft: Canvas;
+    --tk-accent-contrast: Canvas;
+
+    /* Rule outcomes lose their hue here, which is exactly why pass/fail is
+       never signalled by colour alone — every status carries an icon and a
+       text label as well. */
+    --tk-status-pass: CanvasText;
+    --tk-status-warn: CanvasText;
+    --tk-status-fail: CanvasText;
+    --tk-status-manual: CanvasText;
+    --tk-shadow-sm: none;
+    --tk-shadow-md: none;
+  }
+}

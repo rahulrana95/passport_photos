@@ -37,4 +37,9 @@ global.ResizeObserver = class ResizeObserver {
 
 afterEach(() => {
   cleanup();
+
+  // Theme state is written to localStorage and stamped on <html>, so without
+  // this a test that switches theme leaks into every test that follows it.
+  window.localStorage.clear();
+  document.documentElement.removeAttribute('data-mantine-color-scheme');
 });
