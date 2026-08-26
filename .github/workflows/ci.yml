@@ -85,6 +85,12 @@ jobs:
         # committed baselines. A UI change cannot land without a human looking
         # at the diff.
         run: npm run test:visual
+      - name: Screenshot gallery is in sync
+        # The gallery is generated. If a baseline was added or removed without
+        # regenerating it, the browsable index silently stops matching reality.
+        run: |
+          npm run screenshots:gallery
+          git diff --exit-code e2e/visual/SCREENSHOTS.md
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

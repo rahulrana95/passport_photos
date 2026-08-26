@@ -22,7 +22,8 @@
     "format": "prettier --write .",
     "test:visual": "npm run build-storybook && playwright test --project=stories",
     "test:visual:update": "npm run build-storybook && playwright test --project=stories --update-snapshots",
-    "test:visual:report": "playwright show-report"
+    "test:visual:report": "playwright show-report",
+    "screenshots:gallery": "node scripts/generate-screenshot-gallery.mjs"
   },
   "dependencies": {
     "@mantine/core": "^9.5.2",
