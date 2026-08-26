@@ -20,10 +20,17 @@ const REQUIRED_PATTERNS: readonly (readonly [string, RegExp])[] = [
   ['a meta description', /<meta[^>]+name="description"[^>]+content="[^"]{20,}"/i],
   ['exactly one <h1>', /<h1[^>]*>[\s\S]*?<\/h1>/i],
   ['a declared language', /<html[^>]+lang="[a-z]{2}"/i],
+  ['an absolute canonical URL', /<link[^>]+rel="canonical"[^>]+href="https?:\/\//i],
+  ['an Open Graph title', /<meta[^>]+property="og:title"/i],
+  ['an Open Graph image', /<meta[^>]+property="og:image"/i],
+  ['a Twitter card', /<meta[^>]+name="twitter:card"/i],
+  ['JSON-LD structured data', /<script[^>]+type="application\/ld\+json"/i],
 ];
 
 const FORBIDDEN_PATTERNS: readonly (readonly [string, RegExp])[] = [
   ['a guarantee of acceptance', /\bguarantee(d|s)?\b/i],
+  // A canonical pointing at the wrong origin silently de-indexes the page.
+  ['a localhost canonical', /rel="canonical"[^>]+href="https?:\/\/(localhost|127\.)/i],
 ];
 
 const failures: string[] = [];

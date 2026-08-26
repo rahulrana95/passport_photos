@@ -13,7 +13,12 @@ export default defineConfig({
     // The app validates environment eagerly so a bad value fails the build.
     // Tests therefore need a valid value present; parseEnvironment is exercised
     // directly with explicit inputs for the failure cases.
-    env: { NEXT_PUBLIC_SITE_URL: 'https://example.test' },
+    // Tests run as though on a Vercel production deployment. Without VERCEL_ENV
+    // the suite inherits NODE_ENV=test, nothing is indexable, and every
+    // metadata assertion would be exercising the preview path by accident.
+    // The production-versus-preview logic itself is covered directly by
+    // resolveIsIndexable's own tests.
+    env: { NEXT_PUBLIC_SITE_URL: 'https://example.test', VERCEL_ENV: 'production' },
     setupFiles: ['./vitest.setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
     css: true,
