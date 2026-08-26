@@ -666,17 +666,32 @@ DESCRIPTION
   a measurement against a spec band. Small PR, disproportionate blast radius.
 
 IMPLEMENTS
-  [ ] mm <-> inch <-> px conversions at a given DPI
-  [ ] Band evaluation returning pass/fail plus the delta needed to pass
-  [ ] Aspect-ratio helpers, safe rounding policy
+  [x] mm <-> inch <-> px conversions at a given DPI (moved into src/measurement)
+  [x] Band evaluation returning status, signed delta AND a scale multiplier —
+      the multiplier is what turns "21.4mm against 25.4mm" into "move about 19%
+      closer to the camera", which is the product's core promise
+  [x] Aspect-ratio helpers, including largestInscribedRect for the crop
+  [x] Resolution sufficiency, which never suggests upscaling
+  [x] Safe rounding policy: evaluate raw, round only for display
 
 EDGE CASES
-  [ ] Floating-point drift — round once, at the boundary, consistently
-  [ ] Non-integer DPI values
-  [ ] Zero or negative dimensions
-  [ ] Very large values overflowing canvas limits
-  [ ] Rounding must never turn a passing measurement into a failing one
-  [ ] Locale decimal separators when formatting for display
+  [x] Rounding never turns a pass into a fail — evaluateBand never rounds the
+      value it is given, and a 500-step sweep across the whole band asserts
+      every value inside it is reported as within
+  [x] Band widened by a tolerance far tighter than any published requirement,
+      so sub-pixel landmark jitter cannot flip a boundary measurement between
+      runs
+  [x] Monotonicity asserted: a larger value never moves from above back within
+  [x] Non-integer DPI; zero and negative dimensions; NaN and Infinity all
+      rejected with typed errors rather than producing NaN downstream
+  [x] Requirements beyond the browser canvas limit reported as such, rather
+      than silently producing a blank bitmap
+  [x] A crop is always proven to fit inside its source — a crop larger than the
+      image produces the black band down one edge of a passport photo
+  [x] Locale decimal separators, asserted against de-DE
+  [x] Bands must have a non-negative minimum. Every band here is a physical
+      quantity, so a negative edge is a bug, and requiring it removed a
+      genuinely unreachable defensive branch rather than testing dead code.
 
 SEO  n/a
 

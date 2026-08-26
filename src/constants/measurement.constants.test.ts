@@ -14,6 +14,7 @@ const UNIT_SUFFIXES = [
   'RADIX',
   'SCALE',
   'FACTOR',
+  'COUNT',
   'MM',
   'PX',
   'DPI',
