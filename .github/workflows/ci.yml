@@ -78,16 +78,25 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - run: npx playwright install --with-deps chromium webkit
-      - name: Build Storybook
-        run: npm run build-storybook
-      - name: Story screenshots and a11y
-        run: npm run test:storybook
       - name: Integration tests
         run: npm run test:e2e
+      - name: Story screenshots
+        # Compares every story, in every theme and viewport, against the
+        # committed baselines. A UI change cannot land without a human looking
+        # at the diff.
+        run: npm run test:visual
+      - name: Screenshot gallery is in sync
+        # The gallery is generated. If a baseline was added or removed without
+        # regenerating it, the browsable index silently stops matching reality.
+        run: |
+          npm run screenshots:gallery
+          git diff --exit-code e2e/visual/SCREENSHOTS.md
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: failure-artifacts
+          # test-results/ carries the actual-vs-expected screenshot pairs, which
+          # is the whole point of the artifact on a visual failure.
           path: |
             playwright-report/
             test-results/
