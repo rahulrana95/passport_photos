@@ -28,6 +28,7 @@ export const COLOR_TOKENS = [
 ] as const;
 
 export const SPACE_TOKENS = [
+  '--tk-optical-nudge',
   '--tk-space-3xs',
   '--tk-space-2xs',
   '--tk-space-xs',

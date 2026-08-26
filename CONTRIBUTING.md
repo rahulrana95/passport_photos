@@ -50,9 +50,15 @@ re-export files. Name things for what they hold: `measurement.utils.ts`,
 | A copy string in JSX | A key from the content module |
 
 Custom ESLint rules `no-raw-color`, `no-magic-number` and `no-literal-route`
-fail the build.
+fail the build. Stylelint enforces the rest of the token system: a colour, a
+spacing value, a radius, a font size, a shadow or a transition duration that is
+not a `--tk-*` token is an error, and `transition: all` is banned outright.
 
 ## CSS
+
+**Before any UI work, load the `design-system` skill. Before shipping it, load
+`ui-craft`.** They live in `.claude/skills/` and are the authority on visual
+decisions; this section only summarises them.
 
 All tokens live in `src/styles/tokens.css`; Tailwind reads them through
 `@theme inline`. Components compose utilities built from those tokens.

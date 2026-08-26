@@ -37,6 +37,11 @@
   --tk-status-manual: #5a6b8c;
 
   /* Spacing */
+
+  /* Optical correction. An icon centred mathematically beside text sits a
+     hair high, because text has descenders and an icon does not. This is the
+     only sub-grid spacing value, and it exists for that one purpose. */
+  --tk-optical-nudge: 0.125rem;
   --tk-space-3xs: 0.25rem;
   --tk-space-2xs: 0.5rem;
   --tk-space-xs: 0.75rem;

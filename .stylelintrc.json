@@ -20,7 +20,41 @@
           "font"
         ]
       }
-    ]
+    ],
+    "declaration-property-value-allowed-list": {
+      "/^(padding|margin|gap|row-gap|column-gap)/": [
+        "/^(0|auto|var\\(--tk-(space|optical)[^)]*\\)|[0-9.]+em)(\\s+(0|auto|var\\(--tk-(space|optical)[^)]*\\)|[0-9.]+em))*$/"
+      ],
+      "border-radius": [
+        "/^var\\(--tk-radius/",
+        "0"
+      ],
+      "font-size": [
+        "/^var\\(--tk-text/",
+        "inherit",
+        "/^0?\\.\\d+em$/"
+      ],
+      "font-family": [
+        "/^var\\(--tk-font/"
+      ],
+      "box-shadow": [
+        "/^var\\(--tk-shadow/",
+        "none"
+      ],
+      "transition-duration": [
+        "/^var\\(--tk-duration/",
+        "0.01ms"
+      ],
+      "animation-duration": [
+        "/^var\\(--tk-duration/",
+        "0.01ms"
+      ]
+    },
+    "declaration-property-value-disallowed-list": {
+      "transition": [
+        "/^all\\b/"
+      ]
+    }
   },
   "overrides": [
     {
@@ -29,7 +63,9 @@
         "src/styles/print.css"
       ],
       "rules": {
-        "color-no-hex": null
+        "color-no-hex": null,
+        "declaration-property-value-allowed-list": null,
+        "declaration-property-value-disallowed-list": null
       }
     }
   ]
