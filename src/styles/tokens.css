@@ -20,7 +20,7 @@
   --tk-sunken: #e7ecea;
   --tk-text-primary: #101c1a;
   --tk-text-secondary: #3b4e4a;
-  --tk-text-tertiary: #6b7d79;
+  --tk-text-tertiary: #5c6c69;
   --tk-border-default: #d3dbd8;
   --tk-border-strong: #bfcac6;
 
@@ -30,11 +30,16 @@
   --tk-accent-contrast: #fff;
 
   /* Rule outcomes. Deliberately separate from the brand accent, and never the
-     only signal — every status is paired with an icon and a label. */
-  --tk-status-pass: #2c7a4b;
-  --tk-status-warn: #a8631a;
+     only signal — every status is paired with an icon and a label.
+
+     Every colour here is measured, not chosen by eye: each clears WCAG AA
+     (4.5:1) against --tk-sunken, the darkest surface any of them lands on.
+     token-contrast.test.ts asserts it for every text token on every surface,
+     in both themes. */
+  --tk-status-pass: #2b7649;
+  --tk-status-warn: #985a18;
   --tk-status-fail: #a8401c;
-  --tk-status-manual: #5a6b8c;
+  --tk-status-manual: #58698a;
 
   /* Spacing */
 
