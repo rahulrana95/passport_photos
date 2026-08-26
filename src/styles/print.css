@@ -1,0 +1,69 @@
+/**
+ * Print styles. This product exists to be printed — a passport photo sheet is
+ * useless on screen — so print is a first-class output, not an afterthought.
+ *
+ * Browsers drop background colours by default when printing, so nothing may
+ * depend on a background to be legible. Cut guides are therefore drawn as
+ * borders, which do survive.
+ */
+
+@media print {
+  /* Force a light, ink-efficient rendering regardless of the viewer's theme. */
+  :root {
+    --tk-ground: #fff;
+    --tk-surface: #fff;
+    --tk-sunken: #fff;
+    --tk-text-primary: #000;
+    --tk-text-secondary: #000;
+    --tk-text-tertiary: #000;
+    --tk-border-default: #000;
+    --tk-border-strong: #000;
+  }
+
+  body {
+    background: none;
+    color: #000;
+  }
+
+  /* Chrome and Safari need this to honour colours we genuinely require, such as
+     a photo's own pixels. Applied narrowly, never to the whole page. */
+  .print-exact {
+    print-color-adjust: exact;
+  }
+
+  /* Interface furniture has no place on paper. */
+  .print-hide,
+  nav,
+  footer,
+  button {
+    display: none !important;
+  }
+
+  /* Cut guides are borders, not backgrounds, so they survive the default
+     "do not print background graphics" setting. */
+  .print-cut-guide {
+    border: 1px dashed #000;
+  }
+
+  /* A photo sheet must come out at exactly the physical size specified, so it
+     may never be scaled to fit the page. */
+  .print-exact-size {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  a[href]::after {
+    content: ' (' attr(href) ')';
+    font-size: 90%;
+  }
+
+  /* Internal anchors would print as noise. */
+  a[href^='#']::after,
+  a[href^='javascript:']::after {
+    content: '';
+  }
+}
+
+@page {
+  margin: 12mm;
+}

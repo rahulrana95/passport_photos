@@ -25,7 +25,8 @@
   "overrides": [
     {
       "files": [
-        "src/styles/tokens.css"
+        "src/styles/tokens.css",
+        "src/styles/print.css"
       ],
       "rules": {
         "color-no-hex": null

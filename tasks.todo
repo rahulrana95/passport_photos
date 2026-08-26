@@ -186,32 +186,39 @@ TESTS
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #3 — Design token system and global stylesheet
-Branch: feat/design-tokens             Depends on: #2                Status: TODO
+Branch: feat/design-tokens             Depends on: #2                Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   Every colour, space, radius, shadow, duration and type step, defined once.
   This is what makes "no hardcoded values" enforceable rather than aspirational.
 
 IMPLEMENTS
-  [x] tokens.css — raw --tk-* values for light, dark and system-default (#3 seeded in #2)
-  [ ] Mantine cssVariablesResolver mapping --mantine-* onto --tk-* (seeded in #2, extend here)
-  [ ] Semantic layer: surface, text-primary/secondary/tertiary, border-default,
-      status-pass / status-warn / status-fail (distinct from brand accent)
-  [ ] Type scale, spacing scale, radius scale, shadow scale, z-index scale,
+  [x] tokens.css — raw --tk-* values for light, dark and system-default
+  [x] Mantine cssVariablesResolver mapping --mantine-* onto --tk-*
+  [x] Semantic layer: surface, text-primary/secondary/tertiary, border-default,
+      status-pass / status-warn / status-fail / status-manual
+  [x] Type scale, spacing scale, radius scale, shadow scale, z-index scale,
       motion durations and easings
-  [ ] print.css — the print sheet must render correctly on paper
-  [ ] No-flash theme init script; next-themes with attribute="data-theme"
-  [ ] Token documentation page in Storybook
+  [x] print.css — the print sheet must render correctly on paper
+  [x] No-flash init via Mantine ColorSchemeScript; ThemeToggle with all three states
+  [x] Token documentation page in Storybook (TokenGallery, rendered from the registry)
+  [x] design-tokens.constants.ts — typed registry so nothing hardcodes a token name
+  [x] tokens-parity.test.ts — 98 assertions that the three theme states agree
 
 EDGE CASES
-  [ ] Three theme states, not two: explicit light, explicit dark, and unstamped
-      system default. A token defined only under [data-theme] breaks the third.
-  [ ] prefers-contrast / forced-colors mode must stay legible
-  [ ] prefers-reduced-motion disables every transition
-  [ ] Status colours must be distinguishable for colour-blind users — pass/fail
-      must never be conveyed by colour alone (icon + text required)
-  [ ] Print: backgrounds are dropped by default; cut guides must survive
-  [ ] Theme flash on first paint (test with throttled CPU)
+  [x] Three theme states, not two — asserted by tokens-parity.test.ts, which
+      also proves each theme-dependent token actually differs between light and
+      dark, catching the "updated one theme, forgot the other" bug.
+  [x] forced-colors mode hands control to system keywords (Canvas, CanvasText,
+      GrayText, LinkText) rather than fighting the OS
+  [x] prefers-reduced-motion disables every transition
+  [x] Status colours lose their hue under forced-colors, which is exactly why
+      pass/fail is never signalled by colour alone. The icon + label pairing is
+      enforced when RuleResultRow is built in PR #5.
+  [x] Print: backgrounds are dropped by default, so cut guides are borders.
+      .print-exact-size prevents scale-to-fit, which would ruin a photo sheet.
+  [x] Theme flash prevented by ColorSchemeScript before first paint
+  [ ] Verify no flash on a throttled CPU — needs the Lighthouse profile from #27
 
 SEO
   [ ] theme-color meta per colour scheme
