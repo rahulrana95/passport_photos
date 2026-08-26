@@ -811,13 +811,16 @@ IMPLEMENTS
   [x] A separate assertion that the primary > secondary > tertiary hierarchy
       survives, so a future contrast fix cannot silently flatten it.
 
-STILL OPEN — the visual suite is not yet reproducible
+LATENT — the visual suite depends on the machine's fonts
   [ ] --tk-font-mono is `ui-monospace, 'SF Mono', Menlo, monospace`, which
       resolves to whatever the machine has. Six of the sixteen baselines this
-      PR regenerates changed only because the container was rebuilt, not
-      because any design changed. Until the fonts are self-hosted, a green
-      visual job proves the renderer matched itself, not that the UI is right.
-      Owed its own PR.
+      PR regenerated changed only because the container was rebuilt, not
+      because any design changed.
+      CI then ran the visual job for the first time and passed against those
+      same baselines, so the GitHub runner and the dev container currently
+      agree. That makes this latent rather than active: nothing is red, and
+      nothing guarantees the next runner image resolves the same font. Worth
+      self-hosting before the suite grows, not urgent while it is green.
 
 TESTS
   Unit: contrast maths against published values, and the token invariant.
@@ -826,38 +829,81 @@ TESTS
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #16 — Image ingestion: decode, EXIF orientation, downscale
-Branch: feat/image-ingestion           Depends on: #15               Status: TODO
+Branch: feat/image-ingestion           Depends on: #15               Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   Turning whatever the user gives us into a normalised bitmap. More failure
   modes live here than anywhere else in the product.
 
 IMPLEMENTS
-  [ ] File validation (type, size, dimensions) before decode
-  [ ] EXIF parse; apply orientation; strip EXIF from output
-  [ ] Downscale to the analysis working size, keep the original for output
-  [ ] Typed decode-failure reasons with user-facing guidance
+  [x] Validation ordered by cost: size before content, content before decode,
+      dimensions only once something has been decoded
+  [x] EXIF orientation and capture time, read by a purpose-built reader rather
+      than a dependency parsing 300 tags — two fields is short enough to
+      bounds-check completely
+  [x] Working-size planning that never upscales, with an exact scale factor
+      back to the source so the crop is always computed at full resolution
+  [x] Typed failures that each carry a remedy, not just a message
+  [x] ImageDecoder seam with a deterministic fake, mirroring the Detector
+      pattern from #15 — every decision around the decode is tested; only the
+      decode itself needs a browser
 
 EDGE CASES
-  [ ] HEIC/HEIF — the default iPhone format, and browsers cannot decode it.
-      Either ship a WASM decoder or detect and give exact conversion steps.
-      Getting this wrong loses a large share of the target audience.
-  [ ] All eight EXIF orientation values, including the mirrored ones
-  [ ] Images with no EXIF at all
-  [ ] CMYK JPEGs, 16-bit PNGs, images with alpha, progressive JPEGs
-  [ ] Animated GIF/WebP — take frame one
-  [ ] Dimensions beyond the browser's canvas limit (~16,384px)
-  [ ] Corrupt, truncated or zero-byte files
-  [ ] Extension lying about content — sniff the magic bytes
-  [ ] Colour profiles: convert to sRGB or measured colours will be wrong
-  [ ] Memory spikes on 48MP phone photos
-  [ ] EXIF capture date used for the recency hint; absent on screenshots
+  [x] HEIC/HEIF — attempted rather than refused. Safari on iOS decodes it
+      natively and iOS is where these files come from, so refusing on format
+      alone would turn away the exact user whose phone produced the file. When
+      the browser genuinely cannot, the message is the four taps that fix it,
+      not the word "unsupported".
+  [x] All eight EXIF orientation values, including the four mirrored ones, in
+      both byte orders — 16 round-trip assertions. A big-endian SHORT read as
+      little-endian turns orientation 6 into 0x0600.
+  [x] Images with no EXIF at all, and files whose Exif segment sits behind a
+      JFIF segment, as most cameras write them
+  [x] Animated GIF/WebP refused rather than silently using frame one — a still
+      photo is what the user needs to submit
+  [x] Dimensions beyond the browser canvas limit, checked against the
+      orientation-corrected size rather than the stored one
+  [x] Corrupt, truncated and zero-byte files: every offset bounds-checked, and
+      a sweep asserting every truncation length of a real file parses without
+      throwing
+  [x] Extension lying about content — no filename or MIME type is passed to
+      the validator at all. A renamed HEIC is the most common upload on iOS.
+  [x] Dead camera clocks (0000:00:00), impossible dates, and date entries
+      declaring the wrong type
+  [x] EXIF capture date for the recency hint, read from DateTimeOriginal
+      rather than DateTime, which any edit rewrites
+
+  DEFERRED, with reasons
+  [ ] CMYK JPEGs, 16-bit PNGs, alpha, progressive JPEGs and ICC colour
+      profiles — all decided inside createImageBitmap and a canvas draw. They
+      belong with the browser decoder implementation (#25, with camera
+      capture), where there is something real to test them against; asserting
+      them behind the fake would be asserting the fake.
+  [ ] Memory behaviour on 48MP photos — measurable only in a real browser.
+      The guard that matters is already here: an oversized file is refused
+      before a decoder allocates anything.
+  [ ] Integration: real uploads through the UI in Playwright — needs the
+      upload UI (#26).
 
 SEO  n/a
 
 TESTS
-  Unit against a fixture set covering every case above. Integration: real
-  uploads through the UI in Playwright.
+  112 unit tests across six files, 100% coverage with no suppressions.
+  JPEG files with EXIF are synthesised by a builder rather than committed as
+  binary, for the same reason the head fixtures are generated: the input is
+  described in words, so a failure names the property that broke instead of
+  sending someone to a hex editor. Both byte orders and all eight orientations
+  come free, and the mirrored ones — which real corpora almost never contain —
+  are as easy to produce as upright ones.
+
+NOTE
+  Two lint changes came with this. The format signatures moved out of
+  magic-bytes.utils.ts into image-format.constants.ts, and no-magic-numbers is
+  now scoped off *.constants.ts and the fixtures directory rather than
+  suppressed inline — a file of transcribed specification values is where
+  named numbers belong, and the rule still covers every *.utils.ts and
+  component. The one pre-existing eslint-disable comment in the codebase is
+  gone as a result.
 
 
 ═══════════════════════════════════════════════════════════════════════════════

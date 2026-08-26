@@ -1,6 +1,13 @@
 import type { SyntheticHeadFixture, SyntheticHeadSpec } from './synthetic-head.types';
 
-const BASE: SyntheticHeadSpec = {
+/**
+ * The easy case, exported by name.
+ *
+ * Named rather than reached through SYNTHETIC_HEAD_FIXTURES[0]: an indexed
+ * lookup is optional under noUncheckedIndexedAccess, which forces every caller
+ * to handle an absence that cannot happen.
+ */
+export const NOMINAL_HEAD_SPEC: SyntheticHeadSpec = {
   widthPx: 600,
   heightPx: 600,
   crownY: 90,
@@ -16,7 +23,7 @@ const BASE: SyntheticHeadSpec = {
 };
 
 const withSpec = (overrides: Partial<SyntheticHeadSpec>): SyntheticHeadSpec => ({
-  ...BASE,
+  ...NOMINAL_HEAD_SPEC,
   ...overrides,
 });
 
@@ -32,7 +39,7 @@ export const SYNTHETIC_HEAD_FIXTURES: readonly SyntheticHeadFixture[] = [
   {
     name: 'nominal',
     description: 'Well-lit head on a plain light background. The easy case.',
-    spec: BASE,
+    spec: NOMINAL_HEAD_SPEC,
   },
   {
     name: 'dark-hair-on-dark-background',
