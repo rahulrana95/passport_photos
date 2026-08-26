@@ -44,9 +44,18 @@ export interface LegalContent {
   readonly specVerifiedOn: string;
 }
 
+export interface ErrorContent {
+  readonly notFoundTitle: string;
+  readonly notFoundBody: string;
+  readonly notFoundAction: string;
+  readonly unexpectedTitle: string;
+  readonly unexpectedBody: string;
+}
+
 export interface ContentTree {
   readonly common: CommonContent;
   readonly upload: UploadContent;
   readonly result: ResultContent;
   readonly legal: LegalContent;
+  readonly errors: ErrorContent;
 }

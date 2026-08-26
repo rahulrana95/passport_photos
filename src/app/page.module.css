@@ -6,10 +6,3 @@
   flex-direction: column;
   gap: var(--tk-space-md);
 }
-
-.note {
-  max-width: var(--tk-measure);
-  margin: 0;
-  font-size: var(--tk-text-sm);
-  color: var(--tk-text-tertiary);
-}

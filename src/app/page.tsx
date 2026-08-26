@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { PageHeading } from '@/components/common/PageHeading/PageHeading';
+import { SKIP_LINK_TARGET_ID } from '@/constants/navigation.constants';
 import { homeRoute } from '@/constants/routes.constants';
 import { SITE_DESCRIPTION, SITE_TAGLINE } from '@/constants/site.constants';
-import { getContent } from '@/content/content.registry';
 import { JsonLdScript } from '@/seo/JsonLdScript';
 import { buildMetadata } from '@/seo/metadata.utils';
 import { webApplicationJsonLd } from '@/seo/structured-data.utils';
@@ -19,16 +19,11 @@ export const metadata: Metadata = buildMetadata({
  * renders to static HTML containing real, crawlable text. Replaced by the real
  * landing page in a later task.
  */
-const HomePage = (): React.JSX.Element => {
-  const content = getContent();
-
-  return (
-    <main className={styles['main']}>
-      <JsonLdScript node={webApplicationJsonLd()} />
-      <PageHeading title={SITE_TAGLINE} description={SITE_DESCRIPTION} />
-      <p className={styles['note']}>{content.legal.acceptanceDisclaimer}</p>
-    </main>
-  );
-};
+const HomePage = (): React.JSX.Element => (
+  <main className={styles['main']} id={SKIP_LINK_TARGET_ID}>
+    <JsonLdScript node={webApplicationJsonLd()} />
+    <PageHeading title={SITE_TAGLINE} description={SITE_DESCRIPTION} />
+  </main>
+);
 
 export default HomePage;

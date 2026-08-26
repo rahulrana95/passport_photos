@@ -1,0 +1,32 @@
+.nav {
+  font-size: var(--tk-text-sm);
+  color: var(--tk-text-secondary);
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tk-space-3xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link {
+  color: var(--tk-text-secondary);
+  text-underline-offset: 2px;
+}
+
+.link:hover {
+  color: var(--tk-accent);
+}
+
+.current {
+  color: var(--tk-text-primary);
+  font-weight: 600;
+}
+
+.separator {
+  color: var(--tk-text-tertiary);
+}
