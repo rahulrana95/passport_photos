@@ -1,4 +1,4 @@
-import { roundMeasurement } from '@/utils/format-measurement.utils';
+import { roundMeasurement } from '@/measurement/format-measurement.utils';
 import {
   HOURS_PER_DAY,
   MINUTES_PER_HOUR,
