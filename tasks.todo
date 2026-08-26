@@ -230,27 +230,35 @@ TESTS
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #4 — Constants, typed routes and content module
-Branch: feat/constants-and-routes      Depends on: #3                Status: TODO
+Branch: feat/constants-and-routes      Depends on: #3                Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   The other half of "no hardcoded values": strings, routes and numbers.
 
 IMPLEMENTS
-  [ ] site.constants.ts — name, domain, social handles, default OG image
-  [ ] routes.constants.ts — typed builders, e.g. countryPhotoRoute(iso, doc)
-  [ ] measurement.constants.ts — DPI defaults, mm/inch factors, tolerances
-  [ ] analysis.constants.ts — every detection threshold, named and commented
-  [ ] limits.constants.ts — max upload bytes, max pixels, worker timeout
-  [ ] content/ — all user-facing copy, keyed, ready for i18n
-  [ ] Legal copy: the "we check against the published spec, the authority
-      decides" disclaimer as a single reusable constant
+  [x] site.constants.ts — identity and metadata only; copy moved to content/
+  [x] country.constants.ts + document-type.constants.ts — the addressable set,
+      declared here because routes exist before the registry (PR #8) does
+  [x] routes.constants.ts — typed builders over those unions
+  [x] measurement.constants.ts — DPI defaults, mm/inch factors, tolerances
+  [x] analysis.constants.ts — every detection threshold, named and commented
+  [x] limits.constants.ts — max upload bytes, max pixels, worker timeouts
+  [x] content/ — all user-facing copy, keyed, locale-ready
+  [x] format-measurement.utils.ts — Intl-based, never concatenates units
+  [x] Legal copy lives in content.legal, referenced once
 
 EDGE CASES
-  [ ] Route builders must reject unknown country/document at compile time
-  [ ] Trailing-slash policy decided once and encoded in the builder
-  [ ] Copy keys must fail the build when referenced but missing
-  [ ] Threshold constants need units in the name (…Mm, …Px, …Ratio, …Ms)
-  [ ] Locale-aware number/unit formatting — never string-concatenate units
+  [x] Route builders reject unknown country/document at compile time — they
+      take the CountrySlug and DocumentType unions, not strings
+  [x] Trailing-slash policy encoded in absoluteUrl; home returns the bare origin
+      so it agrees with trailingSlash:false rather than producing two URLs
+  [x] Missing copy keys fail the build — ContentTree is declared as an interface
+      rather than inferred, so a locale that omits a key fails tsc
+  [x] Unit-in-name convention enforced by a test that reflects over the exported
+      constants; dimensionless factors declare themselves _RADIX/_SCALE/_FACTOR
+  [x] Locale-aware formatting via Intl.NumberFormat — asserted against de-DE,
+      which uses a comma decimal separator
+  [x] Every error message must name an action, not just a fault — asserted
 
 SEO
   [ ] Canonical URL builder lives here; every page uses it, none hand-rolls one
