@@ -304,7 +304,7 @@ TESTS
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #6 — Test fixture corpus and the ground-truth generator
-Branch: feat/test-fixtures             Depends on: #5                Status: TODO
+Branch: feat/test-fixtures             Depends on: #5                Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   The corpus every later task measures itself against. Pulled ahead of the
@@ -318,34 +318,43 @@ DESCRIPTION
   indefensible on its own terms.
 
 IMPLEMENTS
-  [ ] Tier 1 — programmatic generator. Renders synthetic head silhouettes at
+  [x] Tier 1 — programmatic generator. Renders synthetic head silhouettes at
       EXACTLY known crown/chin/eye pixel positions. Ground truth is exact by
       construction rather than hand-measured, so a failing assertion means the
       code is wrong, not that someone mis-measured. Covers the whole geometry
       engine (PR #15) with zero licence risk and kilobytes on disk.
-  [ ] Tier 2 — SFHQ (Synthetic Faces High Quality). ~425k StyleGAN2 faces with
+  [~] Tier 2 — SFHQ. DEFERRED to the PR that needs it (#12/#13): the Kaggle
+      licence field could not be verified from the build environment, and the
+      gate below says confirm in writing before depending on it. Nothing in the
+      geometry work needs it.
+      Tier 2 — SFHQ (Synthetic Faces High Quality). ~425k StyleGAN2 faces with
       no real person behind any of them, shipping facial landmarks AND face-
       parsing segmentation maps — precisely the ground truth crown detection
       needs and the hardest thing to produce by hand.
       GATE: confirm the Kaggle licence field in writing before depending on it.
-  [ ] Tier 3 — BioLab-ICAO by request, for offline validation only, never
+  [~] Tier 3 — DEFERRED, needs an access request. Tracked, not built.
+      Tier 3 — BioLab-ICAO by request, for offline validation only, never
       committed. 7,740 images ground-truthed against ISO/IEC 19794-5. Publish
       the score; no competitor has that line.
-  [ ] Hard-case compositor: takes a base face and generates the documented
+  [x] Hard-case compositor: 12 fixtures covering the documented
       failure modes deterministically from a seed — dark hair on dark
       background, controlled background luminance, head coverings, exposure
       extremes. Do not hope a dataset contains these.
-  [ ] Download script with pinned SHA-256 hashes + CI cache. NO images in git.
-  [ ] Fixture manifest typed and validated, so a corrupted download fails loudly
+  [x] Manifest schema with pinned SHA-256, size and a REQUIRED licence field;
+      integrity verified on every load, not only after download
+  [~] Download script itself lands with Tier 2, when there is something to fetch
 
 EDGE CASES
-  [ ] Licence field must be verified and recorded in the repo, not assumed
-  [ ] Generated fixtures must be byte-identical across machines — fixed seed,
-      no Date.now, no floating-point accumulation in the generator
-  [ ] The corpus must span skin tones deliberately; PR #16's exposure checks
-      have a fairness requirement that a random sample will not satisfy
-  [ ] CI must work with no network — cache hit or a committed Tier 1 only
-  [ ] Manifest and files can drift; hash-check on load, not just on download
+  [x] Licence is a required schema field — an entry without one fails to parse
+  [x] Byte-identical across machines — seeded mulberry32, no Math.random,
+      asserted by regenerating and comparing every byte
+  [~] Skin-tone spread arrives with Tier 2; Tier 1 renders luminance only, so
+      the fairness requirement in the exposure work is NOT yet satisfied
+  [x] CI needs no network — Tier 1 is generated, never downloaded
+  [x] Hash and size checked on load, not only after download
+  [x] Truncated buffers degrade rather than throw — a real decode failure mode
+  [x] Degenerate specs (zero head width or height) render honest empty frames
+      rather than NaN pixels
 
 SEO  n/a
 

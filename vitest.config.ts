@@ -29,10 +29,11 @@ export default defineConfig({
         // App Router entry points render as Server Components; they are covered
         // by the Playwright suite in e2e/ rather than in jsdom.
         'src/app/**',
-        // Test-support code, not shipped product code. It is still tested (see
-        // src/testing/*.test.ts) — it just is not part of the product's
-        // coverage budget.
-        'src/testing/**',
+        // The axe wrapper is thin test-support glue and is verified by its own
+        // test. Everything else under src/testing IS covered: the fixture
+        // generator is load-bearing, and a bug there would silently corrupt
+        // every measurement downstream of it.
+        'src/testing/axe.utils.ts',
       ],
       thresholds: {
         statements: 100,
