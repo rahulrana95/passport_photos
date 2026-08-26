@@ -1,5 +1,6 @@
 import { PageHeading } from '@/components/common/PageHeading/PageHeading';
-import { ACCEPTANCE_DISCLAIMER, SITE_DESCRIPTION, SITE_TAGLINE } from '@/constants/site.constants';
+import { SITE_DESCRIPTION, SITE_TAGLINE } from '@/constants/site.constants';
+import { getContent } from '@/content/content.registry';
 import styles from './page.module.css';
 
 /**
@@ -7,11 +8,15 @@ import styles from './page.module.css';
  * renders to static HTML containing real, crawlable text. Replaced by the real
  * landing page in a later task.
  */
-const HomePage = (): React.JSX.Element => (
-  <main className={styles['main']}>
-    <PageHeading title={SITE_TAGLINE} description={SITE_DESCRIPTION} />
-    <p className={styles['note']}>{ACCEPTANCE_DISCLAIMER}</p>
-  </main>
-);
+const HomePage = (): React.JSX.Element => {
+  const content = getContent();
+
+  return (
+    <main className={styles['main']}>
+      <PageHeading title={SITE_TAGLINE} description={SITE_DESCRIPTION} />
+      <p className={styles['note']}>{content.legal.acceptanceDisclaimer}</p>
+    </main>
+  );
+};
 
 export default HomePage;
