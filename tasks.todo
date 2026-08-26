@@ -107,6 +107,61 @@ DEFINITION OF DONE
 
 
 ═══════════════════════════════════════════════════════════════════════════════
+ COMPETITIVE POSITION  (researched August 2026)
+═══════════════════════════════════════════════════════════════════════════════
+
+WHO WE ARE AGAINST
+  PhotoAiD (passport-photo.online + photoaid.com) — a SERVICE business. $10M
+    revenue 2023, 1M+ customers, 11M photos/year, 62-130 staff, founded 2012.
+    $16.95 buys human expert review, a 100% acceptance guarantee, double money
+    back, prints posted to you. 200+ countries. iOS and Android apps.
+  Visafoto — an EDITING business. ~577K visits/month. $6.99-7.99 for AI
+    correction: background, crop, tilt, colour, red-eye, 600 DPI, print
+    templates. 200+ document types. Refund on proof of rejection.
+  IDPhoto4You — an AD business. The largest free player. Crops to a country
+    template and stops; its own reviewers note it "won't verify your photo in
+    any way against government regulations."
+
+THE GAP, IN ONE SENTENCE
+  Free tools crop. Paid tools verify. Nobody does free verification.
+
+WHAT WE WIN ON — three things, not a long list
+  1. You find out BEFORE you pay. Even someone who ends up buying from PhotoAiD
+     should come to us first, which makes us their top-of-funnel.
+  2. The photo never leaves the device. All three upload biometric data. Ours is
+     the only trust claim on the page a user can verify in ten seconds.
+  3. We show our working — measurement, requirement, source, date, and the
+     physical action that fixes it. They give a verdict.
+
+  And one structural advantage nobody can copy: their marginal cost per photo is
+  real (GPU time, or a human looking at it). Ours is zero. They cannot match
+  free-and-verifying without destroying their own margin.
+
+WHAT WE LOSE ON — say it plainly
+  - No acceptance guarantee, and we cannot offer one. Theirs is backed by a
+    human who looked at the photo. Ours would be a lie, and "never claim
+    acceptance" is a machine-tested invariant. A deliberate disadvantage.
+  - No prints, no native apps, no photo enhancement. Each a deliberate no.
+  - Zero brand trust against ~700 Trustpilot reviews each. Slowest gap to close.
+
+THE REAL OBSTACLE IS CONTENT, NOT PRODUCT
+  PhotoAiD owns the comparison SERP with their own blog. They review the entire
+  category on their own domain and rank first for it. That is the single biggest
+  thing standing between us and traffic, and no engineering advantage answers it.
+
+REVENUE REALITY — plan against these numbers, not hopes
+  Assume ~2.2 pageviews per session and a US/UK/EU audience.
+    $1,000/month needs roughly 40-60K sessions/month   -> month 10-14
+    $5,000/month needs roughly 150-220K sessions/month -> year 2
+  AdSense alone on this audience is realistically $6-10 page RPM. Mediavine
+  opens at 50K sessions/month and typically lifts RPM 50-80%, so REACHING 50K
+  SESSIONS IS THE HIGHEST-VALUE MILESTONE IN THIS PLAN.
+
+  Affiliate probably beats display for this audience: photo printing, visa
+  services, travel insurance. Lead values are $10-50, not fractions of a cent.
+
+
+═══════════════════════════════════════════════════════════════════════════════
  PHASE 1 — FOUNDATION
 ═══════════════════════════════════════════════════════════════════════════════
 
@@ -843,6 +898,12 @@ IMPLEMENTS
   [ ] 4x6in, 10x15cm and A4 layouts, tiled with cut guides
   [ ] Copy count computed per sheet size and photo size
   [ ] Download as JPEG and as print-ready PDF
+  [ ] PRINT HANDOFF — the sheet plus plain instructions for taking it to a
+      high-street printer (Walgreens, CVS, Boots). We will never post
+      photographs; that is a logistics business. But the handoff closes the loop
+      for the majority who need a physical print, costs nothing, removes the
+      last reason to pay a competitor, and is the natural affiliate placement.
+  [ ] Per-country printer suggestions where the chains differ
 EDGE CASES
   [ ] Printer non-printable margins
   [ ] Photo larger than the sheet
@@ -889,8 +950,53 @@ EDGE CASES
 TESTS  Unit + axe; stories for idle/hover/dragging/error; Playwright real upload.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #25 — Result panel
-Branch: feat/result-panel              Depends on: #24               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+PR #25 — Live camera capture with real-time guidance
+Branch: feat/camera-capture            Depends on: #24               Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  PULLED FORWARD from v1.1 into v1, on competitive evidence. PhotoAiD's mobile
+  apps have this and we would be the only serious tool without it.
+
+  It removes the retake loop entirely, which is the single loudest complaint in
+  every competitor's reviews: people upload, get rejected, upload again, and give
+  up around the fourth attempt. Live feedback replaces that with "move closer…
+  closer… hold there".
+
+  Cheap for what it delivers: getUserMedia plus the geometry engine from #17,
+  both of which already exist by this point.
+
+IMPLEMENTS
+  [ ] getUserMedia capture with rear/front camera switching
+  [ ] Live overlay: head oval guide, real-time head-height percentage, a
+      background-uniformity warning before the shutter rather than after
+  [ ] Analysis on a throttled frame loop, not per frame — full detection at
+      camera rate would melt a mid-range phone
+  [ ] Capture at the sensor's full resolution, not the preview's
+  [ ] Falls back cleanly to file upload wherever camera access is unavailable
+
+EDGE CASES
+  [ ] Permission denied, or dismissed without answering
+  [ ] No camera present (most desktops)
+  [ ] iOS Safari requires a user gesture and refuses getUserMedia over http
+  [ ] Preview resolution far below capture resolution — guidance computed on the
+      preview must still hold for the captured frame
+  [ ] Device rotation mid-session
+  [ ] Front camera mirroring: the preview is mirrored, the capture must not be
+  [ ] Battery and thermal cost of a sustained analysis loop
+  [ ] Stream must be stopped on unmount, or the camera light stays on — which
+      for this product looks exactly like the surveillance we promise we are not
+  [ ] Low light, where guidance would be confidently wrong
+
+SEO
+  [ ] Camera UI is client-only and must not enter the static HTML of any page
+
+TESTS
+  Unit against a mocked MediaStream; the fixture corpus drives the guidance
+  logic. Integration with Playwright's fake camera device.
+
+PR #26 — Result panel
+Branch: feat/result-panel              Depends on: #25               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
   [ ] Overall verdict, per-rule rows with measurement and fix instruction
@@ -906,8 +1012,8 @@ EDGE CASES
 TESTS  Unit + axe; stories for all-pass, mixed, all-fail, error, loading.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #26 — Country page template and static generation
-Branch: feat/country-pages             Depends on: #25               Status: TODO
+PR #27 — Country page template and static generation
+Branch: feat/country-pages             Depends on: #26               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
   [ ] /[country]/[document] route with generateStaticParams over the registry
@@ -928,8 +1034,8 @@ SEO
 TESTS  Unit on the template; integration crawling every generated route.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #27 — Dimension and problem route families
-Branch: feat/alt-route-families        Depends on: #26               Status: TODO
+PR #28 — Dimension and problem route families
+Branch: feat/alt-route-families        Depends on: #27               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
   [ ] /2x2-inch-photo, /35x45mm-photo, /50x70mm-photo, /600x600-photo,
@@ -949,12 +1055,22 @@ TESTS  Integration asserting cross-links and per-route metadata.
 ═══════════════════════════════════════════════════════════════════════════════
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #28 — Registry expansion to 40 countries
-Branch: feat/registry-40               Depends on: #27               Status: TODO
+PR #29 — Registry expansion to 100+ countries
+Branch: feat/registry-40               Depends on: #28               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   The grind, and the moat. Every spec verified against the issuing authority's
   own page, with the URL and the date recorded. No spec enters without a source.
+
+  TARGET RAISED from 40 to 100+, on competitive evidence. PhotoAiD and Visafoto
+  both cover 200+ document types. Every country we do not cover is a bounce from
+  a visitor who already found us — and the long tail is the ONLY ground a new
+  domain can win, because the head terms belong to incumbents for years.
+  Under-covering the tail forfeits the one advantage available to us.
+
+  This is also the single biggest lever on revenue. Ad income is a function of
+  traffic, traffic is a function of pages that can rank, and each verified
+  country is one such page.
 EDGE CASES
   [ ] Authority pages that state requirements only in a PDF
   [ ] Rules differing for applications filed abroad
@@ -965,8 +1081,8 @@ EDGE CASES
 TESTS  Every spec parses; a snapshot test catches accidental edits.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #29 — Analytics and event tracking
-Branch: feat/analytics                 Depends on: #28               Status: TODO
+PR #30 — Analytics and event tracking
+Branch: feat/analytics                 Depends on: #29               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
   [ ] Page views, tool starts, per-rule failure rates, downloads, country mix
@@ -978,8 +1094,8 @@ EDGE CASES
 TESTS  Unit on the payload builder, asserting no image-derived field can leak.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #30 — Performance hardening and CI budgets
-Branch: perf/budgets                   Depends on: #29               Status: TODO
+PR #31 — Performance hardening and CI budgets
+Branch: perf/budgets                   Depends on: #30               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
   [ ] Lighthouse CI gate: LCP < 1.2s, CLS < 0.1, TBT < 200ms
@@ -992,8 +1108,8 @@ EDGE CASES
 TESTS  Lighthouse CI on a representative route sample, failing the build.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #31 — Accessibility audit pass
-Branch: a11y/audit                     Depends on: #30               Status: TODO
+PR #32 — Accessibility audit pass
+Branch: a11y/audit                     Depends on: #31               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
   [ ] Full keyboard path through upload → analysis → download
@@ -1007,8 +1123,8 @@ EDGE CASES
 TESTS  axe on every route; manual VoiceOver/NVDA checklist recorded in the PR.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #32 — Legal, privacy and disclaimer surfaces
-Branch: feat/legal-pages               Depends on: #31               Status: TODO
+PR #33 — Legal, privacy and disclaimer surfaces
+Branch: feat/legal-pages               Depends on: #32               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
   [ ] Privacy policy stating plainly that no image is ever transmitted
@@ -1021,19 +1137,36 @@ EDGE CASES
 TESTS  Integration asserting the disclaimer renders with every result.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #33 — Ads integration and launch checklist
-Branch: chore/launch                   Depends on: #32               Status: TODO
+PR #34 — Ads integration and launch checklist
+Branch: chore/launch                   Depends on: #33               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
-  [ ] Ad slots placed without harming CLS or LCP
+  [ ] Ad slots on content pages only, never the checker
+  [ ] Affiliate placements, which for this audience likely beat display:
+      photo printing on the print sheet, visa services and travel insurance on
+      the result page. Lead values in this vertical are $10-50, not fractions
+      of a cent, and someone who has just learned their photo passes is in an
+      unusually receptive moment.
   [ ] Search Console and sitemap submission; analytics verified
   [ ] Launch content: the 2026 AI-photo-rules explainer
+  [ ] Comparison content published by us. PhotoAiD ranks first for "best
+      passport photo tool" because they wrote it. We can do the same, and do it
+      honestly including where we lose — a real differentiator in a category
+      where every comparison is a vendor reviewing itself.
 EDGE CASES
   [ ] Ad slots must reserve height or CLS collapses
-  [ ] Ads must never appear beside the biometric image in a way implying
-      endorsement or data sharing
+  [ ] NO ADS ON THE CHECKER PAGE. Not a preference — a hard constraint.
+      We invite people to open DevTools and watch the Network tab to verify
+      their photo is never uploaded. An ad stack fires dozens of requests to
+      unknown third parties, so a visitor doing exactly the verification we
+      asked for sees a wall of traffic. That destroys the strongest claim we
+      have, on the page where it matters most. Ads live on requirements, FAQ
+      and guide pages; the checker stays clean, and its emptiness is part of
+      the pitch.
   [ ] AdSense rejects thin tool pages — confirm every route has real content
   [ ] Re-run Lighthouse after ads; budgets still apply
+  [ ] Ad-carrying pages are the informational ones, which are also the ones AI
+      Overviews are eating. Do not plan the business around display alone.
 TESTS  Lighthouse with ads enabled; CLS assertion on ad-bearing routes.
 
 
