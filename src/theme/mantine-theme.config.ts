@@ -1,4 +1,10 @@
-import { createTheme, type CSSVariablesResolver, type MantineThemeOverride } from '@mantine/core';
+import {
+  Button,
+  createTheme,
+  Tooltip,
+  type CSSVariablesResolver,
+  type MantineThemeOverride,
+} from '@mantine/core';
 
 /**
  * Mantine is configured to read the project's own tokens rather than carrying a
@@ -32,6 +38,23 @@ export const appTheme: MantineThemeOverride = createTheme({
     md: 'var(--tk-space-sm)',
     lg: 'var(--tk-space-md)',
     xl: 'var(--tk-space-lg)',
+  },
+  components: {
+    // Defaults live here so no call site repeats the same props, and so a
+    // change to how every button looks is one diff rather than a grep.
+    Button: Button.extend({
+      defaultProps: { radius: 'md', variant: 'filled' },
+    }),
+    Tooltip: Tooltip.extend({
+      defaultProps: {
+        withArrow: true,
+        // Touch devices have no hover. Without an explicit open delay of zero
+        // and tap support, a tooltip is simply unreachable on a phone — and
+        // most of this product's traffic will be on one.
+        openDelay: 0,
+        events: { hover: true, focus: true, touch: true },
+      },
+    }),
   },
 });
 

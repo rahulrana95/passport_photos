@@ -268,7 +268,7 @@ TESTS
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #5 — Core UI primitives
-Branch: feat/ui-primitives             Depends on: #4                Status: TODO
+Branch: feat/ui-primitives             Depends on: #4                Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   SCOPE REDUCED by the Mantine decision. Mantine already ships Button, Card,
@@ -277,13 +277,14 @@ DESCRIPTION
   answer for.
 
 IMPLEMENTS
-  [ ] Extend the Mantine theme: component defaults via theme.components so no
-      call site passes the same props twice
-  [ ] Server-Component content primitives (plain HTML + CSS Modules): Prose,
-      RequirementsTable, FaqList using native <details>/<summary>
-  [ ] App-specific components Mantine cannot provide: RuleResultRow,
-      CountryLinkGrid
-  [ ] One component per file with sibling .types.ts, .test.tsx, .stories.tsx
+  [x] Mantine theme.components defaults for Button and Tooltip. Tooltip gets
+      explicit touch support — without it a tooltip is simply unreachable on a
+      phone, and most of this product's traffic will be on one.
+  [x] Prose, RequirementsTable, FaqList — Server Components, plain semantic
+      HTML + CSS Modules, no client bundle
+  [x] RuleResultRow, CountryLinkGrid
+  [x] rule-status.constants.ts — five statuses, severity ordering, tokens
+  [x] One component per file with sibling .types.ts, .test.tsx, .stories.tsx
 
 EDGE CASES
   [ ] Focus-visible ring on every interactive element, visible in both themes
@@ -302,7 +303,58 @@ TESTS
   Screenshots in light/dark/mobile.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #6 — SEO infrastructure
+PR #6 — Test fixture corpus and the ground-truth generator
+Branch: feat/test-fixtures             Depends on: #5                Status: TODO
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  The corpus every later task measures itself against. Pulled ahead of the
+  detector work because PR #11's fake backend needs it too, and because the
+  dataset licensing question has a decisive answer that shapes the design.
+
+  DECIDED: no real faces, ever. FFHQ is CC BY-NC-SA 4.0 (non-commercial only),
+  and CelebA, UTKFace and FairFace carry the same or worse restrictions — all
+  unusable in a commercial product. Beyond licensing, committing strangers'
+  faces to the repo of a product whose entire pitch is biometric privacy is
+  indefensible on its own terms.
+
+IMPLEMENTS
+  [ ] Tier 1 — programmatic generator. Renders synthetic head silhouettes at
+      EXACTLY known crown/chin/eye pixel positions. Ground truth is exact by
+      construction rather than hand-measured, so a failing assertion means the
+      code is wrong, not that someone mis-measured. Covers the whole geometry
+      engine (PR #15) with zero licence risk and kilobytes on disk.
+  [ ] Tier 2 — SFHQ (Synthetic Faces High Quality). ~425k StyleGAN2 faces with
+      no real person behind any of them, shipping facial landmarks AND face-
+      parsing segmentation maps — precisely the ground truth crown detection
+      needs and the hardest thing to produce by hand.
+      GATE: confirm the Kaggle licence field in writing before depending on it.
+  [ ] Tier 3 — BioLab-ICAO by request, for offline validation only, never
+      committed. 7,740 images ground-truthed against ISO/IEC 19794-5. Publish
+      the score; no competitor has that line.
+  [ ] Hard-case compositor: takes a base face and generates the documented
+      failure modes deterministically from a seed — dark hair on dark
+      background, controlled background luminance, head coverings, exposure
+      extremes. Do not hope a dataset contains these.
+  [ ] Download script with pinned SHA-256 hashes + CI cache. NO images in git.
+  [ ] Fixture manifest typed and validated, so a corrupted download fails loudly
+
+EDGE CASES
+  [ ] Licence field must be verified and recorded in the repo, not assumed
+  [ ] Generated fixtures must be byte-identical across machines — fixed seed,
+      no Date.now, no floating-point accumulation in the generator
+  [ ] The corpus must span skin tones deliberately; PR #16's exposure checks
+      have a fairness requirement that a random sample will not satisfy
+  [ ] CI must work with no network — cache hit or a committed Tier 1 only
+  [ ] Manifest and files can drift; hash-check on load, not just on download
+
+SEO  n/a
+
+TESTS
+  The generator is itself tested: a rendered fixture is measured back and must
+  match the parameters it was generated from.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #7 — SEO infrastructure
 Branch: feat/seo-infrastructure        Depends on: #5                Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
@@ -337,8 +389,8 @@ TESTS
   Integration: crawl the built output, assert per-route tags.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #7 — Layout shell: header, footer, breadcrumbs, theme toggle
-Branch: feat/layout-shell              Depends on: #6                Status: TODO
+PR #8 — Layout shell: header, footer, breadcrumbs, theme toggle
+Branch: feat/layout-shell              Depends on: #7                Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   The server-rendered frame. Also the internal-linking surface, which is doing
@@ -375,8 +427,8 @@ TESTS
 ═══════════════════════════════════════════════════════════════════════════════
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #8 — PhotoSpec schema, Zod validation, registry (US, UK, Schengen)
-Branch: feat/photospec-registry        Depends on: #7                Status: TODO
+PR #9 — PhotoSpec schema, Zod validation, registry (US, UK, Schengen)
+Branch: feat/photospec-registry        Depends on: #8                Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   The country requirement model. This registry is the moat; the schema decides
@@ -410,8 +462,8 @@ TESTS
   Fixture: a deliberately invalid spec proves the build gate works.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #9 — Unit conversion and measurement utilities
-Branch: feat/measurement-utils         Depends on: #8                Status: TODO
+PR #10 — Unit conversion and measurement utilities
+Branch: feat/measurement-utils         Depends on: #9                Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   Pure functions converting between mm, inches, pixels and DPI, and evaluating
@@ -436,8 +488,8 @@ TESTS
   Unit with property-based cases across the full plausible range.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #10 — Worker infrastructure, typed protocol and the fake-model test layer
-Branch: feat/worker-infrastructure     Depends on: #9                Status: TODO
+PR #11 — Worker infrastructure, typed protocol and the fake-model test layer
+Branch: feat/worker-infrastructure     Depends on: #10                Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   The Web Worker plus its typed request/response protocol — and the fixture
@@ -472,8 +524,8 @@ TESTS
   Integration: real worker round-trip in Playwright.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #11 — Image ingestion: decode, EXIF orientation, downscale
-Branch: feat/image-ingestion           Depends on: #10               Status: TODO
+PR #12 — Image ingestion: decode, EXIF orientation, downscale
+Branch: feat/image-ingestion           Depends on: #11               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   Turning whatever the user gives us into a normalised bitmap. More failure
@@ -512,11 +564,11 @@ TESTS
 ═══════════════════════════════════════════════════════════════════════════════
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #12 — Face landmark detection
-Branch: feat/face-landmarks            Depends on: #11               Status: TODO
+PR #13 — Face landmark detection
+Branch: feat/face-landmarks            Depends on: #12               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
-  MediaPipe Face Landmarker behind the detector interface from PR #10.
+  MediaPipe Face Landmarker behind the detector interface from PR #11.
 
 IMPLEMENTS
   [ ] Lazy model load, Cache API persistence, load-progress events
@@ -542,8 +594,8 @@ TESTS
   Unit against recorded fixtures. Integration with the real model, one case.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #13 — Person segmentation and crown detection
-Branch: feat/segmentation-crown        Depends on: #12               Status: TODO
+PR #14 — Person segmentation and crown detection
+Branch: feat/segmentation-crown        Depends on: #13               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   THE RISKIEST PR IN THE PROJECT. Landmarks stop at the hairline, so crown-to-
@@ -576,8 +628,8 @@ TESTS
   fixture set is a project asset — document how to extend it.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #14 — Geometry engine
-Branch: feat/geometry-engine           Depends on: #13               Status: TODO
+PR #15 — Geometry engine
+Branch: feat/geometry-engine           Depends on: #14               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   Landmarks plus crown plus spec, in. Millimetre measurements and the crop
@@ -594,16 +646,16 @@ EDGE CASES
   [ ] Source resolution too low to crop at the spec's DPI
   [ ] Extreme source aspect ratios
   [ ] Head correctly sized but positioned so no valid crop exists
-  [ ] Rounding must be consistent with PR #9's policy
+  [ ] Rounding must be consistent with PR #10's policy
 
 SEO  n/a
 
 TESTS
-  Unit across synthetic geometries plus every fixture from PR #13.
+  Unit across synthetic geometries plus every fixture from PR #14.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #15 — Image quality analysis
-Branch: feat/quality-analysis          Depends on: #14               Status: TODO
+PR #16 — Image quality analysis
+Branch: feat/quality-analysis          Depends on: #15               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   Background, shadow, sharpness, exposure and resolution checks over the
@@ -636,15 +688,26 @@ TESTS
   lighting conditions and background types.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #16 — Rule engine and compliance report model
-Branch: feat/rule-engine               Depends on: #15               Status: TODO
+PR #17 — Rule engine and compliance report model
+Branch: feat/rule-engine               Depends on: #16               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   Measurements plus spec, in. A typed, ordered, human-readable verdict out —
   where every failure carries a physical action the user can take.
 
+  DECIDED: rule identities follow ISO/IEC 19794-5, which defines 30 face-image
+  requirements. Every national specification derives from that standard, so
+  adopting its taxonomy makes our vocabulary match the authorities' own
+  documentation, makes us directly comparable to the BioLab-ICAO benchmark and
+  to BioGaze, and stops us inventing terms nobody else uses. The 17 rules in
+  the fidelity matrix become a subset of the 30, each carrying its ISO id.
+
 IMPLEMENTS
-  [ ] Rule definitions with id, severity, confidence and evaluator
+  [ ] Rule definitions with an ISO/IEC 19794-5 requirement id, severity,
+      confidence and evaluator
+  [ ] Coverage map: which of the 30 ISO requirements we check, which we defer
+      to a manual checklist, and which we cannot detect — published on the site
+      as a credibility signal rather than hidden
   [ ] Verdicts: pass / fail / warning / manual-check / undetectable
   [ ] Fix instructions computed from the delta ("move ~30cm closer")
   [ ] Overall verdict aggregation and rule ordering by importance
@@ -670,8 +733,8 @@ TESTS
 ═══════════════════════════════════════════════════════════════════════════════
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #17 — Annotated overlay renderer
-Branch: feat/overlay-renderer          Depends on: #16               Status: TODO
+PR #18 — Annotated overlay renderer
+Branch: feat/overlay-renderer          Depends on: #17               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
   [ ] Canvas overlay: crop rectangle, crown/chin span, allowed band shading,
@@ -686,8 +749,8 @@ EDGE CASES
 TESTS  Unit on the draw-instruction builder; screenshot stories over fixtures.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #18 — Crop and encode pipeline (mozjpeg byte budget)
-Branch: feat/crop-encode               Depends on: #17               Status: TODO
+PR #19 — Crop and encode pipeline (mozjpeg byte budget)
+Branch: feat/crop-encode               Depends on: #18               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
   [ ] Exact-millimetre crop at the spec's DPI from the full-resolution original
@@ -704,8 +767,8 @@ EDGE CASES
 TESTS  Unit on the search; integration asserting real byte size and DPI headers.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #19 — Print sheet generator
-Branch: feat/print-sheet               Depends on: #18               Status: TODO
+PR #20 — Print sheet generator
+Branch: feat/print-sheet               Depends on: #19               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
   [ ] 4x6in, 10x15cm and A4 layouts, tiled with cut guides
@@ -720,8 +783,8 @@ EDGE CASES
 TESTS  Unit on layout maths; screenshot stories per sheet size.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #20 — PDF compliance report
-Branch: feat/pdf-report                Depends on: #19               Status: TODO
+PR #21 — PDF compliance report
+Branch: feat/pdf-report                Depends on: #20               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
   [ ] Per-rule results, measurements, annotated image, spec source and date
@@ -739,8 +802,8 @@ TESTS  Unit on document construction; integration asserting text extraction.
 ═══════════════════════════════════════════════════════════════════════════════
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #21 — Upload zone and file input
-Branch: feat/upload-zone               Depends on: #20               Status: TODO
+PR #22 — Upload zone and file input
+Branch: feat/upload-zone               Depends on: #21               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
   [ ] Drag-and-drop, click-to-browse, paste-from-clipboard
@@ -757,8 +820,8 @@ EDGE CASES
 TESTS  Unit + axe; stories for idle/hover/dragging/error; Playwright real upload.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #22 — Result panel
-Branch: feat/result-panel              Depends on: #21               Status: TODO
+PR #23 — Result panel
+Branch: feat/result-panel              Depends on: #22               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
   [ ] Overall verdict, per-rule rows with measurement and fix instruction
@@ -774,8 +837,8 @@ EDGE CASES
 TESTS  Unit + axe; stories for all-pass, mixed, all-fail, error, loading.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #23 — Country page template and static generation
-Branch: feat/country-pages             Depends on: #22               Status: TODO
+PR #24 — Country page template and static generation
+Branch: feat/country-pages             Depends on: #23               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
   [ ] /[country]/[document] route with generateStaticParams over the registry
@@ -796,8 +859,8 @@ SEO
 TESTS  Unit on the template; integration crawling every generated route.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #24 — Dimension and problem route families
-Branch: feat/alt-route-families        Depends on: #23               Status: TODO
+PR #25 — Dimension and problem route families
+Branch: feat/alt-route-families        Depends on: #24               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
   [ ] /2x2-inch-photo, /35x45mm-photo, /50x70mm-photo, /600x600-photo,
@@ -817,8 +880,8 @@ TESTS  Integration asserting cross-links and per-route metadata.
 ═══════════════════════════════════════════════════════════════════════════════
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #25 — Registry expansion to 40 countries
-Branch: feat/registry-40               Depends on: #24               Status: TODO
+PR #26 — Registry expansion to 40 countries
+Branch: feat/registry-40               Depends on: #25               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   The grind, and the moat. Every spec verified against the issuing authority's
@@ -833,8 +896,8 @@ EDGE CASES
 TESTS  Every spec parses; a snapshot test catches accidental edits.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #26 — Analytics and event tracking
-Branch: feat/analytics                 Depends on: #25               Status: TODO
+PR #27 — Analytics and event tracking
+Branch: feat/analytics                 Depends on: #26               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
   [ ] Page views, tool starts, per-rule failure rates, downloads, country mix
@@ -846,8 +909,8 @@ EDGE CASES
 TESTS  Unit on the payload builder, asserting no image-derived field can leak.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #27 — Performance hardening and CI budgets
-Branch: perf/budgets                   Depends on: #26               Status: TODO
+PR #28 — Performance hardening and CI budgets
+Branch: perf/budgets                   Depends on: #27               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
   [ ] Lighthouse CI gate: LCP < 1.2s, CLS < 0.1, TBT < 200ms
@@ -860,8 +923,8 @@ EDGE CASES
 TESTS  Lighthouse CI on a representative route sample, failing the build.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #28 — Accessibility audit pass
-Branch: a11y/audit                     Depends on: #27               Status: TODO
+PR #29 — Accessibility audit pass
+Branch: a11y/audit                     Depends on: #28               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
   [ ] Full keyboard path through upload → analysis → download
@@ -875,8 +938,8 @@ EDGE CASES
 TESTS  axe on every route; manual VoiceOver/NVDA checklist recorded in the PR.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #29 — Legal, privacy and disclaimer surfaces
-Branch: feat/legal-pages               Depends on: #28               Status: TODO
+PR #30 — Legal, privacy and disclaimer surfaces
+Branch: feat/legal-pages               Depends on: #29               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
   [ ] Privacy policy stating plainly that no image is ever transmitted
@@ -889,8 +952,8 @@ EDGE CASES
 TESTS  Integration asserting the disclaimer renders with every result.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #30 — Ads integration and launch checklist
-Branch: chore/launch                   Depends on: #29               Status: TODO
+PR #31 — Ads integration and launch checklist
+Branch: chore/launch                   Depends on: #30               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
   [ ] Ad slots placed without harming CLS or LCP

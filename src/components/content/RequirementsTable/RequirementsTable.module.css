@@ -1,0 +1,55 @@
+/* The table can be wider than a phone, so it scrolls inside its own container.
+   The page body must never scroll sideways. */
+.scroller {
+  overflow-x: auto;
+  max-inline-size: 100%;
+}
+
+.table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--tk-border-default);
+  font-size: var(--tk-text-sm);
+}
+
+.caption {
+  caption-side: top;
+  text-align: start;
+  padding-block-end: var(--tk-space-2xs);
+  font-size: var(--tk-text-md);
+  font-weight: 600;
+  color: var(--tk-text-primary);
+}
+
+.rowHeader {
+  text-align: start;
+  padding: var(--tk-space-2xs) var(--tk-space-xs);
+  border-block-end: 1px solid var(--tk-border-default);
+  background: var(--tk-sunken);
+  font-weight: 600;
+  color: var(--tk-text-primary);
+  white-space: nowrap;
+}
+
+.cell {
+  padding: var(--tk-space-2xs) var(--tk-space-xs);
+  border-block-end: 1px solid var(--tk-border-default);
+  color: var(--tk-text-primary);
+}
+
+.note {
+  display: block;
+  margin-block-start: var(--tk-space-3xs);
+  color: var(--tk-text-secondary);
+  font-size: var(--tk-text-xs);
+}
+
+.provenance {
+  margin-block-start: var(--tk-space-2xs);
+  font-size: var(--tk-text-xs);
+  color: var(--tk-text-secondary);
+}
+
+.provenance a {
+  color: var(--tk-accent);
+}
