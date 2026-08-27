@@ -152,6 +152,50 @@ A change to any of these images is a change a reviewer must approve:
 
 ![Starting — mobile-light](./story-screenshots.spec.ts-snapshots/camera-cameraguideoverlay/starting-mobile-light-stories-linux.png)
 
+## Checker Checkerpanel
+
+### Nothing To Check Against
+
+**desktop-dark**
+
+![Nothing To Check Against — desktop-dark](./story-screenshots.spec.ts-snapshots/checker-checkerpanel/nothing-to-check-against-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Nothing To Check Against — desktop-light](./story-screenshots.spec.ts-snapshots/checker-checkerpanel/nothing-to-check-against-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Nothing To Check Against — mobile-light](./story-screenshots.spec.ts-snapshots/checker-checkerpanel/nothing-to-check-against-mobile-light-stories-linux.png)
+
+### Single Specification
+
+**desktop-dark**
+
+![Single Specification — desktop-dark](./story-screenshots.spec.ts-snapshots/checker-checkerpanel/single-specification-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Single Specification — desktop-light](./story-screenshots.spec.ts-snapshots/checker-checkerpanel/single-specification-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Single Specification — mobile-light](./story-screenshots.spec.ts-snapshots/checker-checkerpanel/single-specification-mobile-light-stories-linux.png)
+
+### Waiting
+
+**desktop-dark**
+
+![Waiting — desktop-dark](./story-screenshots.spec.ts-snapshots/checker-checkerpanel/waiting-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Waiting — desktop-light](./story-screenshots.spec.ts-snapshots/checker-checkerpanel/waiting-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Waiting — mobile-light](./story-screenshots.spec.ts-snapshots/checker-checkerpanel/waiting-mobile-light-stories-linux.png)
+
 ## Common Pageheading
 
 ### Long Title Overflow
@@ -1390,4 +1434,4 @@ A change to any of these images is a change a reviewer must approve:
 
 ---
 
-285 baselines across 25 components.
+294 baselines across 26 components.
