@@ -1802,15 +1802,13 @@ TESTS
   no visual state on the zone, only the invisible warm-up, and a screenshot
   identical to idle is a baseline that asserts nothing.
 
-  FLAKE FOUND, NOT FIXED: the Design system/Tokens baselines differ between
-  this machine and the one that generated them, and the diff is confined to
-  text set in --tk-font-mono. The stack is `ui-monospace, 'SF Mono', Menlo,
-  monospace` and resolves to whatever the host happens to have — DejaVu Sans
-  Mono here. Body-font text and every swatch match exactly, so only the four
-  stylesheets using the mono token are exposed. Those baselines are left at
-  the values CI generated; nothing in this PR regenerates them. The real fix
-  is a bundled mono face or a font-stack that cannot vary, and it belongs with
-  the device pass in #34 rather than here.
+  FLAKE FOUND — and MISDIAGNOSED here; see #28a for the real cause. The note
+  that stood in this space blamed the host's font stack for the Design
+  system/Tokens baselines differing, and concluded the fix was a bundled mono
+  face. It was not the host. Baselines were being written by a Chromium build
+  that Playwright does not pin, and the mono glyphs are simply where two
+  Chromium builds diverge first. Everything reverted as "drift" over three PRs
+  was correct all along.
 
   NEW GUARD, src/theme/token-references.test.ts: every var(--tk-…) anywhere in
   the codebase must name a token the stylesheet declares, and must carry no
@@ -2042,6 +2040,52 @@ TESTS
   15 stories: waiting, analysing, all-pass, mixed, nothing-measurable, two
   failures, and each placeholder next to the real component it stands in for —
   which is the comparison that would show a height mismatch at a glance.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #28a — Screenshot baselines were written by the wrong browser
+Branch: fix/visual-baseline-browser    Depends on: #28               Status: DONE
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  A repair, and a correction to three earlier entries.
+
+  #28 merged with the `visual` job red, so main was red. Six baselines failed:
+  Result/ResultPanel · All Pass and · Mixed, in all three variants.
+
+ROOT CAUSE
+  Baselines were being generated with Chromium 1194. Playwright 1.62.1 pins
+  1234, and that is what CI installs. Two Chromium builds rasterise the same
+  page almost identically — the diff image is pixel-perfect across every
+  label, icon, heading and border, and differs ONLY on the monospace
+  measurement lines, which is where they diverge first.
+
+  That "only the mono text" signature is exactly what was seen on the Design
+  system/Tokens stories in #26, #27 and #28, and it was diagnosed as the host
+  machine's font stack resolving `ui-monospace` differently. It was not. The
+  same six failures reproduce locally the moment the override is removed, and
+  the token baselines pass — they were never drifting. They were reverted as
+  noise three times while they were the only correct files in the diff.
+
+  The lesson is narrower than "check the browser version": a screenshot diff
+  reads as "somebody changed the design", and that reading is convincing
+  enough to survive three rounds. Nothing about the failure pointed at the
+  tool, so the tool was never suspected.
+
+IMPLEMENTS
+  [x] The six ResultPanel baselines regenerated with the pinned Chromium. No
+      other file changed, which is itself the evidence: every other baseline
+      already matched, including ones written under 1194.
+  [x] A guard in playwright.config.ts. PLAYWRIGHT_CHROMIUM_EXECUTABLE is still
+      honoured for RUNNING the suite — it is genuinely needed in a sandbox —
+      but WRITING baselines with it now throws, naming the reason. The
+      escape hatch was the defect; removing it entirely would break running
+      the suite here at all.
+  [x] The misdiagnosis in the #26 entry corrected rather than deleted, so the
+      wrong conclusion and its correction are both on the record.
+
+TESTS
+  The full stories suite green against the pinned browser: 286 passed, 0
+  failed. Guard verified by running an update with the override set and
+  watching it refuse.
 
 PR #29 — Country page template and static generation
 Branch: feat/country-pages             Depends on: #28               Status: TODO
