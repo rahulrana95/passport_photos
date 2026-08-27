@@ -17,7 +17,7 @@
   overflow: hidden;
   border: 1px solid var(--tk-border-default);
   border-radius: var(--tk-radius-md);
-  background: var(--tk-surface-sunken, var(--tk-surface));
+  background: var(--tk-sunken);
 }
 
 .photo {

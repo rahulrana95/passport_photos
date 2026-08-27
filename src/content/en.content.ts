@@ -21,11 +21,58 @@ export const EN_CONTENT: ContentTree = {
     dropzoneHint: 'JPEG, PNG or WebP, up to 50 MB',
     browseLabel: 'Choose a photo',
     privacyNote: 'Your photo stays on your device. Nothing is uploaded.',
-    errorTooLarge: 'That file is larger than 50 MB. Try exporting it at a smaller size and drop it in again.',
-    errorWrongType: 'That file is not an image we can read. Use a JPEG, PNG or WebP.',
-    errorTooSmall: 'That image is too small to print at the required size. Use the original from your camera rather than a copy from a chat app.',
-    errorHeicUnsupported: 'Your browser cannot open HEIC photos. On iPhone, open Settings, then Camera, then Formats, and choose Most Compatible before retaking — or share the photo to yourself, which converts it to JPEG.',
-    errorCorrupt: 'That file could not be opened. It may have been cut short during a download. Try the original again.',
+    takePhotoLabel: 'Take a photo',
+    pasteHint: 'You can also paste a photo straight from your clipboard.',
+    busyNote: 'Still checking your last photo. Drop another and we will start again on that one.',
+    usedFirstOfMany: 'You dropped several files. We are using the first one.',
+    nothingDropped:
+      'That did not contain a photo. Folders and links cannot be read — drop the image file itself.',
+    failures: {
+      'empty-file': {
+        message: 'That file is empty.',
+        remedy:
+          'It may not have finished copying or downloading. Check the file opens on your device, then try again.',
+      },
+      'too-large': {
+        message: 'That file is {size}, over the {limit} limit.',
+        remedy:
+          'This is usually a RAW file from a camera. Export it as a JPEG first — any photo app will do it, and the quality is more than enough for a passport photo.',
+      },
+      'unrecognised-format': {
+        message: 'That does not look like an image file.',
+        remedy:
+          'Check you picked the photo itself rather than a document, an archive, or a shortcut to it. JPEG, PNG and HEIC all work.',
+      },
+      'format-not-supported': {
+        message: '{format} files cannot be read here.',
+        remedy:
+          'Open the photo on your device and export or save it as a JPEG, then upload that. Every phone and photo app can do this.',
+      },
+      'heic-not-decodable': {
+        message: 'This browser cannot open HEIC photos, which is how iPhones save them by default.',
+        remedy:
+          'On iPhone: open the photo in Photos, tap Share, choose Copy Photo, and paste it here — iOS converts it to JPEG automatically. On a computer: open it in Preview or Photos and export as JPEG. Or upload from your iPhone directly, where this works without converting.',
+      },
+      'decode-failed': {
+        message: 'That image could not be opened — the file looks damaged or incomplete.',
+        remedy:
+          'Try sending the photo to yourself again, or pick a different one. A file that stopped partway through a download or transfer will do this.',
+      },
+      'too-small': {
+        message: 'That image is {width}x{height} pixels, too small to print at passport quality.',
+        remedy:
+          'Use the original photo rather than a copy saved from a message or a website — those are shrunk. The shorter side needs at least {minimum} pixels.',
+      },
+      'too-large-dimensions': {
+        message: 'That image is {width}x{height} pixels, beyond what a browser can open.',
+        remedy:
+          'Resize it so neither side is over {maximum} pixels, or export it again at a normal photo size.',
+      },
+      'animated-source': {
+        message: 'That is an animated image, not a photograph.',
+        remedy: 'Upload a still photo of your face — a JPEG or PNG straight from the camera.',
+      },
+    },
   },
   result: {
     verdictPass: 'Meets the published requirements',

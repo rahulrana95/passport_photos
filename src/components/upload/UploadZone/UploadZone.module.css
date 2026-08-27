@@ -1,0 +1,131 @@
+.zone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-space-sm);
+  align-items: center;
+  padding: var(--tk-space-lg);
+  border: 2px dashed var(--tk-border-default);
+  border-radius: var(--tk-radius-lg);
+  background: var(--tk-surface);
+  text-align: center;
+  transition:
+    border-color var(--tk-duration-fast) var(--tk-easing-standard),
+    background var(--tk-duration-fast) var(--tk-easing-standard);
+}
+
+/* The dragging state is driven by a counter rather than by the last event, so
+   dragging over a child element cannot flicker it off. */
+.zone[data-dragging='true'] {
+  border-color: var(--tk-accent);
+  background: var(--tk-accent-soft);
+}
+
+.heading {
+  margin: 0;
+  font-size: var(--tk-text-lg);
+  font-weight: 600;
+  color: var(--tk-text-primary);
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--tk-text-sm);
+  color: var(--tk-text-secondary);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tk-space-2xs);
+  justify-content: center;
+}
+
+/* Visually hidden but still focusable and still operable by keyboard.
+
+   Not display:none and not the hidden attribute: both take the input out of
+   the tab order, and then the styled label beside it is a control nobody
+   without a mouse can reach. This is the accessible file-input pattern —
+   the real input keeps focus and Enter opens the picker. */
+.input {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.button {
+  display: inline-flex;
+  gap: var(--tk-space-3xs);
+  align-items: center;
+  padding: var(--tk-space-2xs) var(--tk-space-sm);
+  border: 1px solid var(--tk-border-default);
+  border-radius: var(--tk-radius-md);
+  background: var(--tk-surface);
+  font-size: var(--tk-text-sm);
+  color: var(--tk-text-primary);
+  cursor: pointer;
+  transition:
+    border-color var(--tk-duration-fast) var(--tk-easing-standard),
+    background var(--tk-duration-fast) var(--tk-easing-standard);
+}
+
+/* A styled label is a control the browser gives no feedback for, so it has to
+   supply its own or it reads as text. */
+.button:hover {
+  border-color: var(--tk-accent);
+  background: var(--tk-accent-soft);
+}
+
+/* The focus ring belongs on the label, because the input it labels is the
+   thing focused and the input is not visible. */
+.input:focus-visible + .button {
+  outline: 2px solid var(--tk-accent);
+  outline-offset: 2px;
+}
+
+.privacy {
+  margin: 0;
+  font-size: var(--tk-text-xs);
+  color: var(--tk-text-secondary);
+}
+
+/* A refusal is the most important thing on this screen when it appears — it is
+   the only reason the reader's photograph did not work — so it is given a
+   block of its own rather than being appended as another line of body text.
+
+   The fail colour is carried by the rule down the side, not by the words. Red
+   text at body weight is the one place a status colour reliably fails contrast,
+   and colour alone is not a signal a colour-blind reader receives at all. */
+.failure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-space-3xs);
+  margin-block-start: var(--tk-space-2xs);
+  padding: var(--tk-space-xs) var(--tk-space-sm);
+  border-inline-start: 3px solid var(--tk-status-fail);
+  border-radius: var(--tk-radius-sm);
+  background: var(--tk-sunken);
+  text-align: start;
+}
+
+.failureMessage {
+  margin: 0;
+  font-size: var(--tk-text-md);
+  font-weight: 600;
+  color: var(--tk-text-primary);
+}
+
+.remedy {
+  margin: 0;
+  font-size: var(--tk-text-sm);
+  color: var(--tk-text-secondary);
+}
+
+.note {
+  margin: 0;
+  font-size: var(--tk-text-xs);
+  color: var(--tk-text-secondary);
+}

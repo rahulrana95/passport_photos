@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { MAX_SOURCE_DIMENSION_PX, MAX_UPLOAD_BYTES } from '@/constants/limits.constants';
 import { buildJpegWithExif } from '@/testing/fixtures/jpeg-exif.builder';
 import { createFakeDecoder } from './fake-decoder';
+import { resolveIngestionFailure } from './resolve-failure.utils';
 import { ingestImage } from './ingest-image';
 
 const pad = (bytes: Uint8Array, toLength: number): Uint8Array => {
@@ -120,8 +121,8 @@ describe('every refusal names a next step', () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.failure.detectedFormat).toBe('heic');
-    expect(result.failure.remedy).toMatch(/iPhone/i);
-    expect(result.failure.remedy).toMatch(/Photos/);
+    expect(resolveIngestionFailure(result.failure).remedy).toMatch(/iPhone/i);
+    expect(resolveIngestionFailure(result.failure).remedy).toMatch(/Photos/);
   });
 
   it('accepts HEIC on a browser that can decode it', async () => {
@@ -147,7 +148,7 @@ describe('every refusal names a next step', () => {
     if (result.ok) return;
     expect(result.failure.code).toBe('format-not-supported');
     expect(result.failure.detectedFormat).toBe('avif');
-    expect(result.failure.remedy).not.toMatch(/iPhone/i);
+    expect(resolveIngestionFailure(result.failure).remedy).not.toMatch(/iPhone/i);
   });
 
   it('refuses a file the decoder cannot read', async () => {
@@ -156,7 +157,7 @@ describe('every refusal names a next step', () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.failure.code).toBe('decode-failed');
-    expect(result.failure.remedy).not.toBe('');
+    expect(resolveIngestionFailure(result.failure).remedy).not.toBe('');
   });
 
   it('refuses an animated image rather than silently using frame one', async () => {
@@ -202,8 +203,9 @@ describe('every refusal names a next step', () => {
       const result = await ingestImage(input, createFakeDecoder());
       expect(result.ok).toBe(false);
       if (result.ok) continue;
-      expect(result.failure.remedy.length, result.failure.code).toBeGreaterThan(20);
-      expect(result.failure.message.length, result.failure.code).toBeGreaterThan(10);
+      const resolved = resolveIngestionFailure(result.failure);
+      expect(resolved.remedy.length, result.failure.code).toBeGreaterThan(20);
+      expect(resolved.message.length, result.failure.code).toBeGreaterThan(10);
     }
   });
 });
