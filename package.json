@@ -24,11 +24,14 @@
     "test:visual:update": "npm run build-storybook && playwright test --project=stories --update-snapshots",
     "test:visual:report": "playwright show-report",
     "screenshots:gallery": "node scripts/generate-screenshot-gallery.mjs",
-    "validate:specs": "vitest run src/photo-spec"
+    "validate:specs": "vitest run src/photo-spec",
+    "models": "node scripts/fetch-models.mjs",
+    "prebuild": "node scripts/fetch-models.mjs"
   },
   "dependencies": {
     "@mantine/core": "^9.5.2",
     "@mantine/hooks": "^9.5.2",
+    "@mediapipe/tasks-vision": "^1.0.1",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "lucide-react": "^1.34.0",

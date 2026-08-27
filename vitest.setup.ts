@@ -29,6 +29,25 @@ window.HTMLElement.prototype.scrollIntoView = vi.fn();
 window.HTMLCanvasElement.prototype.getContext = (() =>
   null) as unknown as HTMLCanvasElement['getContext'];
 
+// ImageData is part of the canvas API, which jsdom does not implement either.
+// The detector builds one to hand to MediaPipe and reads nothing back from it,
+// so a faithful container of the same three fields is a complete stand-in —
+// there is no behaviour here to fake incorrectly.
+if (typeof globalThis.ImageData === 'undefined') {
+  globalThis.ImageData = class ImageData {
+    readonly data: Uint8ClampedArray;
+    readonly width: number;
+    readonly height: number;
+    readonly colorSpace: PredefinedColorSpace = 'srgb';
+
+    constructor(data: Uint8ClampedArray, width: number, height: number) {
+      this.data = data;
+      this.width = width;
+      this.height = height;
+    }
+  } as unknown as typeof globalThis.ImageData;
+}
+
 global.ResizeObserver = class ResizeObserver {
   observe(): void {}
   unobserve(): void {}

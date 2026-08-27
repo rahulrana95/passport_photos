@@ -21,3 +21,7 @@ npm-debug.log*
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Fetched at build time by scripts/fetch-models.mjs — reproducible from the
+# lockfile and the pinned digest, and 15MB of binaries do not belong in git.
+public/models/
