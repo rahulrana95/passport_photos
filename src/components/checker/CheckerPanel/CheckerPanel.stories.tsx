@@ -1,4 +1,5 @@
 import { listServableSpecs } from '@/photo-spec/photo-spec.registry';
+import { stubCameraEnvironment } from '@/testing/camera-environment.stub';
 import { resolveSpec } from '@/photo-spec/photo-spec.utils';
 import { CheckerPanel } from './CheckerPanel';
 import type { AnalysisResult } from '@/analysis/analysis-protocol.types';
@@ -50,7 +51,15 @@ const findsNothing = async (): Promise<AnalysisResult> =>
 const meta = {
   title: 'Checker/CheckerPanel',
   component: CheckerPanel,
-  args: { specs: SPECS, decoder: stubDecoder, analyse: findsNothing },
+  args: {
+    specs: SPECS,
+    decoder: stubDecoder,
+    analyse: findsNothing,
+    // A camera that never existed. Storybook runs in a browser that may well
+    // have a real one, and a story that asked for permission every time it
+    // rendered would make the screenshot suite unrunnable.
+    cameraEnvironment: stubCameraEnvironment(),
+  },
   parameters: { layout: 'fullscreen' },
 } satisfies Meta<typeof CheckerPanel>;
 

@@ -97,6 +97,20 @@ test.describe('photo checker page', () => {
     }
   });
 
+  test('offers a live camera, not a file picker wearing a camera label', async ({ page }) => {
+    // `capture` on a file input is ignored by every desktop browser, so the
+    // button used to open the same picker as "Choose a photo" and appear to do
+    // nothing. What replaces it needs no camera to be present to be asserted:
+    // the camera's own controls stand where the dropzone was.
+    await page.goto(PAGE_PATH);
+
+    await page.getByText('Take a photo').click();
+
+    await expect(page.getByRole('button', { name: 'Use my camera' })).toBeVisible();
+    await expect(page.getByLabel('Camera preview')).toBeAttached();
+    await expect(page.getByText('Drop your photo here')).toHaveCount(0);
+  });
+
   test('serves the analysis worker as JavaScript the browser can parse', async ({ request }) => {
     // The bug this page shipped with, asserted directly: the worker was served
     // as TypeScript source. A worker that 404s or arrives as text/plain is dead

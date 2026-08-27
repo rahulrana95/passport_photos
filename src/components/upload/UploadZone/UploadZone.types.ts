@@ -30,4 +30,17 @@ export interface UploadZoneProps {
   readonly failure?: IngestionFailure | undefined;
   /** Reported instead of accepting the file. Rendered with its remedy. */
   readonly onRejected?: ((failure: IngestionFailure) => void) | undefined;
+  /**
+   * Opens a live camera, when the caller has one to open.
+   *
+   * WITHOUT THIS, "Take a photo" IS A FILE INPUT CARRYING `capture`, and that
+   * attribute is ignored on every desktop browser — the button opens the same
+   * picker as "Choose a photo" and the reader is left wondering what happened.
+   * It is still the right control on a phone, where it opens the camera app at
+   * full sensor resolution, and it is the only one that works in a webview
+   * with no getUserMedia. So both exist, and the caller decides: pass this and
+   * the button opens the guided camera; leave it out and the phone's own
+   * camera app is what opens.
+   */
+  readonly onUseCamera?: (() => void) | undefined;
 }

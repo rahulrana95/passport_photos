@@ -12,6 +12,7 @@ import { getContent } from '@/content/content.registry';
 import { ingestImage } from '@/ingestion/ingest-image';
 import { interpolate } from '@/content/interpolate.utils';
 import { AnalysisError } from '@/analysis/analysis-error.utils';
+import { CameraCapture } from '@/components/camera/CameraCapture/CameraCapture';
 import { ResultPanel } from '@/components/result/ResultPanel/ResultPanel';
 import { UploadZone } from '@/components/upload/UploadZone/UploadZone';
 import type { AnalysisResult, AnalysisStage } from '@/analysis/analysis-protocol.types';
@@ -24,6 +25,9 @@ import type { AnalyseOptions, CheckerPanelProps } from './CheckerPanel.types';
 import styles from './CheckerPanel.module.css';
 
 const FIRST_STAGE: AnalysisStage = 'decoding';
+
+/** What a photograph taken here is called once it reaches ingestion. */
+const CAPTURE_FILE_NAME = 'camera-capture.jpg';
 
 /**
  * The whole product on one screen: choose a document, add a photo, read the answer.
@@ -43,11 +47,26 @@ const FIRST_STAGE: AnalysisStage = 'decoding';
  * zone's business and appears there, next to the control that would replace
  * it. An analysis that broke is the result panel's, and comes with a retry.
  */
-export const CheckerPanel = ({ specs, decoder, analyse }: CheckerPanelProps): React.JSX.Element => {
+export const CheckerPanel = ({
+  specs,
+  decoder,
+  analyse,
+  cameraEnvironment,
+}: CheckerPanelProps): React.JSX.Element => {
   const content = getContent();
   const [selected, setSelected] = useState(0);
   const [state, setState] = useState<AnalysisState>({ kind: 'idle' });
   const [rejected, setRejected] = useState<IngestionFailure | undefined>(undefined);
+  const [camera, setCamera] = useState(false);
+  /**
+   * Set once the live camera has said it cannot run here.
+   *
+   * After that the dropzone stops offering it and goes back to the phone's own
+   * camera app, which needs no getUserMedia and is the only thing that works
+   * in an in-app webview. Offering the same dead button twice is how a reader
+   * decides the product is broken.
+   */
+  const [cameraUnavailable, setCameraUnavailable] = useState(false);
 
   const decoderRef = useRef<ImageDecoder | undefined>(decoder);
   const analyseRef = useRef<CheckerPanelProps['analyse']>(analyse);
@@ -138,7 +157,23 @@ export const CheckerPanel = ({ specs, decoder, analyse }: CheckerPanelProps): Re
         ))}
       </fieldset>
 
-      {state.kind === 'ready' ? (
+      {camera ? (
+        <CameraCapture
+          spec={spec}
+          {...(cameraEnvironment === undefined ? {} : { environment: cameraEnvironment })}
+          analyse={async (frame) => await analyseWith()(frame, { onProgress: () => undefined })}
+          onCapture={(photo) => {
+            setCamera(false);
+            void check(new File([photo], CAPTURE_FILE_NAME, { type: photo.type }), spec);
+          }}
+          onUploadInstead={() => {
+            setCamera(false);
+          }}
+          onUnavailable={() => {
+            setCameraUnavailable(true);
+          }}
+        />
+      ) : state.kind === 'ready' ? (
         <button
           className={styles['restart']}
           type="button"
@@ -156,6 +191,13 @@ export const CheckerPanel = ({ specs, decoder, analyse }: CheckerPanelProps): Re
           }}
           busy={state.kind === 'analysing'}
           failure={rejected}
+          {...(cameraUnavailable
+            ? {}
+            : {
+                onUseCamera: (): void => {
+                  setCamera(true);
+                },
+              })}
         />
       )}
 

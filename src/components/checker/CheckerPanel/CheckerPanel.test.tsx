@@ -12,6 +12,8 @@ import { interpolate } from '@/content/interpolate.utils';
 import { listAuthoredSpecs } from '@/photo-spec/photo-spec.registry';
 import { expectNoAxeViolations } from '@/testing/axe.utils';
 import { fileListOf } from '@/testing/file-list.stub';
+import { stubCameraEnvironment } from '@/testing/camera-environment.stub';
+import { withWorkingCanvas } from '@/testing/canvas.stub';
 import { CheckerPanel } from './CheckerPanel';
 import type { AnalysisResult } from '@/analysis/analysis-protocol.types';
 import type { DecodedImage, ImageDecoder } from '@/ingestion/image-decoder.types';
@@ -290,6 +292,138 @@ describe('CheckerPanel', () => {
     const { container } = renderPanel();
 
     await expectNoAxeViolations(container);
+  });
+});
+
+const cameraContent = getContent().camera;
+
+/** The sensor the stub camera reports, which jsdom never sets on its own. */
+const SENSOR_WIDTH_PX = 1_920;
+const SENSOR_HEIGHT_PX = 1_080;
+const HAVE_CURRENT_DATA = 2;
+
+const primeVideo = (): void => {
+  const video = screen.getByLabelText(cameraContent.previewLabel);
+
+  for (const [property, value] of [
+    ['videoWidth', SENSOR_WIDTH_PX],
+    ['videoHeight', SENSOR_HEIGHT_PX],
+    ['readyState', HAVE_CURRENT_DATA],
+  ] as const) {
+    Object.defineProperty(video, property, { configurable: true, value });
+  }
+};
+
+describe('taking a photo with the camera', () => {
+  it('opens the live camera rather than a second file picker', async () => {
+    // The whole bug: `capture` on a file input is ignored by every desktop
+    // browser, so "Take a photo" opened the picker and looked broken.
+    renderPanel({ cameraEnvironment: stubCameraEnvironment() });
+
+    await userEvent.click(screen.getByText(content.upload.takePhotoLabel));
+
+    expect(screen.getByLabelText(cameraContent.previewLabel)).toBeInTheDocument();
+    expect(screen.queryByText(content.upload.dropzoneLabel)).not.toBeInTheDocument();
+  });
+
+  it('checks the photograph it took, the same way an uploaded one is checked', async () => {
+    const restoreCanvas = withWorkingCanvas();
+    try {
+      const { analyse } = renderPanel({ cameraEnvironment: stubCameraEnvironment() });
+
+      await userEvent.click(screen.getByText(content.upload.takePhotoLabel));
+      await userEvent.click(screen.getByRole('button', { name: cameraContent.startLabel }));
+      primeVideo();
+      await userEvent.click(
+        await screen.findByRole('button', { name: cameraContent.captureLabel }),
+      );
+
+      expect(await reportOnScreen()).toBeInTheDocument();
+      expect(analyse).toHaveBeenCalled();
+    } finally {
+      restoreCanvas();
+    }
+  });
+
+  it('feeds the live preview through the same analysis the report uses', async () => {
+    // The guidance loop is the product's differentiator — "move closer, hold
+    // there" before the shutter rather than a rejection after it — and it runs
+    // on the analysis client this panel already owns, so the models are loaded
+    // once and the preview costs no second worker.
+    const restoreCanvas = withWorkingCanvas();
+    try {
+      const { analyse } = renderPanel({ cameraEnvironment: stubCameraEnvironment() });
+
+      await userEvent.click(screen.getByText(content.upload.takePhotoLabel));
+      await userEvent.click(screen.getByRole('button', { name: cameraContent.startLabel }));
+      primeVideo();
+
+      // Before any shutter press: what is asserted is the preview loop, not
+      // the still.
+      await waitFor(() => {
+        expect(analyse).toHaveBeenCalled();
+      });
+    } finally {
+      restoreCanvas();
+    }
+  });
+
+  it('keeps preview progress out of the page, where it would mean the wrong thing', async () => {
+    // The preview analyses a frame four times a second. Letting that drive the
+    // page's progress would leave a bar jittering under a camera nobody has
+    // photographed with yet — progress towards a report that does not exist.
+    const restoreCanvas = withWorkingCanvas();
+    try {
+      const analyse = vi.fn(
+        async (
+          _frame: PixelBuffer,
+          options: { readonly onProgress: (stage: 'segmenting', ratio: number) => void },
+        ): Promise<AnalysisResult> => {
+          options.onProgress('segmenting', 0.5);
+          return await Promise.resolve(NO_RESULT);
+        },
+      );
+
+      renderPanel({ analyse, cameraEnvironment: stubCameraEnvironment() });
+
+      await userEvent.click(screen.getByText(content.upload.takePhotoLabel));
+      await userEvent.click(screen.getByRole('button', { name: cameraContent.startLabel }));
+      primeVideo();
+
+      await waitFor(() => {
+        expect(analyse).toHaveBeenCalled();
+      });
+      expect(screen.queryByText(content.checker.startOver)).not.toBeInTheDocument();
+    } finally {
+      restoreCanvas();
+    }
+  });
+
+  it('goes back to the dropzone when the reader would rather upload', async () => {
+    renderPanel({ cameraEnvironment: stubCameraEnvironment() });
+
+    await userEvent.click(screen.getByText(content.upload.takePhotoLabel));
+    await userEvent.click(screen.getByText(cameraContent.fallbackToUpload));
+
+    expect(screen.getByText(content.upload.dropzoneLabel)).toBeInTheDocument();
+  });
+
+  it('stops offering a camera that cannot open, and offers the device\u2019s own', async () => {
+    // Offering the same dead button twice is how a reader decides the product
+    // is broken. A browser with no getUserMedia fails every time it is asked,
+    // so after the first refusal the phone's camera app is the honest offer.
+    // No injected camera, deliberately: jsdom has no getUserMedia, which is
+    // exactly what an in-app webview looks like — the case this exists for.
+    const { container } = renderPanel();
+
+    await userEvent.click(screen.getByText(content.upload.takePhotoLabel));
+    await userEvent.click(screen.getByRole('button', { name: cameraContent.startLabel }));
+    await screen.findByRole('alert');
+    await userEvent.click(screen.getByText(cameraContent.fallbackToUpload));
+
+    const inputs = container.querySelectorAll('input[type="file"]');
+    expect(inputs).toHaveLength(2);
+    expect(inputs[1]).toHaveAttribute('capture');
   });
 });
 

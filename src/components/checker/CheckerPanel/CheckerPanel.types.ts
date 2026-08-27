@@ -1,4 +1,5 @@
 import type { AnalysisResult, AnalysisStage } from '@/analysis/analysis-protocol.types';
+import type { CameraEnvironment } from '@/camera/media-devices.types';
 import type { ImageDecoder } from '@/ingestion/image-decoder.types';
 import type { PixelBuffer } from '@/testing/fixtures/synthetic-head.types';
 import type { ResolvedPhotoSpec } from '@/photo-spec/photo-spec.types';
@@ -24,4 +25,12 @@ export interface CheckerPanelProps {
    */
   readonly decoder?: ImageDecoder | undefined;
   readonly analyse?: ((frame: PixelBuffer, options: AnalyseOptions) => Promise<AnalysisResult>) | undefined;
+  /**
+   * The camera the live view opens, defaulting to the real navigator.
+   *
+   * Injected for the same reason the decoder is: jsdom has no getUserMedia, so
+   * without a seam the whole camera route — including the photograph it
+   * produces reaching the analysis — is reachable only in a real browser.
+   */
+  readonly cameraEnvironment?: CameraEnvironment | undefined;
 }

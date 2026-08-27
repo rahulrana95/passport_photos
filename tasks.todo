@@ -2239,6 +2239,56 @@ NOTES
     createImageBitmap/OffscreenCanvas seam and nothing else, and it is
     exercised for real by the Chromium spec above.
 
+───────────────────────────────────────────────────────────────────────────────
+PR #28c — "Take a photo" opens a camera
+Branch: fix/camera-button              Depends on: #28b             Status: DONE
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  Reported from the live site: the button did nothing.
+
+ROOT CAUSE
+  "Take a photo" was `<input type="file" capture="user">`. The `capture`
+  attribute is ignored by every desktop browser — Chrome, Firefox and Safari
+  on a laptop all open the ordinary file picker — so the button was a second
+  "Choose a photo" wearing a camera's label. It only ever opened a camera on
+  a phone.
+
+  Behind it, the same gap as the checker itself: CameraCapture had been built
+  in #26, with a live stream, a guidance overlay and 34 tests, and NOTHING
+  MOUNTED IT. The product's whole differentiator — "move closer, hold there"
+  before the shutter instead of a rejection after it — existed only in
+  Storybook.
+
+IMPLEMENTS
+  [x] "Take a photo" opens the live guided camera on the checker page.
+  [x] The photograph it takes goes through the same ingestion and analysis an
+      uploaded one does, and lands in the same report.
+  [x] The preview runs on the panel's own analysis client, so the models load
+      once and the live guidance costs no second worker.
+  [x] Preview progress is deliberately dropped rather than shown: a bar moving
+      under a camera nobody has photographed with yet is progress towards a
+      report that does not exist.
+  [x] CameraCapture reports upward when the camera cannot open at all.
+
+EDGE CASES
+  [x] A browser with no getUserMedia — an in-app webview, a page on plain http
+      — fails every time it is asked. After the first refusal the dropzone
+      stops offering the camera and goes back to the phone's own camera app,
+      which needs no getUserMedia and shoots at full sensor resolution.
+      Offering the same dead button twice is how a reader decides a product is
+      broken.
+  [x] "Upload a photo instead" returns to the dropzone from the camera.
+  [x] The capture input is still what UploadZone renders when its caller has
+      no camera to offer, so the phone path is not dead code.
+
+TESTS
+  21 unit tests on the panel including the whole camera route, 2 on the zone,
+  1 on the component, all at 100% coverage; 2 component-behaviour specs and
+  1 real-page spec in Chromium. The canvas stub moved to src/testing so both
+  suites drive a real capture through it, and it now emits real JPEG bytes —
+  a blob of zeros is refused by ingestion, which would have made every test of
+  the capture route assert a refusal it did not mean.
+
 PR #29 — Country page template and static generation
 Branch: feat/country-pages             Depends on: #28               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────

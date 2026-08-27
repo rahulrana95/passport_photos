@@ -48,6 +48,7 @@ export const CameraCapture = ({
   spec,
   onCapture,
   onUploadInstead,
+  onUnavailable,
   analyse,
   environment,
   intervalMs = GUIDANCE_INTERVAL_MS,
@@ -117,6 +118,7 @@ export const CameraCapture = ({
       if (!result.ok) {
         setFailure(result.failure);
         setLive(false);
+        onUnavailable?.(result.failure);
         return;
       }
 
@@ -138,7 +140,7 @@ export const CameraCapture = ({
       setFacing(nextFacing);
       setLive(true);
     },
-    [environment],
+    [environment, onUnavailable],
   );
 
   useEffect(() => {
