@@ -1,9 +1,11 @@
-import type { FaceLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
+import type { FaceLandmarker, FilesetResolver, ImageSegmenter } from '@mediapipe/tasks-vision';
 import { selectFace } from './landmark-selection.utils';
 import {
   FACE_LANDMARKER_MODEL_PATH,
+  SELFIE_SEGMENTER_MODEL_PATH,
   WASM_BASE_PATH,
 } from './model-source.constants';
+import { CHANNEL_MAX, CHANNEL_MIN } from '@/testing/fixtures/pixel-format.constants';
 import type { PixelBuffer } from '@/testing/fixtures/synthetic-head.types';
 import type { Detector, LandmarkResult, SegmentationResult } from './analysis-protocol.types';
 import type { FaceCandidate } from './landmark-selection.utils';
@@ -19,6 +21,7 @@ import type { FaceCandidate } from './landmark-selection.utils';
 export interface MediaPipeModules {
   readonly FilesetResolver: typeof FilesetResolver;
   readonly FaceLandmarker: typeof FaceLandmarker;
+  readonly ImageSegmenter: typeof ImageSegmenter;
 }
 
 /**
@@ -52,6 +55,9 @@ const NO_ANGLE = 0;
 /** An element outside the matrix reads as zero, so a short matrix is no rotation. */
 const MISSING_ELEMENT = 0;
 const DEFAULT_CONFIDENCE = 0.9;
+const SEGMENTATION_CONFIDENCE = 0.8;
+/** The segmenter emits a category mask where 0 is background. */
+const BACKGROUND_CATEGORY = 0;
 
 /**
  * Element (row, column) of a column-major 4x4.
@@ -125,6 +131,22 @@ export const createMediaPipeDetector = async (
 
   const landmarker = await build('GPU').catch(async () => build('CPU'));
 
+  const buildSegmenter = async (delegate: 'GPU' | 'CPU'): Promise<ImageSegmenter> =>
+    modules.ImageSegmenter.createFromOptions(fileset, {
+      baseOptions: { modelAssetPath: SELFIE_SEGMENTER_MODEL_PATH, delegate },
+      runningMode: 'IMAGE',
+      outputCategoryMask: true,
+      outputConfidenceMasks: false,
+    });
+
+  // Segmentation failing is survivable in a way landmarks are not: the
+  // geometry that depends only on landmarks still works, and crown height
+  // degrades to unmeasurable rather than to wrong. So this is allowed to end
+  // as undefined rather than taking the whole detector down with it.
+  const segmenter = await buildSegmenter('GPU')
+    .catch(async () => buildSegmenter('CPU'))
+    .catch(() => undefined);
+
   return {
     detectLandmarks: (buffer: PixelBuffer): Promise<LandmarkResult | undefined> => {
       const result = landmarker.detect(toImageData(buffer));
@@ -154,10 +176,32 @@ export const createMediaPipeDetector = async (
       });
     },
 
-    segment: (): Promise<SegmentationResult | undefined> =>
-      // Person segmentation is its own model and its own PR (#18). Reporting
-      // nothing is honest; the geometry that depends only on landmarks still
-      // works, and crown height degrades to unmeasurable rather than wrong.
-      Promise.resolve(undefined),
+    segment: (buffer: PixelBuffer): Promise<SegmentationResult | undefined> => {
+      if (segmenter === undefined) return Promise.resolve(undefined);
+
+      const result = segmenter.segment(toImageData(buffer));
+      const categories = result.categoryMask?.getAsUint8Array();
+
+      if (categories === undefined) {
+        result.close();
+        return Promise.resolve(undefined);
+      }
+
+      // Copied out before close(). The mask is backed by WASM memory that the
+      // segmenter reclaims, and reading it afterwards returns whatever the
+      // next inference happens to write there.
+      const mask = new Uint8ClampedArray(categories.length);
+      for (let index = 0; index < categories.length; index += 1) {
+        mask[index] = categories[index] === BACKGROUND_CATEGORY ? CHANNEL_MIN : CHANNEL_MAX;
+      }
+      result.close();
+
+      return Promise.resolve({
+        width: buffer.width,
+        height: buffer.height,
+        mask,
+        confidence: SEGMENTATION_CONFIDENCE,
+      });
+    },
   };
 };
