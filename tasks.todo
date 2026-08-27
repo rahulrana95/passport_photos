@@ -1467,21 +1467,89 @@ TESTS
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #23 — Crop and encode pipeline (mozjpeg byte budget)
-Branch: feat/crop-encode               Depends on: #22               Status: TODO
+Branch: feat/crop-encode               Depends on: #22               Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  The file the reader actually submits: cropped to the millimetre, compressed
+  to fit the authority's byte ceiling, carrying the right print resolution and
+  carrying nothing else.
+
 IMPLEMENTS
-  [ ] Exact-millimetre crop at the spec's DPI from the full-resolution original
-  [ ] mozjpeg encode with binary-search quality to fit the byte ceiling
-  [ ] Write correct JFIF density (DPI) metadata into the output
-  [ ] sRGB conversion; strip all EXIF including GPS
+  [x] Exact-millimetre crop at the spec's DPI from the full-resolution source,
+      by area averaging rather than sampling
+  [x] mozjpeg encode with a binary search on quality to fit the byte ceiling
+  [x] JFIF density (DPI) written into the output, and DERIVED rather than
+      copied: once a digital pixel bound has changed the output size, the
+      spec's stated DPI is no longer the number that makes the file print at
+      the right physical size, and the physical size is the requirement
+  [x] All Exif stripped, GPS included
+
+  [~] sRGB is achieved by construction rather than by a conversion step, and
+      the constraint is written on the decoder interface where whoever
+      implements it will read it. The pixels arrive from a default canvas,
+      which is sRGB; the encoder is handed raw RGB and attaches no profile;
+      a file with no profile is read as sRGB by everything. The temptation
+      runs the other way — a modern phone photograph is often Display P3 and
+      preserving that gamut looks like the higher-fidelity choice — and
+      wide-gamut pixels labelled as sRGB print with the saturation pushed up,
+      on a photograph whose skin tones an official is about to compare
+      against a face.
+
 EDGE CASES
-  [ ] Byte ceiling unreachable even at minimum quality => explain, don't fail
-  [ ] Source smaller than the required output — never upscale silently
-  [ ] Binary search must terminate; cap iterations
-  [ ] DPI metadata is a common rejection cause — assert it in tests
-  [ ] Non-square specs, and specs with different print vs digital sizes
-  [ ] GPS EXIF must be stripped — privacy requirement, test it explicitly
-TESTS  Unit on the search; integration asserting real byte size and DPI headers.
+  [x] Byte ceiling unreachable even at minimum quality: explained, not failed.
+      The floor is tried FIRST, so the impossible case costs one encode rather
+      than eight, and the file it produced is handed back with the
+      explanation — a photograph the reader can look at beats nothing at all.
+  [x] Over-budget is measured against the FINISHED file, not the search's
+      verdict. Writing the density adds bytes, and a file that fitted by a
+      hair before the header went in does not fit after it.
+  [x] Source smaller than the required output is refused, never enlarged.
+      Enlarging invents detail, a printer renders the invention as softness,
+      and softness is its own rejection reason.
+  [x] Binary search terminates — structurally, and this is a deliberate
+      deviation. The plan asked for an iteration cap. A cap nothing can reach
+      is a branch no test can take; a cap something can reach silently returns
+      a worse answer than the search had already found. The search is an
+      integer bisection where every step moves a bound strictly past the
+      midpoint, and the bound is asserted in the tests instead, where a search
+      that stopped converging fails rather than quietly costing eight seconds
+      of somebody's phone battery.
+  [x] DPI metadata asserted — against a real mozjpeg file, not a fake one.
+      Patching a header we invented ourselves would prove nothing.
+  [x] Non-square specs, and specs whose print and digital sizes disagree.
+      Scaled as a whole rather than per-axis: fitting a 35x45 print into a
+      square pixel bound by stretching would satisfy the numbers and produce a
+      photograph of a differently shaped person.
+  [x] GPS Exif stripped, tested against actual coordinates. The fixture
+      builder gained a GPS sub-IFD for it, and the test asserts three things:
+      that the coordinate bytes are in the file to begin with, that the Exif
+      around them is structurally valid (so the fixture is a real Exif file
+      rather than one a stripper could pass against by accident), and that the
+      bytes are gone afterwards.
+  [x] The whole Exif block is removed rather than filtered. Filtering means
+      maintaining a list of which tags are sensitive, and that list is wrong
+      the day a manufacturer adds one.
+  [x] A file the walker cannot parse comes back untouched. Half-stripping a
+      JPEG whose structure we misread would corrupt the photograph in order to
+      protect it.
+
+SEO  n/a
+
+TESTS
+  78 unit tests, 100% coverage, no suppressions.
+
+  Almost all of it runs against a deterministic fake encoder whose size is an
+  exact function of quality — exact including each filler segment's own four
+  bytes of header, because a search asserted against a nearly-right
+  expectation is a search whose off-by-one bugs look like rounding. The fake
+  also reproduces the defect the real encoder has: a JFIF header declaring no
+  physical size at all, which is what the density writer exists to correct.
+
+  One integration test runs the actual mozjpeg. Two claims cannot be made
+  against a fake and they are the two the reader is most exposed to: that the
+  file is under the authority's byte ceiling, and that it declares the right
+  resolution. It reaches the compressor through a harness that compiles the
+  WebAssembly off disk rather than fetching it, so the suite stays offline.
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #24 — Print sheet generator

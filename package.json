@@ -29,6 +29,7 @@
     "prebuild": "node scripts/fetch-models.mjs"
   },
   "dependencies": {
+    "@jsquash/jpeg": "^1.6.0",
     "@mantine/core": "^9.5.2",
     "@mantine/hooks": "^9.5.2",
     "@mediapipe/tasks-vision": "^1.0.1",
