@@ -1948,22 +1948,101 @@ TESTS
   the first frame painted and the screenshot cannot race it.
 
 PR #28 — Result panel
-Branch: feat/result-panel              Depends on: #27               Status: TODO
+Branch: feat/result-panel              Depends on: #27               Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
-IMPLEMENTS
-  [ ] Overall verdict, per-rule rows with measurement and fix instruction
-  [ ] Annotated overlay, download actions, manual checklist
-  [ ] Progress and error states
-EDGE CASES
-  [ ] Zero CLS — reserve the panel's height before results arrive
-  [ ] aria-live announcement when analysis completes
-  [ ] Pass/fail must never rely on colour alone
-  [ ] Long rule lists on small screens
-  [ ] Analysis cancelled or superseded
-  [ ] Slow devices: progress must actually move, not sit at 0%
-TESTS  Unit + axe; stories for all-pass, mixed, all-fail, error, loading.
+DESCRIPTION
+  What the checks concluded, and what they are still doing. The answer at the
+  top in one sentence, then every rule with what was measured and the physical
+  correction, then the list of things only the reader can judge.
 
-───────────────────────────────────────────────────────────────────────────────
+IMPLEMENTS
+  [x] Overall verdict, per-rule rows with measurement and fix instruction
+  [x] Manual checklist as its own list; the annotated overlay and downloads are
+      passed in by the page rather than owned here
+  [x] Progress and error states
+
+  THE ROWS AND THE PDF SHARE ONE FORMATTER. resolveRuleMessage already produced
+  exactly the four strings a row shows, so the panel calls it rather than
+  formatting again. Two formatters is how a downloadable report and the screen
+  it was generated from end up disagreeing about the same photograph.
+
+  [~] CHANGED: row verdicts are now short ("Meets it", "Does not meet it") and
+      the headline keeps the sentence. They were the same string: every one of
+      twenty-four rows repeated "Meets the published requirements" down a
+      column, burying the two rows that did not, which are the only reason
+      anybody is reading it. The PDF report picks this up too.
+
+  [~] ADDED to RuleDefinition: `measures`, whether a rule reports a quantity.
+      Needed BEFORE the rule runs — see the CLS note below — and verified by a
+      test that evaluates every rule against a measured photograph and asserts
+      the flag matches. A declaration that could drift would be worse than none.
+
+  [~] FIXED: percentages were formatted to two decimal places, so a rough
+      physical instruction read "your head needs to be about 111.67% taller".
+      Nobody can act on the .67, and the precision makes a rule of thumb read
+      as a measurement.
+
+EDGE CASES
+  [x] Zero CLS — and it is MEASURED, not asserted in a comment. The waiting
+      state is exactly as tall as the answer: 0px on a passing report, checked
+      in a real browser on every run.
+
+      Three versions of this passed their unit tests while jumping. The first
+      reserved the rule rows and forgot the verdict block, both headings and
+      the entire manual checklist: 332px, a third of the panel. The second
+      reserved a measurement line on every row when only eight of twenty-four
+      rules report one: 225px the other way. The third computed the verdict
+      block's height from its padding and line box and was two pixels out,
+      because the block is sized by its icon.
+
+      What works is refusing to compute any of it. The row count comes from
+      asking the real engine what this specification will produce, with the
+      evidence bundle that says nothing ran. The row and verdict placeholders
+      import the real components' own stylesheets, so their heights are not
+      matched — they are the same boxes. The progress bar's space is held in
+      every state, including the finished one, or it would move everything
+      below it twice.
+
+      RESIDUAL, and it cannot be reserved: a failing row carries a line of
+      advice a passing row does not (+47px on the mixed fixture), and a photo
+      where a stage produced no number leaves reserved lines unused (-179px).
+      Both depend on the verdict, which is what the reader is waiting for.
+      Bounded by the browser test at a quarter of the viewport so they cannot
+      quietly become a third of the panel again.
+
+  [x] aria-live announcement when analysis completes — ONE region, carrying the
+      whole sentence. The first version had a live region on the verdict block
+      as well, which said the verdict twice and never said the wait was over.
+  [x] Pass/fail never relies on colour alone: icon shape, text label and colour,
+      all three, in the rows and in the headline. Under forced-colors every
+      status token resolves to CanvasText, and roughly one in twelve men cannot
+      separate the pass green from the fail red.
+  [x] Long rule lists on small screens — rows wrap rather than truncate, and the
+      mobile screenshots cover the longest row and the longest verdict.
+  [x] Analysis cancelled or superseded — NOT an error. Cancelling is the state
+      the reader asked for by choosing another photograph, and an error box
+      explaining that they did what they meant to do is noise sitting exactly
+      where the next answer should go. The panel returns to waiting.
+  [x] Slow devices: progress moves because it is driven by the STAGE first and
+      the ratio second. ANALYSIS_STAGES is ordered so a bar can be moved by the
+      stage alone, which on a slow device is the only thing that moves — the
+      segmenter reports no intermediate ratio worth the name, and a bar reading
+      the ratio only sits at zero for several seconds and reads as a hang.
+
+SEO  n/a — nothing imports it from a route yet; the build output is unchanged.
+
+TESTS
+  116 unit + axe across the panel and its four components, 14 on the state
+  utilities. 100% coverage, no suppressions.
+
+  7 Playwright tests in the component-behaviour project, and they are the only
+  reason this entry can claim zero CLS: layout is a property of rendered
+  pixels, and jsdom has none. They measure the panel in each state and compare.
+
+  15 stories: waiting, analysing, all-pass, mixed, nothing-measurable, two
+  failures, and each placeholder next to the real component it stands in for —
+  which is the comparison that would show a height mismatch at a glance.
+
 PR #29 — Country page template and static generation
 Branch: feat/country-pages             Depends on: #28               Status: TODO
 ───────────────────────────────────────────────────────────────────────────────

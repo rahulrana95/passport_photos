@@ -32,6 +32,17 @@ export const PREVIEW_DPI = 96;
 export const MEASUREMENT_PRECISION_DIGITS = 2;
 
 /**
+ * Decimal places for a percentage, which is none.
+ *
+ * A percentage already carries two or three significant digits before the
+ * point, so the shared precision spends its budget twice: "your head needs to
+ * be about 111.67% taller" states a rough physical instruction to a hundredth
+ * of a percent. Nobody can act on the .67, and the precision makes a rule of
+ * thumb read as a measurement.
+ */
+export const PERCENT_PRECISION_DIGITS = 0;
+
+/**
  * Slack applied when comparing a measurement against a specification band.
  * Absorbs sub-pixel landmark jitter without letting a genuinely wrong photo
  * through — deliberately far tighter than any published tolerance.

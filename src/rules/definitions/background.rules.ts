@@ -33,6 +33,7 @@ export const backgroundColourRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'segmentation',
   fixGroup: undefined,
+  measures: false,
   evaluate: (input): RuleOutcome => {
     if (input.background === undefined) return unmeasured();
     if (unanswerable(input.background)) {
@@ -53,6 +54,7 @@ export const backgroundUniformityRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'segmentation',
   fixGroup: undefined,
+  measures: false,
   evaluate: (input): RuleOutcome => {
     if (input.background === undefined) return unmeasured();
     if (unanswerable(input.background)) {
@@ -79,6 +81,7 @@ export const backgroundShadowRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'segmentation',
   fixGroup: undefined,
+  measures: false,
   evaluate: (input): RuleOutcome => {
     if (input.background === undefined) return unmeasured();
     if (unanswerable(input.background)) {

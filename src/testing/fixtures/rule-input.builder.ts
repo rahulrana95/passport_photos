@@ -1,4 +1,5 @@
 import { evaluateBand } from '@/measurement/band.utils';
+import { NO_EVIDENCE_INPUT } from '@/rules/no-evidence.constants';
 import type { RuleInput } from '@/rules/rule.types';
 
 /**
@@ -69,23 +70,12 @@ export const PASSING_RULE_INPUT: RuleInput = {
 /**
  * The bundle produced when nothing ran at all.
  *
- * Its own export rather than a spread of undefineds in one test, because it is
- * the input behind the most important single assertion in the engine's suite:
- * a report built from it must not contain a pass anywhere.
+ * Re-exported from the engine rather than declared again here. The interface
+ * needs the same object to size its skeleton, and two copies of "nothing ran"
+ * would drift the moment a field is added to RuleInput — leaving the test
+ * asserting one shape and the product laying out another.
  */
-export const EMPTY_RULE_INPUT: RuleInput = {
-  detection: undefined,
-  geometry: undefined,
-  crown: undefined,
-  exposure: undefined,
-  background: undefined,
-  sharpness: undefined,
-  blendshapes: undefined,
-  pose: undefined,
-  interOcularPx: undefined,
-  outputPx: undefined,
-  confidence: { landmarks: undefined, crown: undefined, segmentation: undefined },
-};
+export const EMPTY_RULE_INPUT = NO_EVIDENCE_INPUT;
 
 export const buildRuleInput = (overrides: Partial<RuleInput> = {}): RuleInput => ({
   ...PASSING_RULE_INPUT,

@@ -116,6 +116,21 @@ export interface RuleDefinition {
   /** Set when this rule's fix contradicts another's. See FIX_GROUPS. */
   readonly fixGroup: FixGroup | undefined;
   /**
+   * Whether this rule reports a quantity when it can measure one.
+   *
+   * Declared rather than discovered, because it is needed BEFORE the rule has
+   * run: the interface reserves the space a report will occupy while the
+   * analysis is still going, and a row that reports a number is one line
+   * taller than one that does not. Eight of the twenty-four do. Reserving two
+   * lines for all of them makes the page shrink by a third of its own height
+   * when the answer arrives, and reserving one makes it grow.
+   *
+   * A declaration that can drift from the truth would be worse than no
+   * declaration, so a test evaluates every rule against a fully measured
+   * photograph and asserts the flag matches what came back.
+   */
+  readonly measures: boolean;
+  /**
    * Returns undefined when the specification does not state this requirement
    * at all — the Schengen standard fixes an eye line, several others do not.
    *

@@ -38,6 +38,7 @@ export const eyesOpenRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'landmarks',
   fixGroup: undefined,
+  measures: false,
   evaluate: (input): RuleOutcome => {
     if (input.blendshapes === undefined) return unmeasured();
 
@@ -53,6 +54,7 @@ export const mouthClosedRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'landmarks',
   fixGroup: undefined,
+  measures: false,
   // Checked against every expression policy, not only the strict one. Both
   // policies in the registry require the mouth closed — one of them permits a
   // slight smile, which is a smile with the lips together.
@@ -71,6 +73,7 @@ export const neutralExpressionRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'landmarks',
   fixGroup: undefined,
+  measures: false,
   evaluate: (input, spec): RuleOutcome => {
     if (input.blendshapes === undefined) return unmeasured();
     if (strongest(input.blendshapes, SMILE_BLENDSHAPES) <= SMILE_BLENDSHAPE_RATIO) return passed();

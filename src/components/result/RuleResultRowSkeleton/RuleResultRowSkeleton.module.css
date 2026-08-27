@@ -1,0 +1,44 @@
+/* Placeholder blocks, sized in `em` so they scale with the text they stand in
+   for. The HEIGHT of the row is not set here at all — it comes from the
+   non-breaking spaces inside these blocks, which occupy exactly one line box
+   at exactly the font size of the real text. That is what makes the skeleton
+   the same height as the row it replaces rather than approximately so. */
+.block {
+  display: inline-block;
+  border-radius: var(--tk-radius-sm);
+  background: var(--tk-sunken);
+  color: transparent;
+}
+
+.label {
+  inline-size: 8em;
+}
+
+.status {
+  inline-size: 4em;
+}
+
+.measurement {
+  inline-size: 11em;
+}
+
+/* Wide enough to stand in for the longest verdict sentence. */
+.verdictText {
+  inline-size: 14em;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .block {
+    animation: skeleton-pulse var(--tk-duration-base) ease-in-out infinite alternate;
+  }
+}
+
+@keyframes skeleton-pulse {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0.5;
+  }
+}

@@ -1,0 +1,40 @@
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-space-2xs);
+}
+
+.label {
+  display: flex;
+  gap: var(--tk-space-2xs);
+  justify-content: space-between;
+  margin: 0;
+  font-size: var(--tk-text-sm);
+  color: var(--tk-text-secondary);
+}
+
+.percent {
+  font-variant-numeric: tabular-nums;
+}
+
+.track {
+  block-size: 0.5rem;
+  overflow: hidden;
+  border-radius: var(--tk-radius-sm);
+  background: var(--tk-sunken);
+}
+
+.fill {
+  block-size: 100%;
+  background: var(--tk-accent);
+  transition: inline-size var(--tk-duration-base) var(--tk-easing-standard);
+}
+
+/* Somebody who has asked for less motion still needs to see the bar move —
+   it is the only evidence the page has not hung. What they lose is the
+   easing, not the information. */
+@media (prefers-reduced-motion: reduce) {
+  .fill {
+    transition-duration: 0.01ms;
+  }
+}

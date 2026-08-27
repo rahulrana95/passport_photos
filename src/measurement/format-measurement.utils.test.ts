@@ -70,3 +70,16 @@ describe('formatMeasurement', () => {
     expect(formatMeasurement(0.62, 'percent', 'en-GB')).toBe('62%');
   });
 });
+
+describe('percentages are not spuriously precise', () => {
+  it('rounds a percentage to a whole number', () => {
+    // "Your head needs to be about 111.67% taller" states a rough physical
+    // instruction to a hundredth of a percent. Nobody can act on the .67, and
+    // the precision makes a rule of thumb read as a measurement.
+    expect(formatMeasurement(1.1167, 'percent', 'en-GB')).toBe('112%');
+  });
+
+  it('keeps a millimetre decimal, which a reader can act on', () => {
+    expect(formatMeasurement(25.4, 'millimeter', 'en-GB')).toBe('25.4 mm');
+  });
+});
