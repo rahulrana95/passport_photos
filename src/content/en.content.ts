@@ -262,6 +262,22 @@ export const EN_CONTENT: ContentTree = {
       pixels: '{value} px',
     },
   },
+  overlay: {
+    photoAlt: 'Your photo, with the crop and the measurements marked on it',
+    legendHeading: 'What the marks mean',
+    roles: {
+      crop: 'What will be printed',
+      'head-span': 'Your head, crown to chin',
+      'head-band': 'Where the top of your head needs to reach',
+      'eye-line': 'Your eye line',
+      'eye-band': 'Where your eyes need to sit',
+      'centre-line': 'Centre of the photo',
+    },
+    download: 'Download the marked-up photo',
+    downloadFilename: 'photo-with-measurements.png',
+    downloadFailed:
+      'Your browser could not build the marked-up image, which usually means the photo is larger than it will open on a canvas. The measurements above are unaffected.',
+  },
   legal: {
     acceptanceDisclaimer:
       'We check your photo against the issuing authority’s published specification. The final decision always belongs to that authority.',

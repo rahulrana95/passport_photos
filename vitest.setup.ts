@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
+import { RecordingResizeObserver, resetResizeObservers } from './src/testing/resize-observer.stub';
 
 /**
  * jsdom implements none of the browser APIs Mantine and the analysis pipeline
@@ -48,14 +49,14 @@ if (typeof globalThis.ImageData === 'undefined') {
   } as unknown as typeof globalThis.ImageData;
 }
 
-global.ResizeObserver = class ResizeObserver {
-  observe(): void {}
-  unobserve(): void {}
-  disconnect(): void {}
-};
+// A recording stub rather than a no-op one. A component that reacts to its own
+// size was previously frozen at zero for the whole unit suite, which meant its
+// most breakable behaviour was only ever exercised in a browser screenshot.
+global.ResizeObserver = RecordingResizeObserver;
 
 afterEach(() => {
   cleanup();
+  resetResizeObservers();
 
   // Theme state is written to localStorage and stamped on <html>, so without
   // this a test that switches theme leaks into every test that follows it.
