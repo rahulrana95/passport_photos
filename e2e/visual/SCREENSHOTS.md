@@ -478,6 +478,152 @@ A change to any of these images is a change a reviewer must approve:
 
 ![Visa Documents — mobile-light](./story-screenshots.spec.ts-snapshots/navigation-countrylinkgrid/visa-documents-mobile-light-stories-linux.png)
 
+## Result Annotatedphotodownload
+
+### Cannot Compose
+
+**desktop-dark**
+
+![Cannot Compose — desktop-dark](./story-screenshots.spec.ts-snapshots/result-annotatedphotodownload/cannot-compose-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Cannot Compose — desktop-light](./story-screenshots.spec.ts-snapshots/result-annotatedphotodownload/cannot-compose-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Cannot Compose — mobile-light](./story-screenshots.spec.ts-snapshots/result-annotatedphotodownload/cannot-compose-mobile-light-stories-linux.png)
+
+### Ready
+
+**desktop-dark**
+
+![Ready — desktop-dark](./story-screenshots.spec.ts-snapshots/result-annotatedphotodownload/ready-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Ready — desktop-light](./story-screenshots.spec.ts-snapshots/result-annotatedphotodownload/ready-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Ready — mobile-light](./story-screenshots.spec.ts-snapshots/result-annotatedphotodownload/ready-mobile-light-stories-linux.png)
+
+## Result Overlaylegend
+
+### Every Mark
+
+**desktop-dark**
+
+![Every Mark — desktop-dark](./story-screenshots.spec.ts-snapshots/result-overlaylegend/every-mark-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Every Mark — desktop-light](./story-screenshots.spec.ts-snapshots/result-overlaylegend/every-mark-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Every Mark — mobile-light](./story-screenshots.spec.ts-snapshots/result-overlaylegend/every-mark-mobile-light-stories-linux.png)
+
+### Without An Eye Line Rule
+
+**desktop-dark**
+
+![Without An Eye Line Rule — desktop-dark](./story-screenshots.spec.ts-snapshots/result-overlaylegend/without-an-eye-line-rule-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Without An Eye Line Rule — desktop-light](./story-screenshots.spec.ts-snapshots/result-overlaylegend/without-an-eye-line-rule-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Without An Eye Line Rule — mobile-light](./story-screenshots.spec.ts-snapshots/result-overlaylegend/without-an-eye-line-rule-mobile-light-stories-linux.png)
+
+## Result Photooverlay
+
+### Crown Not Found
+
+**desktop-dark**
+
+![Crown Not Found — desktop-dark](./story-screenshots.spec.ts-snapshots/result-photooverlay/crown-not-found-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Crown Not Found — desktop-light](./story-screenshots.spec.ts-snapshots/result-photooverlay/crown-not-found-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Crown Not Found — mobile-light](./story-screenshots.spec.ts-snapshots/result-photooverlay/crown-not-found-mobile-light-stories-linux.png)
+
+### Dark Photo
+
+**desktop-dark**
+
+![Dark Photo — desktop-dark](./story-screenshots.spec.ts-snapshots/result-photooverlay/dark-photo-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Dark Photo — desktop-light](./story-screenshots.spec.ts-snapshots/result-photooverlay/dark-photo-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Dark Photo — mobile-light](./story-screenshots.spec.ts-snapshots/result-photooverlay/dark-photo-mobile-light-stories-linux.png)
+
+### Landscape Source
+
+**desktop-dark**
+
+![Landscape Source — desktop-dark](./story-screenshots.spec.ts-snapshots/result-photooverlay/landscape-source-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Landscape Source — desktop-light](./story-screenshots.spec.ts-snapshots/result-photooverlay/landscape-source-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Landscape Source — mobile-light](./story-screenshots.spec.ts-snapshots/result-photooverlay/landscape-source-mobile-light-stories-linux.png)
+
+### Light Photo
+
+**desktop-dark**
+
+![Light Photo — desktop-dark](./story-screenshots.spec.ts-snapshots/result-photooverlay/light-photo-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Light Photo — desktop-light](./story-screenshots.spec.ts-snapshots/result-photooverlay/light-photo-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Light Photo — mobile-light](./story-screenshots.spec.ts-snapshots/result-photooverlay/light-photo-mobile-light-stories-linux.png)
+
+### Mobile Width
+
+**desktop-dark**
+
+![Mobile Width — desktop-dark](./story-screenshots.spec.ts-snapshots/result-photooverlay/mobile-width-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Mobile Width — desktop-light](./story-screenshots.spec.ts-snapshots/result-photooverlay/mobile-width-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Mobile Width — mobile-light](./story-screenshots.spec.ts-snapshots/result-photooverlay/mobile-width-mobile-light-stories-linux.png)
+
+### Without An Eye Line Rule
+
+**desktop-dark**
+
+![Without An Eye Line Rule — desktop-dark](./story-screenshots.spec.ts-snapshots/result-photooverlay/without-an-eye-line-rule-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Without An Eye Line Rule — desktop-light](./story-screenshots.spec.ts-snapshots/result-photooverlay/without-an-eye-line-rule-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Without An Eye Line Rule — mobile-light](./story-screenshots.spec.ts-snapshots/result-photooverlay/without-an-eye-line-rule-mobile-light-stories-linux.png)
+
 ## Result Ruleresultrow
 
 ### Fail
@@ -566,4 +712,4 @@ A change to any of these images is a change a reviewer must approve:
 
 ---
 
-114 baselines across 12 components.
+144 baselines across 15 components.

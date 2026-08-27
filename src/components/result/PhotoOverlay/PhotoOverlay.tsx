@@ -9,7 +9,7 @@ import { paintOverlayCanvas } from '@/overlay/paint-canvas';
 import { EMPTY_OVERLAY_SIZE } from './PhotoOverlay.constants';
 import { aspectStyle } from './PhotoOverlay.utils';
 import type { OverlaySize } from '@/overlay/overlay-transform.utils';
-import type { PhotoOverlayProps } from './PhotoOverlay.types';
+import type { DecodedPhoto, PhotoOverlayProps } from './PhotoOverlay.types';
 import styles from './PhotoOverlay.module.css';
 
 /**
@@ -38,11 +38,20 @@ export const PhotoOverlay = ({
   const content = getContent();
   const [frame, setFrame] = useState<HTMLDivElement | null>(null);
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
-  // The decoded photograph, not merely the element. drawImage on an image the
-  // browser has not finished decoding draws nothing, so exporting before the
-  // load event would produce a blank frame with the measurements neatly drawn
-  // on it — the most convincing wrong output this component could make.
-  const [decoded, setDecoded] = useState<HTMLImageElement | null>(null);
+  // The decoded photograph, remembered ALONGSIDE the source it was decoded
+  // from. Two reasons, and the second is the one that shaped this.
+  //
+  // drawImage on an image the browser has not finished decoding draws nothing,
+  // so exporting before the load event would produce a blank frame with the
+  // measurements neatly drawn on it — the most convincing wrong output this
+  // component could make.
+  //
+  // And checking a second photo is the whole loop of this product. Carrying
+  // the source alongside the element makes "is this still the photograph on
+  // screen?" a comparison at render time rather than a reset that has to be
+  // remembered: the element is reused across sources, so there is nothing
+  // about the element itself that changes when a new one starts loading.
+  const [decoded, setDecoded] = useState<DecodedPhoto | null>(null);
   const [container, setContainer] = useState<OverlaySize>(EMPTY_OVERLAY_SIZE);
 
   // Callback refs into state rather than useRef, so the effects below re-run
@@ -71,15 +80,6 @@ export const PhotoOverlay = ({
       observer.disconnect();
     };
   }, [frame]);
-
-  // A new photograph means the old one is no longer what would be exported.
-  // Readers check a second photo constantly — that is the whole loop this
-  // product is — and without this the download button stays live over the
-  // previous image for as long as the new one takes to decode, which on a
-  // phone photograph is long enough to press.
-  useEffect(() => {
-    setDecoded(null);
-  }, [imageSrc]);
 
   useEffect(() => {
     if (canvas === null) return;
@@ -111,15 +111,15 @@ export const PhotoOverlay = ({
           width={sourceWidthPx}
           height={sourceHeightPx}
           onLoad={(event) => {
-            setDecoded(event.currentTarget);
+            setDecoded({ element: event.currentTarget, src: imageSrc });
           }}
         />
         <canvas className={styles['canvas']} ref={setCanvas} aria-hidden="true" />
       </div>
       <OverlayLegend items={legendItemsFor(instructions)} />
-      {decoded === null ? null : (
+      {decoded === null || decoded.src !== imageSrc ? null : (
         <AnnotatedPhotoDownload
-          image={decoded}
+          image={decoded.element}
           source={{ widthPx: sourceWidthPx, heightPx: sourceHeightPx }}
           instructions={instructions}
         />
