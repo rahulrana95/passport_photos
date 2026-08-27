@@ -13,7 +13,13 @@ interface RouteExpectation {
   readonly label: string;
 }
 
-const ROUTES: readonly RouteExpectation[] = [{ htmlPath: 'server/app/index.html', label: '/' }];
+const ROUTES: readonly RouteExpectation[] = [
+  { htmlPath: 'server/app/index.html', label: '/' },
+  {
+    htmlPath: 'server/app/passport-photo-checker.html',
+    label: '/passport-photo-checker',
+  },
+];
 
 const REQUIRED_PATTERNS: readonly (readonly [string, RegExp])[] = [
   ['a <title>', /<title>[^<]{10,}<\/title>/i],

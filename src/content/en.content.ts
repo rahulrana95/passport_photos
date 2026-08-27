@@ -138,6 +138,17 @@ export const EN_CONTENT: ContentTree = {
       },
     },
   },
+  checker: {
+    heading: 'Check your passport photo',
+    intro:
+      'Choose the document you are applying for, then add your photo. Every check runs on your own device — the photo is never uploaded.',
+    specLegend: 'What are you applying for?',
+    specOption: '{country} {document}',
+    startOver: 'Check another photo',
+    privacyHeading: 'Your photo stays on your device',
+    privacyBody:
+      'The checks run in your browser. Nothing is sent to a server, nothing is stored, and closing the tab removes it. You can disconnect from the internet after the page loads and it will still work.',
+  },
   result: {
     verdictPass: 'Meets the published requirements',
     verdictFail: 'Does not meet the requirements yet',

@@ -12,7 +12,8 @@ export interface WorkerLike {
   terminate(): void;
   addEventListener(type: 'message', listener: (event: { data: WorkerResponse }) => void): void;
   addEventListener(type: 'error', listener: (event: unknown) => void): void;
-  removeEventListener(type: string, listener: (event: never) => void): void;
+  removeEventListener(type: 'message', listener: (event: { data: WorkerResponse }) => void): void;
+  removeEventListener(type: 'error', listener: (event: unknown) => void): void;
 }
 
 export interface AnalyseOptions {
@@ -42,9 +43,4 @@ export interface WorkerScope {
     type: 'message',
     listener: (event: { readonly data: WorkerRequest }) => void,
   ) => void;
-}
-
-/** The global object a worker is constructed from, when the browser allows it. */
-export interface WorkerCapableScope {
-  readonly Worker?: new (url: URL | string, options?: { readonly type?: 'module' }) => WorkerLike;
 }

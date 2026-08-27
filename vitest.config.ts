@@ -55,6 +55,14 @@ export default defineConfig({
         // generator is load-bearing, and a bug there would silently corrupt
         // every measurement downstream of it.
         'src/testing/axe.utils.ts',
+        // The browser seam the decoder is injected with: createImageBitmap and
+        // an OffscreenCanvas, and nothing else. jsdom has neither, and a jsdom
+        // stub of them would only assert that the stub was called. It is
+        // exercised for real in e2e/checker.spec.ts, which decodes a real JPEG
+        // through this exact path in Chromium — the same split the analysis
+        // worker's model loader uses. Everything that DECIDES anything about a
+        // decode is in browser-decoder.ts, with this injected, and covered.
+        'src/ingestion/browser-decode-environment.ts',
       ],
       thresholds: {
         statements: 100,

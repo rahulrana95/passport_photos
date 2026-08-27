@@ -1,0 +1,8 @@
+.main {
+  max-width: var(--tk-container-max);
+  margin-inline: auto;
+  padding: var(--tk-space-xl) var(--tk-space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-space-md);
+}

@@ -1,7 +1,7 @@
 ###############################################################################
 #  PASSPORT PHOTO CHECKER — DELIVERY PLAN
 #  One task = one PR. Branch fresh from `main`. Never start N+1 before N merges.
-#  Last updated: 2026-08-26
+#  Last updated: 2026-08-27
 ###############################################################################
 
 ═══════════════════════════════════════════════════════════════════════════════
@@ -2143,6 +2143,101 @@ TESTS
   The full stories suite green against the pinned browser: 286 passed, 0
   failed. Guard verified by running an update with the override set and
   watching it refuse.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #28b — The checker page: decode in the browser, analyse, and answer
+Branch: feat/browser-decoder           Depends on: #28a              Status: DONE
+───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  Twenty-eight PRs of engine, and no URL that ran it. Every piece had tests
+  and none of them were wired to each other in production code: nothing
+  decoded a photograph in a browser, nothing assembled what the rule engine
+  reads from a decode, and no page mounted the upload zone next to the result
+  panel. This is the PR where the product becomes a thing a person can use.
+
+  Split out of #29 deliberately. Country pages are the ranking surface, and
+  building forty of them on top of an engine nobody had run end to end would
+  have been forty pages of the same broken checker.
+
+IMPLEMENTS
+  [x] Browser decoder: createImageBitmap with the browser's EXIF handling OFF
+      (the orientation is applied here, from the file's own EXIF, so a photo
+      is never rotated twice), downscaled to the analysis edge, read back as
+      pixels, bitmap always closed. sRGB, because the exported file carries no
+      colour profile and a P3 photo labelled sRGB prints with the skin tones
+      pushed up.
+  [x] Animated-source detection by walking the container — GIF blocks, PNG
+      chunks up to IDAT, RIFF/WebP chunks — rather than searching for "ANIM"
+      or "acTL", which occur inside compressed pixel data constantly.
+  [x] buildRuleInput: the missing half of the pipeline. Landmarks in normalised
+      space become source pixels, the crown is estimated on the mask in
+      WORKING space, the crop is planned, and the eye separation is reported in
+      the EXPORTED file's pixels — which is what a border system actually
+      measures.
+  [x] /passport-photo-checker, server-rendered, with the specification list
+      resolved on the server and passed down.
+  [x] CheckerPanel: pick a document, add a photo, read the answer. The decoder
+      and the worker are built on FIRST USE, not on render — the models are
+      fifteen megabytes and nothing should load them because a page rendered.
+  [x] Ingestion failures appear on the dropzone, analysis failures in the
+      result panel. Two kinds of failure, two places, which is the whole
+      reason they are separate types.
+  [x] The analysis worker is now built by scripts/build-worker.mjs into
+      public/workers, not by the application bundler. See ROOT CAUSE below.
+  [x] The sitemap no longer advertises /rejected, which 404s. Search Console
+      reports advertised 404s as errors against the whole property.
+
+ROOT CAUSE — the worker was served as TypeScript
+  The page shipped in a state where every unit test passed and the checker
+  told the reader "The checks stopped unexpectedly." The worker was being
+  emitted as /_next/static/media/analysis.worker.<hash>.ts — the raw
+  TypeScript source, copied out as a static asset. The browser cannot parse
+  it, so the worker died before running a line.
+
+  Turbopack does not compile `new Worker(new URL('./x.ts', import.meta.url))`
+  as a worker entry point; it resolves the URL as an asset reference. Proved
+  by experiment rather than assumed: a .js probe worker was copied out the
+  same way. The build succeeds either way, which is what makes it dangerous —
+  nothing fails until a real browser tries to run it.
+
+  Second failure behind the first: with the worker finally loading, MediaPipe
+  died with "ModuleFactory not set". Its WASM runtime is a classic script that
+  declares `var ModuleFactory` and expects to read it back off the global; in
+  a module worker that declaration is module-scoped and the global stays
+  empty. So the worker is classic, and the bundle is an IIFE with nothing left
+  to import at runtime.
+
+EDGE CASES
+  [x] A file that passes the header check and dies in the decoder — a transfer
+      that stopped halfway — goes back to the dropzone, not to the answer.
+  [x] A browser with no Worker at all (locked-down enterprise, some private
+      modes) is told the checks cannot run here, not shown a TypeError.
+  [x] An empty specification registry renders nothing rather than a dropzone
+      that leads nowhere.
+  [x] A GIF with global and local colour tables — which is almost every real
+      GIF — is walked correctly rather than read as blocks.
+  [x] A truncated GIF whose sub-blocks run off the end terminates the walk.
+  [x] An analysis error with no code reports as unknown rather than borrowing
+      a remedy for a failure that did not happen.
+
+TESTS
+  2726 unit tests, 100% coverage held. Playwright: four specs against the real
+  page — including one that uploads a real JPEG and drives the actual worker,
+  the actual models and the actual detector to a verdict, and one that asserts
+  the worker is served as JavaScript. Four component-behaviour specs driving
+  the panel through a real picker in Chromium. Three stories with baselines.
+
+  The engine spec is the one that matters: it is the only test in the suite
+  that would have caught this bug, and every other kind of test passed while
+  the page was broken.
+
+NOTES
+  - analyse-photo.test.ts builds its photograph once, in beforeAll. Thirteen
+    tests each regenerating a 1200x1200 head and measuring every pixel of it
+    passed locally and timed out the moment coverage instrumentation was on.
+  - browser-decode-environment.ts is excluded from coverage: it is the
+    createImageBitmap/OffscreenCanvas seam and nothing else, and it is
+    exercised for real by the Chromium spec above.
 
 PR #29 — Country page template and static generation
 Branch: feat/country-pages             Depends on: #28               Status: TODO

@@ -25,3 +25,6 @@ npm-debug.log*
 # Fetched at build time by scripts/fetch-models.mjs — reproducible from the
 # lockfile and the pinned digest, and 15MB of binaries do not belong in git.
 public/models/
+
+# Built at build time by scripts/build-worker.mjs from src/analysis/analysis.worker.ts.
+public/workers/
