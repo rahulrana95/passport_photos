@@ -1,0 +1,36 @@
+.verdict {
+  display: flex;
+  gap: var(--tk-space-2xs);
+  align-items: center;
+  padding: var(--tk-space-sm) var(--tk-space-md);
+  border-inline-start: 4px solid var(--tk-border-strong);
+  border-radius: var(--tk-radius-md);
+  background: var(--tk-sunken);
+}
+
+/* The rule down the side carries the colour. The words and the icon carry the
+   meaning, and they work with the colour removed — which is what happens under
+   forced-colors, where every status token collapses to CanvasText. */
+.verdict[data-status='pass'] {
+  border-inline-start-color: var(--tk-status-pass);
+}
+
+.verdict[data-status='fail'] {
+  border-inline-start-color: var(--tk-status-fail);
+}
+
+.verdict[data-status='warning'] {
+  border-inline-start-color: var(--tk-status-warn);
+}
+
+.verdict[data-status='manual'],
+.verdict[data-status='undetectable'] {
+  border-inline-start-color: var(--tk-status-manual);
+}
+
+.text {
+  margin: 0;
+  font-size: var(--tk-text-lg);
+  font-weight: 600;
+  color: var(--tk-text-primary);
+}

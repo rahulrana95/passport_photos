@@ -26,6 +26,7 @@ export const singleSubjectRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'landmarks',
   fixGroup: undefined,
+  measures: false,
   evaluate: (input): RuleOutcome => {
     if (input.detection === undefined) return unmeasured();
     if (!input.detection.ok) {
@@ -54,6 +55,7 @@ export const headCoveringVisibleRule: RuleDefinition = {
   severity: 'advisory',
   evidence: 'crown',
   fixGroup: undefined,
+  measures: false,
   evaluate: (input): RuleOutcome => {
     if (input.crown === undefined) return unmeasured();
     // A crown estimate that failed is the crown rule's business to report, and

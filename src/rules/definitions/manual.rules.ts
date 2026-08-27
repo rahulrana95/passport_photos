@@ -44,6 +44,7 @@ export const glassesRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'none',
   fixGroup: undefined,
+  measures: false,
   evaluate: (_input, spec): RuleOutcome =>
     ruleOutcome('manual', GLASSES_MESSAGES[spec.glasses]),
 };
@@ -54,6 +55,7 @@ export const headCoveringPolicyRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'none',
   fixGroup: undefined,
+  measures: false,
   evaluate: (_input, spec): RuleOutcome =>
     ruleOutcome('manual', HEAD_COVERING_MESSAGES[spec.headCovering]),
 };
@@ -64,6 +66,7 @@ export const veilOverFaceRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'none',
   fixGroup: undefined,
+  measures: false,
   evaluate: (): RuleOutcome => ruleOutcome('manual', 'veil-over-face.check'),
 };
 
@@ -73,6 +76,7 @@ export const hairAcrossEyesRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'none',
   fixGroup: undefined,
+  measures: false,
   evaluate: (): RuleOutcome => ruleOutcome('manual', 'hair-across-eyes.check'),
 };
 
@@ -82,6 +86,7 @@ export const inkOrCreaseRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'none',
   fixGroup: undefined,
+  measures: false,
   evaluate: (): RuleOutcome => ruleOutcome('manual', 'ink-or-crease.check'),
 };
 
@@ -95,5 +100,6 @@ export const photoAgeRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'none',
   fixGroup: undefined,
+  measures: false,
   evaluate: (): RuleOutcome => ruleOutcome('manual', 'photo-age.check'),
 };

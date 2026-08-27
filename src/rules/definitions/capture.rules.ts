@@ -20,6 +20,7 @@ export const resolutionRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'pixels',
   fixGroup: undefined,
+  measures: true,
   evaluate: (input, spec): RuleOutcome => {
     if (input.outputPx === undefined) return unmeasured();
 
@@ -49,6 +50,7 @@ export const focusRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'pixels',
   fixGroup: undefined,
+  measures: false,
   evaluate: (input): RuleOutcome => {
     if (input.sharpness === undefined) return unmeasured();
 
@@ -90,6 +92,7 @@ export const exposureRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'pixels',
   fixGroup: undefined,
+  measures: false,
   evaluate: (input): RuleOutcome => {
     if (input.exposure === undefined) return unmeasured();
     if (input.exposure.verdict === 'well-exposed') return passed();

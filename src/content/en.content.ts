@@ -144,10 +144,73 @@ export const EN_CONTENT: ContentTree = {
     verdictWarning: 'Close, but worth checking',
     verdictManual: 'You need to check this one yourself',
     verdictUndetectable: 'We could not measure this',
+    statuses: {
+      pass: 'Meets it',
+      fail: 'Does not meet it',
+      warning: 'Borderline',
+      manual: 'Check yourself',
+      undetectable: 'Not measured',
+    },
     manualChecklistHeading: 'Check these yourself',
     downloadDigital: 'Download photo',
     downloadPrintSheet: 'Download print sheet',
     downloadReport: 'Download report',
+    resultsHeading: 'What we checked',
+    downloadsHeading: 'Downloads',
+    analysingLabel: 'Checking your photo',
+    stages: {
+      decoding: 'Reading your photo',
+      'detecting-face': 'Finding your face',
+      segmenting: 'Finding the edges of your head',
+      measuring: 'Measuring against the requirements',
+      'checking-quality': 'Checking sharpness, exposure and background',
+    },
+    completeAnnouncement: 'Check complete. {verdict}',
+    retryLabel: 'Try again',
+    failures: {
+      'no-face-detected': {
+        message: 'We could not find a face in that photo.',
+        remedy:
+          'Use a photo taken straight on, with your whole head in frame and nothing covering your face. A photo of a photo often fails here.',
+      },
+      'multiple-faces': {
+        message: 'There is more than one face in that photo.',
+        remedy:
+          'Crop the photo so only you are in it, or take a new one on a plain background with nobody behind you.',
+      },
+      'detector-unavailable': {
+        message: 'The checks could not be loaded.',
+        remedy:
+          'This usually means the connection dropped part-way. Reload the page and try again — nothing you did was wrong.',
+      },
+      'out-of-memory': {
+        message: 'That photo was too large for this device to analyse.',
+        remedy:
+          'Close a few other tabs and try again, or use a smaller copy of the photo. Phone cameras often save at far more detail than a passport photo needs.',
+      },
+      timeout: {
+        message: 'The checks took too long and were stopped.',
+        remedy:
+          'Try again — a slower device sometimes needs a second run. If it keeps happening, a smaller copy of the photo will go through.',
+      },
+      'worker-crashed': {
+        message: 'The checks stopped unexpectedly.',
+        remedy: 'Try again. If it happens twice, reload the page first.',
+      },
+      'worker-unavailable': {
+        message: 'This browser cannot run the checks.',
+        remedy:
+          'Open this page in Chrome, Safari, Firefox or Edge. The checks run on your device, so they need a browser that supports background processing.',
+      },
+      cancelled: {
+        message: 'The check was stopped.',
+        remedy: 'Choose a photo to start again.',
+      },
+      unknown: {
+        message: 'Something went wrong during the checks.',
+        remedy: 'Try again. Your photo never left your device, so nothing was lost.',
+      },
+    },
   },
   errors: {
     notFoundTitle: 'That page does not exist',

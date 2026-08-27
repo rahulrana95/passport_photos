@@ -752,6 +752,64 @@ A change to any of these images is a change a reviewer must approve:
 
 ![Without A Photograph — mobile-light](./story-screenshots.spec.ts-snapshots/print-sheetpreview/without-a-photograph-mobile-light-stories-linux.png)
 
+## Result Analysisprogress
+
+### Every Stage
+
+**desktop-dark**
+
+![Every Stage — desktop-dark](./story-screenshots.spec.ts-snapshots/result-analysisprogress/every-stage-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Every Stage — desktop-light](./story-screenshots.spec.ts-snapshots/result-analysisprogress/every-stage-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Every Stage — mobile-light](./story-screenshots.spec.ts-snapshots/result-analysisprogress/every-stage-mobile-light-stories-linux.png)
+
+### Nearly Done
+
+**desktop-dark**
+
+![Nearly Done — desktop-dark](./story-screenshots.spec.ts-snapshots/result-analysisprogress/nearly-done-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Nearly Done — desktop-light](./story-screenshots.spec.ts-snapshots/result-analysisprogress/nearly-done-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Nearly Done — mobile-light](./story-screenshots.spec.ts-snapshots/result-analysisprogress/nearly-done-mobile-light-stories-linux.png)
+
+### Segmenting
+
+**desktop-dark**
+
+![Segmenting — desktop-dark](./story-screenshots.spec.ts-snapshots/result-analysisprogress/segmenting-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Segmenting — desktop-light](./story-screenshots.spec.ts-snapshots/result-analysisprogress/segmenting-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Segmenting — mobile-light](./story-screenshots.spec.ts-snapshots/result-analysisprogress/segmenting-mobile-light-stories-linux.png)
+
+### Starting
+
+**desktop-dark**
+
+![Starting — desktop-dark](./story-screenshots.spec.ts-snapshots/result-analysisprogress/starting-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Starting — desktop-light](./story-screenshots.spec.ts-snapshots/result-analysisprogress/starting-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Starting — mobile-light](./story-screenshots.spec.ts-snapshots/result-analysisprogress/starting-mobile-light-stories-linux.png)
+
 ## Result Annotatedphotodownload
 
 ### Cannot Compose
@@ -898,6 +956,222 @@ A change to any of these images is a change a reviewer must approve:
 
 ![Without An Eye Line Rule — mobile-light](./story-screenshots.spec.ts-snapshots/result-photooverlay/without-an-eye-line-rule-mobile-light-stories-linux.png)
 
+## Result Resultpanel
+
+### All Pass
+
+**desktop-dark**
+
+![All Pass — desktop-dark](./story-screenshots.spec.ts-snapshots/result-resultpanel/all-pass-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![All Pass — desktop-light](./story-screenshots.spec.ts-snapshots/result-resultpanel/all-pass-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![All Pass — mobile-light](./story-screenshots.spec.ts-snapshots/result-resultpanel/all-pass-mobile-light-stories-linux.png)
+
+### Analysing
+
+**desktop-dark**
+
+![Analysing — desktop-dark](./story-screenshots.spec.ts-snapshots/result-resultpanel/analysing-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Analysing — desktop-light](./story-screenshots.spec.ts-snapshots/result-resultpanel/analysing-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Analysing — mobile-light](./story-screenshots.spec.ts-snapshots/result-resultpanel/analysing-mobile-light-stories-linux.png)
+
+### Browser Unsupported
+
+**desktop-dark**
+
+![Browser Unsupported — desktop-dark](./story-screenshots.spec.ts-snapshots/result-resultpanel/browser-unsupported-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Browser Unsupported — desktop-light](./story-screenshots.spec.ts-snapshots/result-resultpanel/browser-unsupported-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Browser Unsupported — mobile-light](./story-screenshots.spec.ts-snapshots/result-resultpanel/browser-unsupported-mobile-light-stories-linux.png)
+
+### Failed
+
+**desktop-dark**
+
+![Failed — desktop-dark](./story-screenshots.spec.ts-snapshots/result-resultpanel/failed-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Failed — desktop-light](./story-screenshots.spec.ts-snapshots/result-resultpanel/failed-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Failed — mobile-light](./story-screenshots.spec.ts-snapshots/result-resultpanel/failed-mobile-light-stories-linux.png)
+
+### Mixed
+
+**desktop-dark**
+
+![Mixed — desktop-dark](./story-screenshots.spec.ts-snapshots/result-resultpanel/mixed-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Mixed — desktop-light](./story-screenshots.spec.ts-snapshots/result-resultpanel/mixed-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Mixed — mobile-light](./story-screenshots.spec.ts-snapshots/result-resultpanel/mixed-mobile-light-stories-linux.png)
+
+### Nothing Measurable
+
+**desktop-dark**
+
+![Nothing Measurable — desktop-dark](./story-screenshots.spec.ts-snapshots/result-resultpanel/nothing-measurable-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Nothing Measurable — desktop-light](./story-screenshots.spec.ts-snapshots/result-resultpanel/nothing-measurable-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Nothing Measurable — mobile-light](./story-screenshots.spec.ts-snapshots/result-resultpanel/nothing-measurable-mobile-light-stories-linux.png)
+
+### Waiting
+
+**desktop-dark**
+
+![Waiting — desktop-dark](./story-screenshots.spec.ts-snapshots/result-resultpanel/waiting-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Waiting — desktop-light](./story-screenshots.spec.ts-snapshots/result-resultpanel/waiting-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Waiting — mobile-light](./story-screenshots.spec.ts-snapshots/result-resultpanel/waiting-mobile-light-stories-linux.png)
+
+## Result Resultverdict
+
+### Every Status
+
+**desktop-dark**
+
+![Every Status — desktop-dark](./story-screenshots.spec.ts-snapshots/result-resultverdict/every-status-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Every Status — desktop-light](./story-screenshots.spec.ts-snapshots/result-resultverdict/every-status-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Every Status — mobile-light](./story-screenshots.spec.ts-snapshots/result-resultverdict/every-status-mobile-light-stories-linux.png)
+
+### Fail
+
+**desktop-dark**
+
+![Fail — desktop-dark](./story-screenshots.spec.ts-snapshots/result-resultverdict/fail-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Fail — desktop-light](./story-screenshots.spec.ts-snapshots/result-resultverdict/fail-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Fail — mobile-light](./story-screenshots.spec.ts-snapshots/result-resultverdict/fail-mobile-light-stories-linux.png)
+
+### Manual
+
+**desktop-dark**
+
+![Manual — desktop-dark](./story-screenshots.spec.ts-snapshots/result-resultverdict/manual-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Manual — desktop-light](./story-screenshots.spec.ts-snapshots/result-resultverdict/manual-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Manual — mobile-light](./story-screenshots.spec.ts-snapshots/result-resultverdict/manual-mobile-light-stories-linux.png)
+
+### Pass
+
+**desktop-dark**
+
+![Pass — desktop-dark](./story-screenshots.spec.ts-snapshots/result-resultverdict/pass-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Pass — desktop-light](./story-screenshots.spec.ts-snapshots/result-resultverdict/pass-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Pass — mobile-light](./story-screenshots.spec.ts-snapshots/result-resultverdict/pass-mobile-light-stories-linux.png)
+
+### Undetectable
+
+**desktop-dark**
+
+![Undetectable — desktop-dark](./story-screenshots.spec.ts-snapshots/result-resultverdict/undetectable-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Undetectable — desktop-light](./story-screenshots.spec.ts-snapshots/result-resultverdict/undetectable-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Undetectable — mobile-light](./story-screenshots.spec.ts-snapshots/result-resultverdict/undetectable-mobile-light-stories-linux.png)
+
+### Warning
+
+**desktop-dark**
+
+![Warning — desktop-dark](./story-screenshots.spec.ts-snapshots/result-resultverdict/warning-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Warning — desktop-light](./story-screenshots.spec.ts-snapshots/result-resultverdict/warning-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Warning — mobile-light](./story-screenshots.spec.ts-snapshots/result-resultverdict/warning-mobile-light-stories-linux.png)
+
+## Result Resultverdictskeleton
+
+### Against The Real Verdict
+
+**desktop-dark**
+
+![Against The Real Verdict — desktop-dark](./story-screenshots.spec.ts-snapshots/result-resultverdictskeleton/against-the-real-verdict-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Against The Real Verdict — desktop-light](./story-screenshots.spec.ts-snapshots/result-resultverdictskeleton/against-the-real-verdict-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Against The Real Verdict — mobile-light](./story-screenshots.spec.ts-snapshots/result-resultverdictskeleton/against-the-real-verdict-mobile-light-stories-linux.png)
+
+### Waiting
+
+**desktop-dark**
+
+![Waiting — desktop-dark](./story-screenshots.spec.ts-snapshots/result-resultverdictskeleton/waiting-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Waiting — desktop-light](./story-screenshots.spec.ts-snapshots/result-resultverdictskeleton/waiting-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Waiting — mobile-light](./story-screenshots.spec.ts-snapshots/result-resultverdictskeleton/waiting-mobile-light-stories-linux.png)
+
 ## Result Ruleresultrow
 
 ### Fail
@@ -983,6 +1257,50 @@ A change to any of these images is a change a reviewer must approve:
 **mobile-light**
 
 ![Warning — mobile-light](./story-screenshots.spec.ts-snapshots/result-ruleresultrow/warning-mobile-light-stories-linux.png)
+
+## Result Ruleresultrowskeleton
+
+### Against The Real Row
+
+**desktop-dark**
+
+![Against The Real Row — desktop-dark](./story-screenshots.spec.ts-snapshots/result-ruleresultrowskeleton/against-the-real-row-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Against The Real Row — desktop-light](./story-screenshots.spec.ts-snapshots/result-ruleresultrowskeleton/against-the-real-row-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Against The Real Row — mobile-light](./story-screenshots.spec.ts-snapshots/result-ruleresultrowskeleton/against-the-real-row-mobile-light-stories-linux.png)
+
+### With Measurement
+
+**desktop-dark**
+
+![With Measurement — desktop-dark](./story-screenshots.spec.ts-snapshots/result-ruleresultrowskeleton/with-measurement-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![With Measurement — desktop-light](./story-screenshots.spec.ts-snapshots/result-ruleresultrowskeleton/with-measurement-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![With Measurement — mobile-light](./story-screenshots.spec.ts-snapshots/result-ruleresultrowskeleton/with-measurement-mobile-light-stories-linux.png)
+
+### Without Measurement
+
+**desktop-dark**
+
+![Without Measurement — desktop-dark](./story-screenshots.spec.ts-snapshots/result-ruleresultrowskeleton/without-measurement-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Without Measurement — desktop-light](./story-screenshots.spec.ts-snapshots/result-ruleresultrowskeleton/without-measurement-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Without Measurement — mobile-light](./story-screenshots.spec.ts-snapshots/result-ruleresultrowskeleton/without-measurement-mobile-light-stories-linux.png)
 
 ## Upload Uploadzone
 
@@ -1072,4 +1390,4 @@ A change to any of these images is a change a reviewer must approve:
 
 ---
 
-219 baselines across 20 components.
+285 baselines across 25 components.

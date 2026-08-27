@@ -35,6 +35,7 @@ export const headHeightRule: RuleDefinition = {
   // half of this measurement — so the weaker half sets the confidence.
   evidence: 'crown',
   fixGroup: 'framing',
+  measures: true,
   evaluate: (input): RuleOutcome => {
     const geometry = accessGeometry(input.geometry);
     if (!geometry.ok) return geometry.outcome;
@@ -66,6 +67,7 @@ export const eyeLineRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'landmarks',
   fixGroup: 'framing',
+  measures: true,
   evaluate: (input, spec): RuleOutcome | undefined => {
     // Not every authority states one. Reporting a pass against a requirement
     // the country never published would be inventing a rule and then awarding
@@ -102,6 +104,7 @@ export const horizontalCentringRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'landmarks',
   fixGroup: 'framing',
+  measures: true,
   evaluate: (input): RuleOutcome => {
     const geometry = accessGeometry(input.geometry);
     if (!geometry.ok) return geometry.outcome;
@@ -138,6 +141,7 @@ export const eyeDistanceRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'landmarks',
   fixGroup: 'framing',
+  measures: true,
   evaluate: (input): RuleOutcome => {
     if (input.interOcularPx === undefined) return unmeasured();
 

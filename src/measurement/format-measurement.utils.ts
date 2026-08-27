@@ -1,6 +1,7 @@
 import {
   DECIMAL_RADIX,
   MEASUREMENT_PRECISION_DIGITS,
+  PERCENT_PRECISION_DIGITS,
   MM_PER_INCH,
   PERCENT_SCALE,
 } from '@/constants/measurement.constants';
@@ -42,5 +43,6 @@ export const formatMeasurement = (
     style: 'unit',
     unit,
     unitDisplay: 'short',
-    maximumFractionDigits: MEASUREMENT_PRECISION_DIGITS,
+    maximumFractionDigits:
+      unit === 'percent' ? PERCENT_PRECISION_DIGITS : MEASUREMENT_PRECISION_DIGITS,
   }).format(unit === 'percent' ? value * PERCENT_SCALE : value);

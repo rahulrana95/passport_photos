@@ -8,7 +8,9 @@ import type { RequirementCoverage } from '@/rules/rule.types';
 import type { OverlayRole } from '@/overlay/overlay-role.constants';
 import type { SheetSizeId } from '@/sheet/sheet-size.constants';
 import type { IngestionMessageId } from '@/ingestion/ingestion-failure.types';
+import type { AnalysisErrorCode, AnalysisStage } from '@/analysis/analysis-protocol.types';
 import type { CameraFailureCode } from '@/camera/camera-failure.types';
+import type { RuleStatus } from '@/constants/rule-status.constants';
 import type { GuidanceId } from '@/camera/guidance/guidance.types';
 
 /** The four answers the coverage map can give about a requirement. */
@@ -85,15 +87,47 @@ export interface CameraContent {
 }
 
 export interface ResultContent {
+  /**
+   * The headline, which has to stand alone at the top of a page.
+   *
+   * Deliberately different words from `statuses` below. A row says its verdict
+   * beside the name of what was checked and gets its meaning from that pairing;
+   * the headline has nothing beside it, so it has to carry the sentence.
+   */
   readonly verdictPass: string;
   readonly verdictFail: string;
   readonly verdictWarning: string;
   readonly verdictManual: string;
   readonly verdictUndetectable: string;
+  /**
+   * The verdict as it appears in a row, next to what was checked.
+   *
+   * Short, because it appears once per rule and a report has twenty of them.
+   * Repeating "Meets the published requirements" down a whole column buries
+   * the two rows that do not, which is the only thing the reader came for.
+   */
+  readonly statuses: Readonly<Record<RuleStatus, string>>;
   readonly manualChecklistHeading: string;
   readonly downloadDigital: string;
   readonly downloadPrintSheet: string;
   readonly downloadReport: string;
+  readonly resultsHeading: string;
+  readonly downloadsHeading: string;
+  readonly analysingLabel: string;
+  /**
+   * What each stage is doing, in words.
+   *
+   * Named stages rather than a bare percentage because the stages take
+   * visibly different lengths of time: segmentation is most of the wait on a
+   * mid-range phone, and a bar that crawls through it with no explanation
+   * reads as a hang. "Finding the edges of your head" reads as work.
+   */
+  readonly stages: Readonly<Record<AnalysisStage, string>>;
+  /** Announced when the analysis finishes. Interpolated with {verdict}. */
+  readonly completeAnnouncement: string;
+  readonly retryLabel: string;
+  /** Every way the analysis itself can fail, keyed by the worker's own code. */
+  readonly failures: Readonly<Record<AnalysisErrorCode, IngestionMessage>>;
 }
 
 export interface LegalContent {

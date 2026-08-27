@@ -34,6 +34,7 @@ export const headTiltRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'landmarks',
   fixGroup: undefined,
+  measures: true,
   evaluate: (input): RuleOutcome => {
     // Roll comes from the eye line rather than from the pose model. Two
     // sources for one angle is how they end up disagreeing, and the eye line
@@ -60,6 +61,7 @@ export const headTurnRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'landmarks',
   fixGroup: undefined,
+  measures: true,
   evaluate: (input): RuleOutcome => {
     if (input.pose === undefined) return unmeasured();
 
@@ -81,6 +83,7 @@ export const headPitchRule: RuleDefinition = {
   severity: 'blocking',
   evidence: 'landmarks',
   fixGroup: undefined,
+  measures: true,
   evaluate: (input): RuleOutcome => {
     if (input.pose === undefined) return unmeasured();
 

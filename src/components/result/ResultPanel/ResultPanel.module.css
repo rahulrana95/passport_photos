@@ -1,0 +1,91 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-space-md);
+}
+
+/* Announced, not shown. The verdict block says the same thing on screen; this
+   exists so the announcement can also say that the wait is over, which a
+   headline read in isolation never does. */
+.announcement {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Holds the progress bar's space whether or not it is showing. Sized from the
+   bar's own parts — a label line plus the gap plus the track — so the two
+   cannot drift apart. */
+.progressSlot {
+  block-size: calc(1lh + var(--tk-space-2xs) + 0.5rem);
+}
+
+.heading {
+  margin: 0;
+  font-size: var(--tk-text-lg);
+  font-weight: 600;
+  color: var(--tk-text-primary);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-space-2xs);
+}
+
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-space-2xs);
+  padding-block-start: var(--tk-space-sm);
+  border-block-start: 1px solid var(--tk-border-default);
+}
+
+.failure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-space-3xs);
+  padding: var(--tk-space-xs) var(--tk-space-sm);
+  border-inline-start: 3px solid var(--tk-status-fail);
+  border-radius: var(--tk-radius-sm);
+  background: var(--tk-sunken);
+}
+
+.failureMessage {
+  margin: 0;
+  font-size: var(--tk-text-md);
+  font-weight: 600;
+  color: var(--tk-text-primary);
+}
+
+.remedy {
+  margin: 0;
+  font-size: var(--tk-text-sm);
+  color: var(--tk-text-secondary);
+}
+
+.retry {
+  align-self: flex-start;
+  padding: var(--tk-space-2xs) var(--tk-space-sm);
+  border: 1px solid var(--tk-border-default);
+  border-radius: var(--tk-radius-md);
+  background: var(--tk-surface);
+  font-size: var(--tk-text-sm);
+  color: var(--tk-text-primary);
+  cursor: pointer;
+}
+
+.retry:hover {
+  border-color: var(--tk-accent);
+  background: var(--tk-accent-soft);
+}
+
+.retry:focus-visible {
+  outline: 2px solid var(--tk-accent);
+  outline-offset: 2px;
+}
