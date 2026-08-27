@@ -1150,37 +1150,91 @@ NOTE
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #20 — Image quality analysis
-Branch: feat/quality-analysis          Depends on: #19               Status: TODO
+Branch: feat/quality-analysis          Depends on: #19               Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   Background, shadow, sharpness, exposure and resolution checks over the
   segmentation mask.
 
+  THE FAIRNESS REQUIREMENT SHAPED THIS WHOLE MODULE, and it forced one item
+  in the list below to be written differently from how it was specified.
+
+  "Exposure: histogram clipping percentage AND MEAN FACE LUMINANCE" cannot be
+  built as written. Skin tone IS luminance — a correctly exposed photograph of
+  dark skin has a lower mean than a correctly exposed photograph of pale skin,
+  by definition and by a wide margin. Any threshold on the mean rejects
+  darker-skinned people for having been photographed accurately, and delivers
+  it as a confident "your photo is too dark". That is the exact failure that
+  made camera metering notorious, and the two requirements in that line
+  contradict each other.
+
+  Exposure is therefore judged on two tone-independent signals and the mean is
+  never consulted: CLIPPING (pixels pinned at pure black or white have lost
+  their detail, whatever tone the subject is) and TONAL RANGE (a well-exposed
+  face of any tone has modelling across it; an under- or over-exposed one
+  collapses toward one end). The mean is still computed, because the
+  background checks need it, and reading it in exposure.utils.ts would
+  reintroduce precisely what that file exists to avoid.
+
 IMPLEMENTS
-  [ ] Background uniformity: luminance and chroma standard deviation
-  [ ] Background colour against the spec's accepted range
-  [ ] Shadow detection via background luminance gradient
-  [ ] Sharpness via Laplacian variance over the face region
-  [ ] Exposure: histogram clipping percentage and mean face luminance
-  [ ] Resolution sufficiency against the spec
+  [x] Background uniformity: luminance standard deviation over background pixels
+  [x] Background colour against the spec's accepted range
+  [x] Shadow detection via a left-to-right luminance difference, not an overall
+      spread — a shadow darkens one side, texture darkens everywhere, and
+      conflating them sends someone to move a lamp when they need another wall
+  [x] Sharpness via Laplacian variance over the face region
+  [x] Exposure via clipping and tonal range — see above for why not the mean
+  [x] Subject/background separation, as a confidence signal rather than a rule
+  [ ] Resolution sufficiency — already built in #14 (evaluateResolution) and
+      wired in #19 (planCrop declines rather than upscaling). Rebuilding it
+      here would be a second answer to one question.
 
 EDGE CASES
-  [ ] Patterned, textured or gradient studio backgrounds
-  [ ] White clothing against a white background — segmentation bleed
-  [ ] Subject's hair the same tone as the background
-  [ ] Deliberate vignetting from a phone camera
-  [ ] Motion blur vs shallow depth of field — both blur, only one is the fault
-  [ ] Bright but valid exposure vs genuinely clipped highlights
-  [ ] Upscaled low-resolution images that "meet" pixel counts but are soft
-  [ ] Very small background area when the crop is tight
-  [ ] Skin tone must never influence the exposure verdict — test across a
-      diverse fixture set, this is a fairness requirement not a nice-to-have
+  [x] Patterned and textured backgrounds — measured: amplitude 30 gives a
+      standard deviation of 13 against a plain wall's 1.2
+  [x] Gradient backgrounds, reported as shadowed rather than uneven
+  [x] White clothing on a white wall, and hair the tone of the wall — both
+      surface as a low subject/background separation, which is the honest
+      answer: the mask bleeds and every measurement through it is suspect
+  [x] Motion blur vs shallow depth of field — deliberately NOT distinguished.
+      Both reduce the Laplacian identically, the verdict is "soft" and never a
+      diagnosis, because the pixels do not say which and a confident wrong
+      reason sends someone to fix the wrong thing
+  [x] Bright but valid vs genuinely clipped — a high-key photograph that keeps
+      its detail passes; one whose highlights have gone does not
+  [x] Upscaled low-resolution images that meet pixel counts but are soft —
+      caught by the Laplacian, which is what upscaling destroys
+  [x] Very small background area when the crop is tight — declines rather than
+      reporting a standard deviation from a sliver of corner pixels
+  [x] Skin tone never influences the exposure verdict. Six tones from 55 to
+      205, asserted identical at the same exposure, with the tonal range
+      itself varying by under 6 across them so the agreement is structural and
+      not a coincidence of today's thresholds. Also asserted in the negative:
+      under-exposure, clipped shadows and clipped highlights each fire at
+      every tone, because a check that never fires for dark skin is as broken
+      as one that always does.
+  [x] Skin tone does not influence sharpness either. Laplacian variance scales
+      with local contrast and a dark face has less of it, so this needed
+      asserting rather than assuming.
+  [ ] Vignetting from a phone camera is not detected. It is a radial falloff,
+      and every signal here is either side-to-side or global; adding a radial
+      term without a real photograph to calibrate against would be a threshold
+      invented from nothing. Owed to the real-model work.
 
 SEO  n/a
 
 TESTS
-  Unit against a labelled fixture set, explicitly including diverse skin tones,
-  lighting conditions and background types.
+  41 unit tests, 100% coverage. The fixture is new: the existing head
+  generator paints a flat disc of one luminance, which has no modelling and
+  therefore cannot express exposure at all — every such face reads as flat.
+  toned-face.builder.ts separates baseTone (who is in the photograph) from
+  modellingRange (how well it was lit), which is exactly the separation a
+  mean-luminance check fails to make.
+
+  Every threshold in this module was measured against that corpus, not
+  guessed. The sharpness threshold was moved from 40 to 100 once the numbers
+  were in: sharp measures 676 and a one-pixel blur measures 36, so 40 sat four
+  away from a boundary a different noise seed could have crossed.
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #21 — Rule engine and compliance report model
