@@ -33,10 +33,18 @@ const TAG_ORIENTATION = 0x0112;
 const TAG_DATE_TIME = 0x0132;
 const TAG_EXIF_IFD_POINTER = 0x8769;
 const TAG_DATE_TIME_ORIGINAL = 0x9003;
+const TAG_GPS_IFD_POINTER = 0x8825;
+const TAG_GPS_LATITUDE = 0x0002;
 
 const TYPE_SHORT = 3;
 const TYPE_ASCII = 2;
 const TYPE_LONG = 4;
+const TYPE_RATIONAL = 5;
+
+/** Degrees, minutes and seconds. */
+const GPS_COORDINATE_PARTS = 3;
+/** Seconds are written as hundredths, which is what phones do. */
+const SECONDS_DENOMINATOR = 100;
 
 const IFD_ENTRY_BYTES = 12;
 const TIFF_HEADER_BYTES = 8;
@@ -70,6 +78,15 @@ export interface JpegExifOptions {
   /** Written to the Exif sub-IFD as DateTimeOriginal — when the shutter fired. */
   readonly dateTimeOriginal?: string;
   readonly bigEndian?: boolean;
+  /**
+   * Writes a GPS sub-IFD holding a latitude, as every phone does by default.
+   *
+   * Present so the privacy requirement can be tested against the thing it is
+   * actually about. Asserting that an Exif segment disappeared is a proxy;
+   * asserting that these degrees, minutes and seconds are nowhere in the
+   * output file is the claim the product makes.
+   */
+  readonly gpsLatitude?: { degrees: number; minutes: number; seconds: number };
 }
 
 const uint16 = (value: number, bigEndian: boolean): number[] =>
@@ -122,9 +139,16 @@ const shortPayload = (value: number, bigEndian: boolean): number[] => [
   0,
 ];
 
+/** A RATIONAL is two four-byte integers: numerator then denominator. */
+const rational = (numerator: number, denominator: number, bigEndian: boolean): number[] => [
+  ...uint32(numerator, bigEndian),
+  ...uint32(denominator, bigEndian),
+];
+
 export const buildJpegWithExif = (options: JpegExifOptions = {}): Uint8Array => {
   const bigEndian = options.bigEndian === true;
   const hasOriginal = options.dateTimeOriginal !== undefined;
+  const gps = options.gpsLatitude;
 
   const zerothEntries: Entry[] = [];
   if (options.orientation !== undefined) {
@@ -138,12 +162,18 @@ export const buildJpegWithExif = (options: JpegExifOptions = {}): Uint8Array => 
 
   // Layout is fixed before any offset is written: IFD0, then the Exif sub-IFD
   // when there is one, then the variable-length ASCII values after both.
-  const zerothCount = zerothEntries.length + (options.dateTime === undefined ? 0 : 1) + (hasOriginal ? 1 : 0);
+  const zerothCount =
+    zerothEntries.length +
+    (options.dateTime === undefined ? 0 : 1) +
+    (hasOriginal ? 1 : 0) +
+    (gps === undefined ? 0 : 1);
   const zerothStart = TIFF_HEADER_BYTES;
   const zerothBytes = IFD_COUNT_BYTES + zerothCount * IFD_ENTRY_BYTES + NEXT_IFD_BYTES;
   const exifIfdStart = zerothStart + zerothBytes;
   const exifIfdBytes = hasOriginal ? IFD_COUNT_BYTES + IFD_ENTRY_BYTES + NEXT_IFD_BYTES : 0;
-  let valueCursor = exifIfdStart + exifIfdBytes;
+  const gpsIfdStart = exifIfdStart + exifIfdBytes;
+  const gpsIfdBytes = gps === undefined ? 0 : IFD_COUNT_BYTES + IFD_ENTRY_BYTES + NEXT_IFD_BYTES;
+  let valueCursor = gpsIfdStart + gpsIfdBytes;
 
   if (options.dateTime !== undefined) {
     zerothEntries.push({
@@ -163,6 +193,23 @@ export const buildJpegWithExif = (options: JpegExifOptions = {}): Uint8Array => 
       payload: uint32(exifIfdStart, bigEndian),
     });
   }
+
+  if (gps !== undefined) {
+    zerothEntries.push({
+      tag: TAG_GPS_IFD_POINTER,
+      type: TYPE_LONG,
+      count: 1,
+      payload: uint32(gpsIfdStart, bigEndian),
+    });
+  }
+
+  // Fixed before the IFDs are written, because a pointer cannot be written
+  // until the thing it points at has a position. The ASCII values come first
+  // and the coordinate after them.
+  // valueCursor has already been advanced past the DateTime value, if there
+  // is one. Only the DateTimeOriginal value still stands between here and the
+  // coordinate.
+  const gpsValueOffset = valueCursor + (hasOriginal ? DATE_FIELD_BYTES : 0);
 
   const tiff: number[] = [
     ...uint16(bigEndian ? TIFF_BIG_ENDIAN_MARK : TIFF_LITTLE_ENDIAN_MARK, true),
@@ -189,9 +236,32 @@ export const buildJpegWithExif = (options: JpegExifOptions = {}): Uint8Array => 
     );
   }
 
+  if (gps !== undefined) {
+    tiff.push(
+      ...uint16(1, bigEndian),
+      ...entryBytes(
+        {
+          tag: TAG_GPS_LATITUDE,
+          type: TYPE_RATIONAL,
+          count: GPS_COORDINATE_PARTS,
+          payload: uint32(gpsValueOffset, bigEndian),
+        },
+        bigEndian,
+      ),
+      ...uint32(0, bigEndian),
+    );
+  }
+
   if (options.dateTime !== undefined) tiff.push(...asciiBytes(options.dateTime, DATE_FIELD_BYTES));
   if (options.dateTimeOriginal !== undefined) {
     tiff.push(...asciiBytes(options.dateTimeOriginal, DATE_FIELD_BYTES));
+  }
+  if (gps !== undefined) {
+    tiff.push(
+      ...rational(gps.degrees, 1, bigEndian),
+      ...rational(gps.minutes, 1, bigEndian),
+      ...rational(Math.round(gps.seconds * SECONDS_DENOMINATOR), SECONDS_DENOMINATOR, bigEndian),
+    );
   }
 
   const app1Payload = [...EXIF_IDENTIFIER, ...tiff];

@@ -39,6 +39,12 @@ export default defineConfig({
         // because there is no worker global to attach to. Same reasoning as
         // src/app/** above: entry points are wiring, not logic.
         'src/analysis/analysis.worker.ts',
+        // The dynamic import of the mozjpeg bundle, and nothing else. The
+        // encoder it returns IS covered — one integration test runs the real
+        // compressor, reaching it through a harness that compiles the
+        // WebAssembly off disk rather than fetching it. This line is the fetch
+        // that harness exists to avoid.
+        'src/encode/mozjpeg-module.loader.ts',
         // The dynamic import of the MediaPipe bundle, and nothing else.
         // Importing it under jsdom would instantiate a WebAssembly runtime
         // that has no business being in a unit test. Everything that decides

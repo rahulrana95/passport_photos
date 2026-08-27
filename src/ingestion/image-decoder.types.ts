@@ -31,6 +31,17 @@ export interface DecodedImage {
  * Returns undefined for a file it cannot read. A damaged JPEG is an expected
  * input, not an exceptional one: people upload photos that stopped halfway
  * through a transfer every day.
+ *
+ * AN IMPLEMENTATION MUST DECODE INTO sRGB, which is what a default canvas
+ * does and what every browser gives back unless it is asked for something
+ * else. It is worth stating because the temptation runs the other way: a
+ * modern phone photograph is often Display P3, and preserving that gamut is
+ * the obviously higher-fidelity choice. It is also the wrong one here. The
+ * file this product exports carries no colour profile — that is what strips
+ * the metadata a photograph should not be carrying — and a file with no
+ * profile is read as sRGB by everything that opens it. Wide-gamut pixels
+ * labelled as sRGB print with the saturation pushed up, on a photograph whose
+ * skin tones an official is about to compare against a face.
  */
 export interface ImageDecoder {
   readonly decode: (request: DecodeRequest) => Promise<DecodedImage | undefined>;
