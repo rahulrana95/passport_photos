@@ -22,6 +22,13 @@ export interface LandmarkResult {
   readonly confidence: number;
   readonly rollDegrees: number;
   readonly yawDegrees: number;
+  /**
+   * Chin up or down. Carried unsigned in practice — the rule that reads it
+   * reports magnitude only, because the sign of this decomposition has never
+   * been confirmed against a real capture and a confidently reversed "lower
+   * your chin" is worse than no direction at all.
+   */
+  readonly pitchDegrees: number;
   readonly blendshapes: Readonly<Record<string, number>>;
 }
 

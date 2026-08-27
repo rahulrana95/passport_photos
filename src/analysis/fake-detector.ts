@@ -20,6 +20,7 @@ export interface FakeDetectorOptions {
   readonly confidence?: number;
   readonly rollDegrees?: number;
   readonly yawDegrees?: number;
+  readonly pitchDegrees?: number;
   readonly blendshapes?: Readonly<Record<string, number>>;
 }
 
@@ -67,6 +68,7 @@ const landmarksFromSpec = (
   confidence: options.confidence ?? DEFAULT_CONFIDENCE,
   rollDegrees: options.rollDegrees ?? 0,
   yawDegrees: options.yawDegrees ?? 0,
+  pitchDegrees: options.pitchDegrees ?? 0,
   blendshapes: options.blendshapes ?? NEUTRAL_BLENDSHAPES,
 });
 

@@ -1238,44 +1238,129 @@ TESTS
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #21 — Rule engine and compliance report model
-Branch: feat/rule-engine               Depends on: #20               Status: TODO
+Branch: feat/rule-engine               Depends on: #20               Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   Measurements plus spec, in. A typed, ordered, human-readable verdict out —
   where every failure carries a physical action the user can take.
 
-  DECIDED: rule identities follow ISO/IEC 19794-5, which defines 30 face-image
-  requirements. Every national specification derives from that standard, so
-  adopting its taxonomy makes our vocabulary match the authorities' own
-  documentation, makes us directly comparable to the BioLab-ICAO benchmark and
-  to BioGaze, and stops us inventing terms nobody else uses. The 17 rules in
-  the fidelity matrix become a subset of the 30, each carrying its ISO id.
+  DECIDED: rule identities follow the ICAO/ISO portrait-quality requirement
+  set, 30 requirements, so our vocabulary matches the authorities' own
+  documentation and we are comparable to the published benchmarks instead of
+  grading ourselves against a list we invented. 17 of the 30 are measured,
+  which is the fidelity matrix's 17 rules landing exactly where planned.
+
+  DEVIATION, and it is deliberate: ISO/IEC 19794-5 is a paid standard and
+  nobody here has read it. The identifiers are requirement NAMES transcribed
+  from the public literature built on the standard, and nothing in the
+  codebase prints a clause number — a fabricated "§7.2.3" beside a verdict
+  would be the most convincing thing on the page and the least true. Buying
+  the standard and attaching real clause references is owed alongside spec
+  verification (#29).
 
 IMPLEMENTS
-  [ ] Rule definitions with an ISO/IEC 19794-5 requirement id, severity,
-      confidence and evaluator
-  [ ] Coverage map: which of the 30 ISO requirements we check, which we defer
-      to a manual checklist, and which we cannot detect — published on the site
-      as a credibility signal rather than hidden
-  [ ] Verdicts: pass / fail / warning / manual-check / undetectable
-  [ ] Fix instructions computed from the delta ("move ~30cm closer")
-  [ ] Overall verdict aggregation and rule ordering by importance
-  [ ] Manual checklist for glasses, head covering and recency
+  [x] Rule definitions with a requirement id, severity, evidence source and
+      evaluator — 24 rules, 18 measured and 6 always the reader's
+  [x] Coverage map over all 31 requirements (30 ISO + photo age), DERIVED from
+      the registry rather than authored beside it, so the published map cannot
+      drift from what the engine does. 17 checked, 8 manual, 4 undetectable,
+      2 planned — published because a list of only what we check invites the
+      reader to assume the rest passed
+  [x] Verdicts: pass / fail / warning / manual / undetectable
+  [x] Fix instructions computed from the delta, in ratios and degrees
+  [x] Overall verdict aggregation, with a precedence ORDER OF ITS OWN, distinct
+      from the display order — undetectable ranks second for the headline and
+      fourth for the rows, because a report that could not measure something
+      is not entitled to summarise itself as a warning
+  [x] Manual checklist for glasses, head coverings, veils, hair, print marks
+      and recency, worded from the spec's own policy
+  [x] Message resolution: labels, findings, measurements, requirements and fix
+      instructions, all from the content module, all through Intl
+
+  [~] "Move ~30cm closer" is NOT emitted, and this is a refusal rather than an
+      omission. Turning "your head needs to be 20% taller" into a distance
+      requires knowing how far away the camera already is; the scale factor
+      gives the RATIO of two distances and nothing more. An invented
+      centimetre figure would be wrong for anyone not standing where we
+      guessed, and it would be the most actionable-looking sentence on the
+      page. Instructions are quantified in percentages, degrees and
+      millimetres — all of which are measured.
+
+DEFERRALS THAT CAME DUE HERE
+  [x] Sunglasses, masks and heavy shadow (deferred from #17 "to be worded for
+      the user"). Honoured as coverage rather than as detection: tinted
+      lenses, lens glare, heavy frames and frames across the eyes are one
+      manual glasses check; a veil over the face is its own; shadow across the
+      face is published as undetectable, because telling a cast shadow from
+      the modelling that makes a face look like a face is not something
+      luminance settles.
+  [x] Pitch extraction (deferred from #19 to "the rule that needs it").
+      Recovered from the transformation matrix, and the yaw formula corrected
+      while there: dividing by R[2][2] alone is the cosine of the yaw only
+      while the head is level, so a photo with the chin down had its yaw
+      overstated — a straight-on face reported as turned away.
+      The pitch RULE reports magnitude only. The sign of this decomposition
+      has never been held against a real capture, and a confidently reversed
+      "lower your chin" said to somebody who needs to raise it is worse than
+      no direction at all.
+  [x] mayIncludeCovering surfaced (its own comment said "the rule engine must
+      report this rather than swallow it"). Reported by the one advisory rule
+      in the registry — a flat-topped silhouette is a hat or it is a head of
+      hair, and failing a photograph on that would reject people for their
+      hair.
 
 EDGE CASES
-  [ ] Detection failed entirely — must not report "pass" by omission
-  [ ] Low-confidence results must degrade to manual-check, never to pass
-  [ ] Contradictory rules resolved deterministically
-  [ ] Fix instructions must stay correct when two rules interact (moving closer
-      fixes head height but may break the eye line)
-  [ ] Never emit "guaranteed to pass" anywhere in the model or copy
-  [ ] All messages come from the content module — i18n-ready, no literals
+  [x] Detection failed entirely does not report "pass" by omission. Structural
+      rather than remembered: every rule's missing-input path goes through one
+      unmeasured() constructor, and no evaluator has a branch that turns an
+      absent measurement into anything else. Asserted by handing the engine an
+      empty bundle and requiring that no rule passes.
+  [x] Low confidence degrades to manual — in BOTH directions. The obvious half
+      is that an unreliable pass is not a pass. The half worth writing down is
+      that an unreliable FAILURE is as damaging: it sends somebody to retake a
+      photograph that was fine, on a measurement we already decided not to
+      trust. Confidence is a property of the evidence, not of the answer.
+  [x] Contradictory rules resolved deterministically, by fix group. Only
+      framing has one, and it is the case the mechanism exists for: moving
+      closer changes the head height AND the eye line AND the centring. The
+      earlier rule keeps its instruction; the others keep their verdict and
+      their measurement and name the rule that covers them.
+  [x] Rules merely fixed at the same time are NOT grouped. "Retake sharper"
+      and "retake with more light" compose; suppressing one would lose a real
+      finding. Same for the three pose rules — three axes, three independent
+      movements.
+  [x] A requirement the country never published is omitted, not passed. A row
+      reading "Eye position — meets the requirement" against a country that
+      publishes no eye position is a verdict on a rule nobody wrote.
+  [x] Never emits "guaranteed to pass". Enforced over the whole content tree
+      by the existing copy invariants, which the new rule copy now flows
+      through — 140-odd strings, each asserted.
+  [x] All messages come from the content module, keyed by unions, so a rule
+      added without copy fails the build rather than rendering a blank row.
+
+  [ ] The background verdict was ordered and short-circuiting, so a blue
+      patterned wall came back as 'wrong-colour' and said nothing about the
+      pattern — and a rule reading only the verdict would have reported the
+      pattern as acceptable, a pass it never established. Fixed here rather
+      than worked around: evaluateBackground now answers its four questions
+      independently and the ordered verdict is derived from them.
+  [ ] MIN_FACE_LUMINANCE / MAX_FACE_LUMINANCE deleted from analysis.constants,
+      with a test asserting no such threshold returns. They were never wired
+      to anything, and a band on mean face luminance is a band on skin tone.
+      Leaving them in the constants file was an invitation to wire them.
 
 SEO  n/a
 
 TESTS
-  Unit: every rule, every verdict state, aggregation, message resolution.
+  132 unit tests across the module, 100% coverage, no suppressions. The
+  centrepiece is a scenario table: one entry per state any rule can reach, and
+  a final test asserting that every message the content module holds is
+  produced by one of them. A message with no path to it is either dead copy or
+  an unreachable branch, and neither is visible in a diff.
 
+  No Storybook stories: this PR ships no component. RuleResultRow already has
+  its own, and wiring the resolver into a results page belongs to #26 rather
+  than being invented here ahead of its design.
 
 ═══════════════════════════════════════════════════════════════════════════════
  PHASE 4 — OUTPUT

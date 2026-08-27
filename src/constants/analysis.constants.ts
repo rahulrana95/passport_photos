@@ -12,6 +12,13 @@ export const MIN_FACE_DETECTION_CONFIDENCE_RATIO = 0.5;
 /** Below this, a crown estimate degrades to manual-check rather than a verdict. */
 export const MIN_CROWN_CONFIDENCE_RATIO = 0.6;
 
+/**
+ * Below this, anything measured through the segmentation mask degrades to
+ * manual-check. A mask that bled into the wall gives a background sample full
+ * of hair, and the resulting verdict is confident and about the wrong pixels.
+ */
+export const MIN_SEGMENTATION_CONFIDENCE_RATIO = 0.6;
+
 /** Face must occupy at least this share of the frame to be measurable at all. */
 export const MIN_FACE_FRAME_COVERAGE_RATIO = 0.05;
 
@@ -42,6 +49,14 @@ export const MIN_FACE_SHARPNESS_VARIANCE = 100;
 /** Share of pixels at 0 or 255 above which exposure is reported as clipped. */
 export const MAX_CLIPPED_PIXEL_RATIO = 0.02;
 
-/** Acceptable mean face luminance, 0–255. Outside this, exposure is flagged. */
-export const MIN_FACE_LUMINANCE = 60;
-export const MAX_FACE_LUMINANCE = 220;
+/*
+ * MIN_FACE_LUMINANCE and MAX_FACE_LUMINANCE used to live here, and their
+ * removal is the point rather than a tidy-up.
+ *
+ * A band on mean face luminance is a band on skin tone: a correctly exposed
+ * photograph of dark skin sits below any such minimum by definition. They were
+ * written before the exposure work and were never wired to anything, and
+ * leaving them in the constants file would have been an invitation to wire
+ * them. Exposure is judged on clipping and tonal range instead — see
+ * src/quality/exposure.utils.ts for the full argument.
+ */

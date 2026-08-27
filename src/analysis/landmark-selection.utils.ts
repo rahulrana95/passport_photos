@@ -33,6 +33,7 @@ export interface FaceCandidate {
   readonly confidence: number;
   readonly yawDegrees: number;
   readonly rollDegrees: number;
+  readonly pitchDegrees: number;
 }
 
 export const FACE_REJECTION_REASONS = [

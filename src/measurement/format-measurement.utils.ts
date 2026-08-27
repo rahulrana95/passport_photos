@@ -13,7 +13,7 @@ import {
  * everywhere. Intl.NumberFormat handles both.
  */
 
-export type MeasurementUnit = 'millimeter' | 'inch' | 'percent';
+export type MeasurementUnit = 'millimeter' | 'inch' | 'percent' | 'degree';
 
 export const roundMeasurement = (
   value: number,

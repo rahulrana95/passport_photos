@@ -34,6 +34,30 @@ describe('copy invariants', () => {
     }
   });
 
+  it('gives every fix instruction something to actually do', () => {
+    // A fix line that only restates the finding is the failure mode this whole
+    // model exists to avoid: a verdict a reader cannot act on. Each of these
+    // has to name a movement, a setting or a retake.
+    for (const [kind, instruction] of Object.entries(EN_CONTENT.rules.fixes)) {
+      expect(instruction.toLowerCase(), `${kind} must name an action`).toMatch(
+        /take|move|stand|face|straighten|look|line|open|close|relax|rest|turn|step/,
+      );
+    }
+  });
+
+  it('says what we could not measure rather than staying silent about it', () => {
+    // The shared message is load-bearing: it appears wherever a check could
+    // not run, and a reader who sees nothing at all concludes it passed.
+    expect(EN_CONTENT.rules.messages['shared.unmeasured'].toLowerCase()).toContain('could not');
+  });
+
+  it('names the coverage the map is published to admit', () => {
+    // The uncomfortable half. If these two ever read as reassurance, the map
+    // has stopped doing the job it exists for.
+    expect(EN_CONTENT.rules.coverageKinds.undetectable.toLowerCase()).toContain('cannot');
+    expect(EN_CONTENT.rules.coverageKinds.planned.toLowerCase()).toContain('not built');
+  });
+
   it('states who makes the final decision', () => {
     expect(EN_CONTENT.legal.acceptanceDisclaimer.toLowerCase()).toContain('final decision');
   });

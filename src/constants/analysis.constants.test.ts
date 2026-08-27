@@ -13,10 +13,17 @@ describe('analysis thresholds', () => {
     expect(value).toBeLessThanOrEqual(1);
   });
 
-  it('keeps the face luminance window ordered and inside the 8-bit range', () => {
-    expect(analysis.MIN_FACE_LUMINANCE).toBeLessThan(analysis.MAX_FACE_LUMINANCE);
-    expect(analysis.MIN_FACE_LUMINANCE).toBeGreaterThanOrEqual(0);
-    expect(analysis.MAX_FACE_LUMINANCE).toBeLessThanOrEqual(255);
+  it('declares no threshold on absolute face luminance', () => {
+    // Not an omission. A band on mean face luminance is a band on skin tone,
+    // and the two constants that used to sit here would have failed correctly
+    // exposed photographs of dark-skinned people. Exposure is judged on
+    // clipping and tonal range instead; asserting their absence keeps them
+    // from drifting back in as a convenience.
+    const luminanceThresholds = Object.keys(analysis).filter((name) =>
+      name.includes('FACE_LUMINANCE'),
+    );
+
+    expect(luminanceThresholds).toEqual([]);
   });
 
   it('requires more confidence for a crown estimate than for a face detection', () => {
