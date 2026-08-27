@@ -1,13 +1,18 @@
 import type { AnalysisResult } from '@/analysis/analysis-protocol.types';
 import type { CameraEnvironment } from '@/camera/media-devices.types';
-import type { CrownDefinition } from '@/analysis/crown-detection.utils';
 import type { PixelBuffer } from '@/testing/fixtures/synthetic-head.types';
 import type { ResolvedPhotoSpec } from '@/photo-spec/photo-spec.types';
 
 export interface CameraCaptureProps {
-  /** What the guidance is measured against. Country-specific, so never a default. */
+  /**
+   * What the guidance is measured against. Country-specific, so never a default.
+   *
+   * It carries its own crownDefinition, which is why that is not a separate
+   * prop: whether the top of the head means the hair or the skull is published
+   * by the authority, so pairing a specification with the wrong one is a
+   * mistake there should be no way to make.
+   */
   readonly spec: ResolvedPhotoSpec;
-  readonly crownDefinition: CrownDefinition;
   /** The photograph, at the sensor's resolution. */
   readonly onCapture: (photo: Blob) => void;
   /**

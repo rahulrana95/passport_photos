@@ -71,7 +71,7 @@ describe('photoSpecSchema', () => {
     expect(() =>
       photoSpecSchema.parse({
         ...valid,
-        background: { ...valid.background, hexRange: ['#F2F2F2', '#FFFFFF'] },
+        background: { ...valid.background, hexRanges: [['#F2F2F2', '#FFFFFF']] },
       }),
     ).toThrow();
   });

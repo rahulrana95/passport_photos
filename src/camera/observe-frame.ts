@@ -9,7 +9,6 @@ import { evaluateBackground } from '@/quality/background.utils';
 import { summariseTones } from '@/quality/luminance.utils';
 import { HALF } from '@/measurement/angle.constants';
 import type { AnalysisResult } from '@/analysis/analysis-protocol.types';
-import type { CrownDefinition } from '@/analysis/crown-detection.utils';
 import type { PixelBuffer } from '@/testing/fixtures/synthetic-head.types';
 import type { ResolvedPhotoSpec } from '@/photo-spec/photo-spec.types';
 import type { SourcePoint, SubjectGeometry } from '@/geometry/geometry.types';
@@ -21,8 +20,13 @@ const SUBJECT_THRESHOLD = 128;
 export interface ObserveFrameOptions {
   readonly result: AnalysisResult;
   readonly frame: PixelBuffer;
+  /**
+   * Carries the crown definition too. It used to be a separate option, which
+   * meant a caller could pair one authority's specification with another's
+   * idea of where the top of the head is — a mismatch of several millimetres
+   * on anyone with volume, and most of the tolerance on a head-height rule.
+   */
   readonly spec: ResolvedPhotoSpec;
-  readonly crownDefinition: CrownDefinition;
 }
 
 /**
@@ -110,7 +114,7 @@ export const observeFrame = (options: ObserveFrameOptions): LiveObservation => {
           {
             faceCentreX: (leftEye.x + rightEye.x) / HALF,
             faceCentreY: (leftEye.y + rightEye.y) / HALF,
-            definition: options.crownDefinition,
+            definition: spec.crownDefinition,
             headWidthPx: interOcularPx * HALF,
           },
         );

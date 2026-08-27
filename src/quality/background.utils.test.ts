@@ -12,12 +12,17 @@ import {
   subjectBackgroundContrast,
   subjectBackgroundSeparation,
 } from './background.utils';
+import {
+  ALPHA_OPAQUE,
+  CHANNELS_PER_PIXEL,
+} from '@/testing/fixtures/pixel-format.constants';
 import type { BackgroundRequirement } from './background.utils';
+import type { PixelBuffer } from '@/testing/fixtures/synthetic-head.types';
 import type { TonedFaceSpec } from '@/testing/fixtures/toned-face.builder';
 
 /** An off-white background requirement, as most authorities publish. */
 const offWhite: BackgroundRequirement = {
-  hexRange: ['#e0e0e0', '#ffffff'],
+  hexRanges: [['#e0e0e0', '#ffffff']],
   uniformityTolerance: 6,
 };
 
@@ -184,5 +189,60 @@ describe('FAIRNESS: the background verdict must not depend on skin tone', () => 
     const spread = Math.max(...measurements) - Math.min(...measurements);
 
     expect(spread).toBeLessThan(0.5);
+  });
+});
+
+
+/** A frame of one flat colour, which is all a colour check needs. */
+const solidBuffer = (red: number, green: number, blue: number): PixelBuffer => {
+  const width = 64;
+  const height = 64;
+  const data = new Uint8ClampedArray(width * height * CHANNELS_PER_PIXEL);
+  for (let index = 0; index < width * height; index += 1) {
+    const offset = index * CHANNELS_PER_PIXEL;
+    data[offset] = red;
+    data[offset + 1] = green;
+    data[offset + 2] = blue;
+    data[offset + 3] = ALPHA_OPAQUE;
+  }
+  return { width, height, data: data as Uint8ClampedArray<ArrayBuffer> };
+};
+
+describe('an authority that accepts two different colours', () => {
+  /** HM Passport Office: "plain cream or light grey". Warm, and neutral. */
+  const ukLike: BackgroundRequirement = {
+    hexRanges: [
+      ['#d9d9d9', '#f2f2f2'],
+      ['#f4efea', '#fdfbf7'],
+    ],
+    uniformityTolerance: 12,
+  };
+
+  const colourAccepted = (red: number, green: number, blue: number): boolean =>
+    evaluateBackground(
+      solidBuffer(red, green, blue),
+      () => true,
+      ukLike,
+    ).colourWithinRange;
+
+  it('accepts the neutral grey', () => {
+    expect(colourAccepted(0xe5, 0xe5, 0xe5)).toBe(true);
+  });
+
+  it('accepts the warm cream', () => {
+    expect(colourAccepted(0xf8, 0xf5, 0xf0)).toBe(true);
+  });
+
+  it('rejects a colour that sits between the two published ones', () => {
+    // THE REASON THIS IS A LIST. A single range wide enough to hold both a
+    // cream and a grey is a box in RGB, and a box holds every tint in the
+    // corners of it — this mint would have passed a check the authority fails.
+    expect(colourAccepted(0xd9, 0xfb, 0xea)).toBe(false);
+  });
+
+  it('rejects pure white, which the United Kingdom does not accept', () => {
+    // A pale subject has no edge against it, and it is one of the commonest
+    // reasons a UK photograph comes back.
+    expect(colourAccepted(0xff, 0xff, 0xff)).toBe(false);
   });
 });

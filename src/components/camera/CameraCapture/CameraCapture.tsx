@@ -46,7 +46,6 @@ const WAITING: LiveGuidance = {
  */
 export const CameraCapture = ({
   spec,
-  crownDefinition,
   onCapture,
   onUploadInstead,
   analyse,
@@ -152,7 +151,12 @@ export const CameraCapture = ({
         grabFrame({ video, canvas: canvas(), maxEdgePx: GUIDANCE_FRAME_EDGE_PX }),
       onFrame: async (frame) => {
         const result = await analyse(frame);
-        setGuidance(deriveGuidance(observeFrame({ result, frame, spec, crownDefinition }), spec));
+        setGuidance(
+          deriveGuidance(
+            observeFrame({ result, frame, spec }),
+            spec,
+          ),
+        );
       },
       // Swallowed on purpose. A detector that timed out on one frame must not
       // freeze the preview with a stale instruction still on it — the next
@@ -164,7 +168,7 @@ export const CameraCapture = ({
     return () => {
       loop.stop();
     };
-  }, [live, analyse, spec, crownDefinition, intervalMs]);
+  }, [live, analyse, spec, intervalMs]);
 
   // Battery, and the reason it is worth a listener: a backgrounded tab keeps
   // its camera open, and a detection loop running against a frame nobody is

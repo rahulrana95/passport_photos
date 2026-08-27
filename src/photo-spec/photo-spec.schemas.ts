@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CROWN_DEFINITIONS } from '@/analysis/crown-detection.utils';
 import { COUNTRY_SLUGS } from '@/constants/country.constants';
 import { DOCUMENT_TYPES } from '@/constants/document-type.constants';
 import {
@@ -69,8 +70,18 @@ export const eyeLineSchema = z
 
 export const backgroundSchema = z.object({
   colour: z.enum(BACKGROUND_COLOURS),
-  /** Inclusive range the measured mean background colour must fall within. */
-  hexRange: z.tuple([hexColour, hexColour]),
+  /**
+   * The acceptable colours, as one or more inclusive ranges.
+   *
+   * A LIST, because an authority can accept two colours that are nowhere near
+   * each other. HM Passport Office accepts "plain cream or light grey": one is
+   * warm, one is neutral, and a single range wide enough to hold both also
+   * holds every tint between them — a mint-green wall would pass. Two ranges
+   * accept exactly the two colours published and nothing in the gap.
+   */
+  hexRanges: z.array(z.tuple([hexColour, hexColour])).min(1, {
+    error: 'A background must state at least one acceptable colour range',
+  }),
   /** Permitted standard deviation of background luminance, 0–255. */
   uniformityTolerance: z.number().positive(),
 });
@@ -87,6 +98,18 @@ export const photoSpecSchema = z.object({
   headHeight: headHeightSchema,
   eyeLine: eyeLineSchema.optional(),
   background: backgroundSchema,
+
+  /**
+   * Where the top of the head is, for this authority.
+   *
+   * Not a detector setting — a published difference. The United States measures
+   * "the top of the head, including the hair"; the United Kingdom and the
+   * Schengen states measure from the crown, meaning the skull. On anyone with
+   * volume those are several millimetres apart, which is most of the tolerance
+   * on a head-height rule, so a single hard-coded answer is wrong for one
+   * country or the other.
+   */
+  crownDefinition: z.enum(CROWN_DEFINITIONS),
 
   glasses: z.enum(GLASSES_POLICIES),
   headCovering: z.enum(HEAD_COVERING_POLICIES),

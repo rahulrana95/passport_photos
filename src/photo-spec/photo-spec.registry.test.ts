@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { UK_PASSPORT } from './specs/uk.spec';
 import { photoSpecSchema } from './photo-spec.schemas';
+import type { PhotoSpec } from './photo-spec.schemas';
 import {
   buildRegistry,
   findSpec,
@@ -40,16 +42,40 @@ describe('the authored registry', () => {
 });
 
 describe('serving rules', () => {
+  /**
+   * The RULE, not the current state of the registry.
+   *
+   * These two used to assert that nothing was servable, because at the time
+   * every seeded spec was provisional. That is a fact about the data, and it
+   * stopped being true the moment the specifications were verified — so two
+   * tests failed that were describing the world rather than the behaviour.
+   * A provisional spec is built here instead, so the gate is tested whatever
+   * the shipped registry happens to contain.
+   */
+  const provisional: PhotoSpec = { ...UK_PASSPORT, verification: 'provisional' };
+  const mixed = buildRegistry([provisional]);
+
   it('serves nothing that has not been verified against its source', () => {
-    // Every seeded spec is currently provisional: the values are believed
-    // correct but nobody has confirmed them at the authority's own page.
     // Presenting an unverified government requirement as authoritative is the
     // exact failure this product exists to prevent.
-    expect(listServableSpecs()).toHaveLength(0);
+    expect(findSpecIn(mixed, 'uk', 'passport', NOW)).toEqual({
+      found: false,
+      reason: 'unknown-country',
+    });
   });
 
-  it('reports a provisional specification as not found rather than serving it', () => {
-    expect(findSpec('us', 'passport', NOW)).toEqual({ found: false, reason: 'unknown-country' });
+  it('serves a specification once it has been verified', () => {
+    const verified = buildRegistry([{ ...UK_PASSPORT, verification: 'verified' }]);
+
+    expect(findSpecIn(verified, 'uk', 'passport', NOW).found).toBe(true);
+  });
+
+  it('serves every specification the shipped registry has verified', () => {
+    // The other direction: a spec that is marked verified and still does not
+    // reach a reader would be a silent outage of the whole product.
+    const verified = listAuthoredSpecs().filter((spec) => spec.verification === 'verified');
+
+    expect(listServableSpecs()).toHaveLength(verified.length);
   });
 });
 

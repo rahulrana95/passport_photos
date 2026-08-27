@@ -8,7 +8,7 @@ import type { ResolvedPhotoSpec } from '@/photo-spec/photo-spec.types';
 const US_SPEC = {
   print: { widthMm: 51, heightMm: 51, dpi: 300 },
   headHeight: { minMm: 25, maxMm: 35, minRatio: 0.49, maxRatio: 0.69, authoredUnit: 'mm' },
-  background: { colour: 'white', hexRange: ['#e0e0e0', '#ffffff'], uniformityTolerance: 12 },
+  background: { colour: 'white', hexRanges: [['#e0e0e0', '#ffffff']], uniformityTolerance: 12 },
 } as unknown as ResolvedPhotoSpec;
 
 const meta = {
@@ -16,7 +16,6 @@ const meta = {
   component: CameraCapture,
   args: {
     spec: US_SPEC,
-    crownDefinition: 'visible-top',
     onCapture: fn(),
     // A camera that never existed. Storybook runs in a browser that may well
     // have a real one, and a story that asked for permission every time it
