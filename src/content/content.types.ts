@@ -86,6 +86,20 @@ export interface CameraContent {
   readonly failures: Readonly<Record<CameraFailureCode, IngestionMessage>>;
 }
 
+/**
+ * The checker page — the one screen where the whole product is assembled.
+ */
+export interface CheckerContent {
+  readonly heading: string;
+  readonly intro: string;
+  readonly specLegend: string;
+  /** Interpolated with {country} and {document}. */
+  readonly specOption: string;
+  readonly startOver: string;
+  readonly privacyHeading: string;
+  readonly privacyBody: string;
+}
+
 export interface ResultContent {
   /**
    * The headline, which has to stand alone at the top of a page.
@@ -220,6 +234,7 @@ export interface ContentTree {
   readonly common: CommonContent;
   readonly upload: UploadContent;
   readonly camera: CameraContent;
+  readonly checker: CheckerContent;
   readonly result: ResultContent;
   readonly legal: LegalContent;
   readonly errors: ErrorContent;

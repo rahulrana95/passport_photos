@@ -1,26 +1,29 @@
+import { ANALYSIS_WORKER_PATH } from './analysis-worker.constants';
 import { AnalysisError } from './analysis-error.utils';
-import type { WorkerCapableScope, WorkerLike } from './analysis-client.types';
+import type { WorkerLike } from './analysis-client.types';
 
 /**
  * Constructs the real analysis worker.
  *
- * The URL form is what lets the bundler emit the worker as its own chunk, so
- * the models and the analysis code stay out of the first-paint bundle. That is
- * a hard requirement rather than an optimisation: every country page carries
- * the search traffic this product lives on, and none of them run an analysis
- * until someone chooses a photo.
+ * Loaded from a path rather than from `new URL('./analysis.worker.ts',
+ * import.meta.url)`, because Turbopack does not compile that form — see
+ * analysis-worker.constants.ts for what it does instead.
+ *
+ * A CLASSIC WORKER, DELIBERATELY. `{ type: 'module' }` is the modern default
+ * and it breaks MediaPipe. Its WASM runtime arrives as a classic script that
+ * declares `var ModuleFactory` at the top level and expects to find it on the
+ * global afterwards; inside a module worker that declaration is module-scoped,
+ * the global stays empty, and the detector fails with "ModuleFactory not set"
+ * after downloading twelve megabytes. Classic it is, which is also why the
+ * build emits an IIFE with nothing left to import at runtime.
  */
-export const createBrowserWorker = (
-  scope: WorkerCapableScope = globalThis as WorkerCapableScope,
-): WorkerLike => {
-  const constructor = scope.Worker;
-
-  if (constructor === undefined) {
+export const createBrowserWorker = (): WorkerLike => {
+  if (typeof Worker === 'undefined') {
     throw new AnalysisError(
       'worker-unavailable',
       'This browser blocked the analysis engine from starting. Checks cannot run here.',
     );
   }
 
-  return new constructor(new URL('./analysis.worker.ts', import.meta.url), { type: 'module' });
+  return new Worker(ANALYSIS_WORKER_PATH);
 };

@@ -42,6 +42,22 @@ export const SYNTHETIC_HEAD_FIXTURES: readonly SyntheticHeadFixture[] = [
     spec: NOMINAL_HEAD_SPEC,
   },
   {
+    name: 'compliant-framing',
+    description:
+      'A photograph a compliant crop actually fits inside. The corpus had none: every other fixture is 600x600 with a head filling 55-97% of it, because these were built for crown detection where framing did not matter. Against a real specification not one of them yields a crop — the head is so large that the crop the spec asks for comes out bigger than the photograph. So the geometry engine\'s success path had never been exercised end to end by any fixture, which is the most important path there is. Derived rather than guessed: at a head of 480px the crop is 480 x 50.8 / 30.2 = 807px, inside a 1200px frame with room for the eye line to place it.',
+    spec: {
+      ...NOMINAL_HEAD_SPEC,
+      widthPx: 1_200,
+      heightPx: 1_200,
+      crownY: 300,
+      chinY: 780,
+      centreX: 600,
+      headWidthPx: 340,
+      eyeY: 540,
+      seed: 21,
+    },
+  },
+  {
     name: 'dark-hair-on-dark-background',
     description:
       'Head luminance within a few levels of the background. The classic segmentation failure: naive thresholding finds no edge at all.',

@@ -1,0 +1,85 @@
+.checker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-space-lg);
+}
+
+.specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tk-space-2xs);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  margin-block-end: var(--tk-space-2xs);
+  padding: 0;
+  font-size: var(--tk-text-sm);
+  font-weight: 600;
+  color: var(--tk-text-primary);
+}
+
+/* The radio itself is hidden from sight but not from the keyboard: it stays
+   focusable and operable, and the label beside it carries the focus ring. */
+.radio {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.option {
+  display: inline-flex;
+  padding: var(--tk-space-2xs) var(--tk-space-sm);
+  border: 1px solid var(--tk-border-default);
+  border-radius: var(--tk-radius-md);
+  background: var(--tk-surface);
+  font-size: var(--tk-text-sm);
+  color: var(--tk-text-primary);
+  cursor: pointer;
+  transition:
+    border-color var(--tk-duration-fast) var(--tk-easing-standard),
+    background var(--tk-duration-fast) var(--tk-easing-standard);
+}
+
+.option:hover {
+  border-color: var(--tk-accent);
+  background: var(--tk-accent-soft);
+}
+
+.radio:checked + .option {
+  border-color: var(--tk-accent);
+  background: var(--tk-accent);
+  color: var(--tk-accent-contrast);
+}
+
+.radio:focus-visible + .option {
+  outline: 2px solid var(--tk-accent);
+  outline-offset: 2px;
+}
+
+.restart {
+  align-self: flex-start;
+  padding: var(--tk-space-2xs) var(--tk-space-sm);
+  border: 1px solid var(--tk-border-default);
+  border-radius: var(--tk-radius-md);
+  background: var(--tk-surface);
+  font-size: var(--tk-text-sm);
+  color: var(--tk-text-primary);
+  cursor: pointer;
+}
+
+.restart:hover {
+  border-color: var(--tk-accent);
+  background: var(--tk-accent-soft);
+}
+
+.restart:focus-visible {
+  outline: 2px solid var(--tk-accent);
+  outline-offset: 2px;
+}
