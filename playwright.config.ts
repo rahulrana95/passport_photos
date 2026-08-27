@@ -52,12 +52,12 @@ export default defineConfig({
   projects: [
     {
       name: 'desktop-chromium',
-      testIgnore: /visual\//,
+      testIgnore: /(visual|storybook)\//,
       use: { ...devices['Desktop Chrome'], baseURL: APP_URL, ...launchOverride },
     },
     {
       name: 'mobile-chromium',
-      testIgnore: /visual\//,
+      testIgnore: /(visual|storybook)\//,
       use: { ...devices['Pixel 7'], baseURL: APP_URL, ...launchOverride },
     },
     {
@@ -65,6 +65,15 @@ export default defineConfig({
       // preset here only supplies the browser.
       name: 'stories',
       testMatch: /visual\//,
+      use: { ...devices['Desktop Chrome'], baseURL: STORYBOOK_URL, ...launchOverride },
+    },
+    {
+      // Behaviour, in a real browser, against a real component — as opposed to
+      // the screenshots above. Components are mounted through Storybook rather
+      // than through the app because a component is reachable there the day it
+      // is written, instead of the day a route happens to mount it.
+      name: 'component-behaviour',
+      testMatch: /storybook\//,
       use: { ...devices['Desktop Chrome'], baseURL: STORYBOOK_URL, ...launchOverride },
     },
   ],

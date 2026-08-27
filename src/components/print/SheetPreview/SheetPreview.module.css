@@ -13,8 +13,8 @@
 .slot {
   position: absolute;
   overflow: hidden;
-  border: 1px dashed var(--tk-border-strong, var(--tk-border-default));
-  background: var(--tk-skeleton, var(--tk-surface));
+  border: 1px dashed var(--tk-border-strong);
+  background: var(--tk-sunken);
 }
 
 .photo {

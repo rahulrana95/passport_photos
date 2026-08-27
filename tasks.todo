@@ -1687,21 +1687,139 @@ TESTS
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #26 — Upload zone and file input
-Branch: feat/upload-zone               Depends on: #25               Status: TODO
+Branch: feat/upload-zone               Depends on: #25               Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  The first thing anybody touches. Everything downstream of this is worthless
+  to a reader who could not get their photograph in, and the ways people fail
+  to get a photograph in are specific and knowable — so each one is handled by
+  name rather than by a single "please try another file".
+
 IMPLEMENTS
-  [ ] Drag-and-drop, click-to-browse, paste-from-clipboard
-  [ ] Mobile capture attribute for direct camera use
-  [ ] Model warm-up on pointerenter
-  [ ] Inline validation errors with recovery guidance
+  [x] Drag-and-drop, click-to-browse, paste-from-clipboard
+  [x] Mobile capture attribute for direct camera use — on a SECOND input, not
+      on the picker. `capture` on the main picker is the common shortcut and it
+      is destructive: on a phone it removes the option to choose an existing
+      photograph entirely, so somebody who already has a good one is made to
+      take a worse one on the spot. Two inputs, two buttons, both available.
+  [x] Model warm-up on pointerenter, once per mount and guarded by a ref
+  [x] Inline validation errors with recovery guidance
+
+  [~] MIGRATION: ingestion refusal copy moved into the content module. It used
+      to be English sentences built inside src/ingestion. A failure now carries
+      a messageId and numbers — a size, a format, the dimensions that fell
+      short — and the words are resolved from content at render. This is the
+      first screen a reader meets, before anything has worked, so it is the
+      worst possible place to have untranslatable text; a second language is
+      now a content file rather than a second copy of the ingestion module.
+      One code can carry two explanations, which is why messageId is a
+      separate field: a HEIC this browser cannot open and a TIFF nobody can
+      open are both 'format-not-supported', and one of them is three taps in
+      Photos away from working.
+
+  [~] ADDED: a `failure` prop, so the CALLER can hand the zone a refusal to
+      render. Half the refusals in the pipeline are only knowable after a
+      decoder has run — damaged, too small, animated — and decoding happens
+      downstream of this component. Without it those failures had nowhere to
+      go but a second error block in a second style, next to the one the
+      reader has already learnt to read. A refusal detected here outranks one
+      passed in, because that one is about the file just chosen.
+
+  [~] FIXED, found by the new guard below: the drag highlight named three
+      design tokens that do not exist (--tk-primary, --tk-surface-raised,
+      --tk-focus-ring) and two components shipped in #22 and #24 named two
+      more (--tk-skeleton, --tk-surface-sunken). Every one had a fallback, so
+      every one rendered something plausible instead of nothing — which is
+      exactly why they got through review.
+
 EDGE CASES
-  [ ] Multiple files dropped; folder dropped; non-image dropped
-  [ ] dragleave firing on child elements (the classic flicker bug)
-  [ ] Keyboard and screen-reader operable without a mouse
-  [ ] Drop outside the zone must not navigate the browser away
-  [ ] Re-uploading while an analysis is in flight
-  [ ] iOS Safari camera capture quirks
-TESTS  Unit + axe; stories for idle/hover/dragging/error; Playwright real upload.
+  [x] Multiple files dropped — the first is used and the count is shown.
+      Refusing a four-photograph drop only makes the reader drop one again.
+      Reachable by drop and paste only: the picker is deliberately not
+      `multiple`, asserted in the browser suite.
+  [x] Folder dropped — recognised by the only signal available from this side
+      of the API: no type and no size. A genuinely empty file looks identical
+      and that ambiguity cannot be resolved here, so the tie is broken toward
+      "not a file" — the folder advice is useful to somebody with an empty
+      file, and the empty-file advice is baffling to somebody who dropped a
+      folder. A zero-byte file that DOES declare a type keeps its own precise
+      refusal.
+  [x] Non-image dropped — sniffed from the leading bytes, never from the
+      declared MIME type or the filename. Both lie routinely: a .jpg that is
+      really a HEIC is the most common upload on iOS, because renaming is what
+      people try when a file "will not work".
+  [x] dragleave firing on child elements (the classic flicker bug) — the drag
+      state is a DEPTH COUNTER, not a boolean. Covered twice: in jsdom, and in
+      a real browser where the events are the browser's own. The counter is
+      also floored at zero, because browsers do emit unpaired dragleaves and a
+      negative count would mean the zone never lit up again.
+  [x] Keyboard and screen-reader operable without a mouse — the file inputs
+      are visually hidden by clip-path and remain focusable. Not `hidden` and
+      not display:none, the usual shortcut, which takes them out of the tab
+      order and leaves the styled labels beside them unreachable. The focus
+      ring is drawn on the label, since the thing focused is invisible.
+      Asserted in a real browser by tabbing to it. Refusals are announced in
+      an aria-live="polite" region: assertive would cut across whatever the
+      reader is being told.
+  [x] Drop outside the zone must not navigate the browser away — a window
+      listener swallows dragover and drop. The browser's default for a dropped
+      file is to open it, discarding the page and everything done so far. The
+      same listener is what makes the zone droppable at all, so there is
+      deliberately no second preventDefault on the zone itself.
+  [x] Re-uploading while an analysis is in flight — `busy` says so and the
+      zone keeps accepting. Refusing the new file would leave the reader
+      waiting on an analysis of a photograph they have already replaced.
+  [~] iOS Safari camera capture quirks — the separate input and `capture="user"`
+      as a hint rather than an instruction (iOS offers the choice anyway, which
+      costs a tap; forcing the rear camera costs the photograph). HEIC stays in
+      the accept list even though many browsers cannot decode it: leaving it
+      out does not stop somebody choosing one, it stops the picker showing them
+      their own photographs. NOT verified on a physical iPhone — no device in
+      CI. Flagged for the device pass in #34.
+
+  [x] Reads only the first 32 bytes of a file, never the whole thing. A phone
+      photograph is tens of megabytes and the format check needs thirty-two of
+      them; reading it whole would stall the tab on exactly the devices least
+      able to afford it, and would do so before we know it is an image at all.
+
+SEO  n/a — a client component behind no route until #28.
+
+TESTS
+  38 unit + axe on the component, 19 on the upload utilities, 23 on the
+  failure resolver, 6 on the FileList stub. 100% coverage, no suppressions.
+
+  12 Playwright tests in a NEW `component-behaviour` project, run against the
+  built Storybook. Real picker, real DataTransfer, real ClipboardEvent, real
+  browser. jsdom can construct none of those, so the unit suite reaches them
+  through a stub — this suite is what proves the stub is not lying. Mounted
+  through Storybook rather than a route because a component is reachable there
+  the day it is written rather than the day something mounts it.
+
+  6 stories: idle, dragging, busy, two refusals, mobile. The dragging state is
+  driven by a real dragenter dispatched from a callback ref, which React runs
+  during commit — so the highlighted frame is the first one painted and the
+  screenshot cannot catch an un-highlighted one. No hover story: hover carries
+  no visual state on the zone, only the invisible warm-up, and a screenshot
+  identical to idle is a baseline that asserts nothing.
+
+  FLAKE FOUND, NOT FIXED: the Design system/Tokens baselines differ between
+  this machine and the one that generated them, and the diff is confined to
+  text set in --tk-font-mono. The stack is `ui-monospace, 'SF Mono', Menlo,
+  monospace` and resolves to whatever the host happens to have — DejaVu Sans
+  Mono here. Body-font text and every swatch match exactly, so only the four
+  stylesheets using the mono token are exposed. Those baselines are left at
+  the values CI generated; nothing in this PR regenerates them. The real fix
+  is a bundled mono face or a font-stack that cannot vary, and it belongs with
+  the device pass in #34 rather than here.
+
+  NEW GUARD, src/theme/token-references.test.ts: every var(--tk-…) anywhere in
+  the codebase must name a token the stylesheet declares, and must carry no
+  fallback. The existing parity test checked only that registered tokens are
+  declared — the direction that never fails. A component naming a token that
+  does not exist passes build, lint and stylelint, then silently falls back.
+  Five such references were already in the tree; all are fixed. The fallback
+  ban is part of the same rule: once existence is proven, a fallback is dead
+  code whose only effect is to make the next typo look plausible.
 
 ───────────────────────────────────────────────────────────────────────────────
 ───────────────────────────────────────────────────────────────────────────────

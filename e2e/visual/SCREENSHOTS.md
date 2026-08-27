@@ -840,6 +840,92 @@ A change to any of these images is a change a reviewer must approve:
 
 ![Warning — mobile-light](./story-screenshots.spec.ts-snapshots/result-ruleresultrow/warning-mobile-light-stories-linux.png)
 
+## Upload Uploadzone
+
+### Busy
+
+**desktop-dark**
+
+![Busy — desktop-dark](./story-screenshots.spec.ts-snapshots/upload-uploadzone/busy-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Busy — desktop-light](./story-screenshots.spec.ts-snapshots/upload-uploadzone/busy-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Busy — mobile-light](./story-screenshots.spec.ts-snapshots/upload-uploadzone/busy-mobile-light-stories-linux.png)
+
+### Dragging
+
+**desktop-dark**
+
+![Dragging — desktop-dark](./story-screenshots.spec.ts-snapshots/upload-uploadzone/dragging-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Dragging — desktop-light](./story-screenshots.spec.ts-snapshots/upload-uploadzone/dragging-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Dragging — mobile-light](./story-screenshots.spec.ts-snapshots/upload-uploadzone/dragging-mobile-light-stories-linux.png)
+
+### Idle
+
+**desktop-dark**
+
+![Idle — desktop-dark](./story-screenshots.spec.ts-snapshots/upload-uploadzone/idle-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Idle — desktop-light](./story-screenshots.spec.ts-snapshots/upload-uploadzone/idle-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Idle — mobile-light](./story-screenshots.spec.ts-snapshots/upload-uploadzone/idle-mobile-light-stories-linux.png)
+
+### Mobile
+
+**desktop-dark**
+
+![Mobile — desktop-dark](./story-screenshots.spec.ts-snapshots/upload-uploadzone/mobile-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Mobile — desktop-light](./story-screenshots.spec.ts-snapshots/upload-uploadzone/mobile-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Mobile — mobile-light](./story-screenshots.spec.ts-snapshots/upload-uploadzone/mobile-mobile-light-stories-linux.png)
+
+### Refused
+
+**desktop-dark**
+
+![Refused — desktop-dark](./story-screenshots.spec.ts-snapshots/upload-uploadzone/refused-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Refused — desktop-light](./story-screenshots.spec.ts-snapshots/upload-uploadzone/refused-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Refused — mobile-light](./story-screenshots.spec.ts-snapshots/upload-uploadzone/refused-mobile-light-stories-linux.png)
+
+### Refused With Measurements
+
+**desktop-dark**
+
+![Refused With Measurements — desktop-dark](./story-screenshots.spec.ts-snapshots/upload-uploadzone/refused-with-measurements-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Refused With Measurements — desktop-light](./story-screenshots.spec.ts-snapshots/upload-uploadzone/refused-with-measurements-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Refused With Measurements — mobile-light](./story-screenshots.spec.ts-snapshots/upload-uploadzone/refused-with-measurements-mobile-light-stories-linux.png)
+
 ---
 
-171 baselines across 17 components.
+189 baselines across 18 components.

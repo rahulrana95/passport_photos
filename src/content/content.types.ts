@@ -7,6 +7,7 @@ import type { RuleId } from '@/rules/rule-id.constants';
 import type { RequirementCoverage } from '@/rules/rule.types';
 import type { OverlayRole } from '@/overlay/overlay-role.constants';
 import type { SheetSizeId } from '@/sheet/sheet-size.constants';
+import type { IngestionMessageId } from '@/ingestion/ingestion-failure.types';
 
 /** The four answers the coverage map can give about a requirement. */
 export type CoverageKind = RequirementCoverage['kind'];
@@ -29,16 +30,32 @@ export interface CommonContent {
   readonly close: string;
 }
 
+/**
+ * What a refusal says and what to do about it.
+ *
+ * The remedy is the field that matters. "We cannot read this file" loses the
+ * reader; "your iPhone saved this as HEIC — open it in Photos, tap Share, copy
+ * the photo and paste it here" keeps them.
+ */
+export interface IngestionMessage {
+  readonly message: string;
+  readonly remedy: string;
+}
+
 export interface UploadContent {
   readonly dropzoneLabel: string;
   readonly dropzoneHint: string;
   readonly browseLabel: string;
   readonly privacyNote: string;
-  readonly errorTooLarge: string;
-  readonly errorWrongType: string;
-  readonly errorTooSmall: string;
-  readonly errorHeicUnsupported: string;
-  readonly errorCorrupt: string;
+  readonly takePhotoLabel: string;
+  readonly pasteHint: string;
+  readonly busyNote: string;
+  /** Shown when several files are dropped at once. */
+  readonly usedFirstOfMany: string;
+  /** Shown when a drop contained no file at all — a folder, or a link. */
+  readonly nothingDropped: string;
+  /** Every refusal the ingestion pipeline can produce, keyed by its id. */
+  readonly failures: Readonly<Record<IngestionMessageId, IngestionMessage>>;
 }
 
 export interface ResultContent {

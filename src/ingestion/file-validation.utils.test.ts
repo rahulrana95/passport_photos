@@ -4,6 +4,7 @@ import {
   MAX_UPLOAD_BYTES,
   MIN_SOURCE_EDGE_PX,
 } from '@/constants/limits.constants';
+import { resolveIngestionFailure } from './resolve-failure.utils';
 import { validateCandidateFile, validateDecodedDimensions } from './file-validation.utils';
 
 const headerFor = (...parts: (number | string)[]): Uint8Array => {
@@ -32,7 +33,7 @@ describe('the cheap checks run before anything is decoded', () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.failure.code).toBe('empty-file');
-    expect(result.failure.remedy).not.toBe('');
+    expect(resolveIngestionFailure(result.failure).remedy).not.toBe('');
   });
 
   it('rejects an oversized file before reading its content', () => {
@@ -150,9 +151,12 @@ describe('dimension checks, once something has been decoded', () => {
   });
 
   it('names the actual dimensions in the message', () => {
+    // The numbers come from the pipeline and the sentence from the content
+    // module; this is the seam where they meet.
     const failure = validateDecodedDimensions(300, 200);
+    const resolved = failure === undefined ? undefined : resolveIngestionFailure(failure);
 
-    expect(failure?.message).toContain('300');
-    expect(failure?.message).toContain('200');
+    expect(resolved?.message).toContain('300');
+    expect(resolved?.message).toContain('200');
   });
 });
