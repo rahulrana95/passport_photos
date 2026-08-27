@@ -4,7 +4,7 @@ import { RULE_STATUSES } from '@/constants/rule-status.constants';
 import { getContent } from '@/content/content.registry';
 import { expectNoAxeViolations } from '@/testing/axe.utils';
 import { RuleResultRow } from './RuleResultRow';
-import { ruleStatusLabel } from './RuleResultRow.constants';
+import { ruleStatusLabel } from '@/rules/rule-status-label.utils';
 
 const content = getContent();
 

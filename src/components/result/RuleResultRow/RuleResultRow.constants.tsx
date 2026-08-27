@@ -1,6 +1,5 @@
 import { AlertTriangle, Check, CircleHelp, Hand, X } from 'lucide-react';
 import type { RuleStatus } from '@/constants/rule-status.constants';
-import type { ContentTree } from '@/content/content.types';
 
 /**
  * Every status gets a distinct icon shape, not just a distinct colour.
@@ -18,17 +17,6 @@ export const RULE_STATUS_ICONS: Readonly<
   warning: AlertTriangle,
   manual: Hand,
   undetectable: CircleHelp,
-};
-
-export const ruleStatusLabel = (status: RuleStatus, content: ContentTree): string => {
-  const labels: Readonly<Record<RuleStatus, string>> = {
-    pass: content.result.verdictPass,
-    fail: content.result.verdictFail,
-    warning: content.result.verdictWarning,
-    manual: content.result.verdictManual,
-    undetectable: content.result.verdictUndetectable,
-  };
-  return labels[status];
 };
 
 export const RULE_STATUS_ICON_SIZE = 18;
