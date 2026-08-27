@@ -35,6 +35,20 @@ const flat = (width: number, height: number, value: number): PixelBuffer => {
 const SOURCE = flat(700, 700, 180);
 const CROP = { x: 20, y: 20, widthPx: 650, heightPx: 650 };
 
+/**
+ * A byte ceiling this file states for itself.
+ *
+ * Not read from a real specification, deliberately. These tests are about the
+ * encoder's behaviour against a budget, not about any authority's current
+ * limit — and when the United States' passport ceiling turned out to be 10MB
+ * rather than the 240KB this file had been borrowing, three tests failed that
+ * had nothing wrong with them.
+ */
+const TIGHT_BUDGET_BYTES = 240_000;
+const BUDGETED = specWith({
+  digital: { ...US_PASSPORT.digital, maxBytes: TIGHT_BUDGET_BYTES },
+});
+
 describe('the file the reader submits', () => {
   it('is the size the specification prints at', async () => {
     // 50.8mm at 300 dots per inch is 600 pixels. The pixel count and the
@@ -71,11 +85,11 @@ describe('the file the reader submits', () => {
   });
 
   it('fits under the authority’s byte ceiling', async () => {
-    const result = await encodePhoto(createFakeJpegEncoder(), SOURCE, CROP, SPEC);
+    const result = await encodePhoto(createFakeJpegEncoder(), SOURCE, CROP, BUDGETED);
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.photo.bytes.length).toBeLessThanOrEqual(240_000);
+    expect(result.photo.bytes.length).toBeLessThanOrEqual(TIGHT_BUDGET_BYTES);
     expect(result.photo.overBudget).toBeUndefined();
   });
 });
@@ -89,7 +103,7 @@ describe('when the ceiling cannot be met', () => {
   it('still produces a photograph', async () => {
     // Explain, do not fail. A reader whose file cannot be squeezed under the
     // limit needs to know that and needs the photograph.
-    const result = await encodePhoto(stubborn, SOURCE, CROP, SPEC);
+    const result = await encodePhoto(stubborn, SOURCE, CROP, BUDGETED);
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -98,11 +112,11 @@ describe('when the ceiling cannot be met', () => {
   });
 
   it('says by how much it overshot, and against what', async () => {
-    const result = await encodePhoto(stubborn, SOURCE, CROP, SPEC);
+    const result = await encodePhoto(stubborn, SOURCE, CROP, BUDGETED);
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.photo.overBudget?.maxBytes).toBe(240_000);
+    expect(result.photo.overBudget?.maxBytes).toBe(TIGHT_BUDGET_BYTES);
     expect(result.photo.overBudget?.bytes).toBe(result.photo.bytes.length);
   });
 

@@ -21,9 +21,10 @@ const spec = (): ResolvedPhotoSpec =>
     headHeight: { minMm: 25, maxMm: 35, minRatio: 0.49, maxRatio: 0.69, authoredUnit: 'mm' },
     background: {
       colour: 'white',
-      hexRange: ['#e0e0e0', '#ffffff'],
+      hexRanges: [['#e0e0e0', '#ffffff']],
       uniformityTolerance: 12,
     },
+    crownDefinition: 'visible-top',
   }) as unknown as ResolvedPhotoSpec;
 
 /** A flat frame at a chosen luminance. */
@@ -53,7 +54,7 @@ const landmarks = (overrides: Partial<LandmarkResult> = {}): LandmarkResult => (
 });
 
 const observe = (result: AnalysisResult, level = MID_GREY) =>
-  observeFrame({ result, frame: frameAt(level), spec: spec(), crownDefinition: 'visible-top' });
+  observeFrame({ result, frame: frameAt(level), spec: spec() });
 
 describe('landmark point order', () => {
   it('is the order the fake detector produces', () => {

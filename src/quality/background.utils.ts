@@ -67,10 +67,18 @@ export interface BackgroundResult {
 
 export interface BackgroundRequirement {
   /** Inclusive hex range the mean background colour must sit within. */
-  readonly hexRange: readonly [string, string];
+  readonly hexRanges: readonly (readonly [string, string])[];
   readonly uniformityTolerance: number;
 }
 
+/**
+ * Whether a colour falls inside one published range.
+ *
+ * Per channel, which is a box in RGB rather than a line between two colours.
+ * That is the right shape for "a wall of about this colour" and the wrong
+ * shape for spanning two different hues — see the note on hexRanges in the
+ * schema for why an authority's two acceptable colours are two boxes.
+ */
 const withinHexRange = (colour: Rgb, range: readonly [string, string]): boolean => {
   const [low, high] = range;
   const [lowRed, lowGreen, lowBlue] = parseHexColour(low);
@@ -137,7 +145,7 @@ export const evaluateBackground = (
     shadowGradient,
     meanColour: colour,
     hasEnoughSamples: stats.sampleCount >= MIN_BACKGROUND_SAMPLES,
-    colourWithinRange: withinHexRange(colour, requirement.hexRange),
+    colourWithinRange: requirement.hexRanges.some((range) => withinHexRange(colour, range)),
     isUniform: stats.standardDeviation <= requirement.uniformityTolerance,
     isEvenlyLit: shadowGradient <= MAX_SHADOW_GRADIENT,
   };

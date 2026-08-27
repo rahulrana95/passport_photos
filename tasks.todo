@@ -630,8 +630,65 @@ IMPLEMENTS
   Presenting an unverified government requirement as authoritative is the exact
   failure this product exists to prevent, so it is a state in the type system
   rather than a caveat in a comment.
-  CONSEQUENCE: no country page will render until a human verifies a spec and
-  flips the flag. That is intentional.
+  CONSEQUENCE: no country page rendered until a human verified a spec and
+  flipped the flag. That was intentional, and it held for four plan items.
+  Cleared on 2026-08-27 — see below.
+
+  ── RESOLVED, 2026-08-27 ───────────────────────────────────────────────────
+  All four specifications are VERIFIED. The architect supplied the published
+  values from the authorities' own documents after a research pass from here
+  reached only search summaries — the egress proxy blocks travel.state.gov,
+  www.gov.uk, assets.publishing.service.gov.uk and home-affairs.ec.europa.eu,
+  so a primary-source read was not possible from this environment and the flag
+  was never going to be flippable by the build.
+
+  FOUR THINGS WERE WRONG, and each had a consequence:
+
+  1. US passport digital.maxBytes was 240_000 — the DS-160 CONSULAR ceiling,
+     inherited by a spread. A passport upload accepts 10MB, so every passport
+     photograph was being compressed against a budget forty times too small.
+     The visa keeps 240KB, and a test now guards that the two are different in
+     the direction the mistake actually went.
+
+  2. US head height was authored in millimetres, 25.4-34.9. State publishes the
+     same rule three ways — "1 - 1 3/8 inches", "(25 - 35 mm)", and 50%-69% of
+     the image height — and they disagree, because an inch is 25.4mm. Enforcing
+     the millimetre form rejects a photograph at 25.1mm that the inch form
+     accepts. Now authored as the proportion, which is what the biometric
+     pipeline operates on.
+
+  3. The Schengen citation pointed at a page containing neither the size nor
+     the ratio. Regulation 810/2009 states no dimensions at all; it defers to
+     ICAO 9303. A "verified on" line linking to a page without the numbers is
+     worse than no citation because it looks checked. Now points at the
+     Commission's own ICAO photograph guidelines, which state the 70-80%.
+
+  4. The UK background could not be expressed. gov.uk accepts "plain cream or
+     light grey" — one warm, one neutral — and the schema held a single hex
+     range. A range wide enough for both is a box in RGB, and a box holds its
+     corners: a mint wall would have passed. `hexRange` is now `hexRanges`, a
+     list, and a test asserts the colour between the two published ones fails.
+
+  ONE THING WAS RIGHT AND NEARLY BROKEN: the UK permits glasses with
+  conditions. A widely-repeated third-party claim says they were banned in
+  2018. gov.uk's own wording permits them, and the research pass came close to
+  "correcting" a correct value on a competitor's say-so.
+
+  NEW FIELD: `crownDefinition`, the one owed since #18. The US measures to the
+  top of the HAIR; the UK and Schengen measure to the crown, meaning the SKULL.
+  Several millimetres apart on anyone with volume, which is most of the
+  tolerance on a head-height rule. It travels with the specification, and both
+  observeFrame and CameraCapture now read it from there rather than taking it
+  as a parameter a caller could get wrong.
+
+  STILL OWED: digital.minBytes. Both the US (54KB) and the UK (50KB) publish a
+  floor, and nothing reads it, so it is not in the schema — a field with no
+  consumer is data that drifts unnoticed. It belongs with a rule that warns
+  when the encoder has compressed below the authority's minimum.
+
+  CONSEQUENCE, REVERSED: listServableSpecs() now returns four. Country pages
+  can generate.
+  ───────────────────────────────────────────────────────────────────────────
 
 EDGE CASES
   [x] Inverted bands rejected: head height, eye line and digital edge sizes

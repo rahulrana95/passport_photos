@@ -15,7 +15,7 @@ const spec = (): ResolvedPhotoSpec =>
   ({
     print: { widthMm: 51, heightMm: 51, dpi: 300 },
     headHeight: { minMm: 25, maxMm: 35, minRatio: 0.49, maxRatio: 0.69, authoredUnit: 'mm' },
-    background: { colour: 'white', hexRange: ['#e0e0e0', '#ffffff'], uniformityTolerance: 12 },
+    background: { colour: 'white', hexRanges: [['#e0e0e0', '#ffffff']], uniformityTolerance: 12 },
   }) as unknown as ResolvedPhotoSpec;
 
 const renderCamera = (
@@ -25,7 +25,6 @@ const renderCamera = (
   const view = render(
     <CameraCapture
       spec={spec()}
-      crownDefinition="visible-top"
       onCapture={vi.fn()}
       analyse={vi.fn(async () => ({ landmarks: undefined, segmentation: undefined }))}
       {...overrides}
@@ -274,8 +273,7 @@ describe('the real browser', () => {
     render(
       <CameraCapture
         spec={spec()}
-        crownDefinition="visible-top"
-        onCapture={vi.fn()}
+          onCapture={vi.fn()}
         analyse={vi.fn(async () => ({ landmarks: undefined, segmentation: undefined }))}
       />,
     );
@@ -358,8 +356,7 @@ describe('when the camera cannot be opened', () => {
     rerender(
       <CameraCapture
         spec={spec()}
-        crownDefinition="visible-top"
-        onCapture={vi.fn()}
+          onCapture={vi.fn()}
         analyse={vi.fn(async () => ({ landmarks: undefined, segmentation: undefined }))}
         environment={environment}
       />,
