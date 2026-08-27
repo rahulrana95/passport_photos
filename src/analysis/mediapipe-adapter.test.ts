@@ -146,14 +146,76 @@ describe('reading a detection', () => {
     expect(await detector.detectLandmarks(buffer)).toBeUndefined();
   });
 
-  it('reports no segmentation, which is PR #18 and not this one', async () => {
-    // Honest rather than absent: geometry that depends only on landmarks still
-    // works, and crown height degrades to unmeasurable rather than to wrong.
+  it('turns the category mask into subject and background bytes', async () => {
+    // The segmenter labels 0 as background and non-zero as person. Downstream
+    // wants the two extremes and nothing between them.
+    const categories = new Uint8Array(buffer.width * buffer.height);
+    categories.fill(1, 0, categories.length / 2);
+
     const detector = await createMediaPipeDetector(
-      createFakeMediaPipe({ faces: [faceAt(0.5, 0.5, 0.6)] }),
+      createFakeMediaPipe({ faces: [faceAt(0.5, 0.5, 0.6)], segmentCategories: categories }),
+    );
+
+    const result = await detector.segment(buffer);
+
+    expect(result?.width).toBe(buffer.width);
+    expect(result?.mask).toHaveLength(categories.length);
+    expect([...new Set(result?.mask ?? [])].sort((a, b) => a - b)).toEqual([0, 255]);
+  });
+
+  it('copies the mask out before releasing the WASM memory behind it', async () => {
+    // The mask is backed by memory the segmenter reclaims on close. Reading it
+    // afterwards returns whatever the next inference happened to write there —
+    // a bug that only appears on the second photo someone checks.
+    const onMaskClosed = vi.fn();
+    const categories = new Uint8Array(buffer.width * buffer.height).fill(1);
+
+    const detector = await createMediaPipeDetector(
+      createFakeMediaPipe({
+        faces: [faceAt(0.5, 0.5, 0.6)],
+        segmentCategories: categories,
+        onMaskClosed,
+      }),
+    );
+
+    const result = await detector.segment(buffer);
+
+    expect(onMaskClosed).toHaveBeenCalled();
+    expect(result?.mask.every((value) => value === 255)).toBe(true);
+  });
+
+  it('releases the mask even when there is no category mask to read', async () => {
+    const onMaskClosed = vi.fn();
+    const detector = await createMediaPipeDetector(
+      createFakeMediaPipe({
+        faces: [faceAt(0.5, 0.5, 0.6)],
+        segmenterReturnsNoMask: true,
+        onMaskClosed,
+      }),
     );
 
     expect(await detector.segment(buffer)).toBeUndefined();
+    expect(onMaskClosed).toHaveBeenCalled();
+  });
+
+  it('still detects landmarks when the segmenter cannot start', async () => {
+    // Survivable in a way a missing landmarker is not: the geometry that
+    // depends only on landmarks still works, and crown height degrades to
+    // unmeasurable rather than to wrong.
+    const detector = await createMediaPipeDetector(
+      createFakeMediaPipe({ faces: [faceAt(0.5, 0.5, 0.6)], segmenterUnavailable: true }),
+    );
+
+    expect(await detector.detectLandmarks(buffer)).toBeDefined();
+    expect(await detector.segment(buffer)).toBeUndefined();
+  });
+
+  it('falls back to the CPU segmenter when the GPU one will not build', async () => {
+    const onBuild = vi.fn();
+
+    await createMediaPipeDetector(createFakeMediaPipe({ gpuUnavailable: true, onBuild }));
+
+    expect(onBuild).toHaveBeenCalledWith('segmenter:CPU');
   });
 });
 

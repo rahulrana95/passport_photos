@@ -18,5 +18,9 @@ export const importMediaPipe = async (): Promise<MediaPipeModules> => {
   // shadows the CommonJS global and breaks the bundler's module analysis.
   const bundle = await import('@mediapipe/tasks-vision');
 
-  return { FilesetResolver: bundle.FilesetResolver, FaceLandmarker: bundle.FaceLandmarker };
+  return {
+    FilesetResolver: bundle.FilesetResolver,
+    FaceLandmarker: bundle.FaceLandmarker,
+    ImageSegmenter: bundle.ImageSegmenter,
+  };
 };

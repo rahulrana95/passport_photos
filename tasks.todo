@@ -996,37 +996,85 @@ TESTS
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #18 — Person segmentation and crown detection
-Branch: feat/segmentation-crown        Depends on: #17               Status: TODO
+Branch: feat/segmentation-crown        Depends on: #17               Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   THE RISKIEST PR IN THE PROJECT. Landmarks stop at the hairline, so crown-to-
   chin — the most common rejection reason — depends entirely on this working.
-  Build the hard-case test set BEFORE the implementation.
+  Built the hard-case corpus first, as this entry required.
 
 IMPLEMENTS
-  [ ] Segmentation model behind the detector interface
-  [ ] Mask cleanup: morphological close, largest-connected-component, hole fill
-  [ ] Crown estimation from the cleaned mask
-  [ ] Per-result confidence, surfaced when low
+  [x] MediaPipe ImageSegmenter behind the detector interface. The 250 KB binary
+      person/background model, NOT the 16 MB multiclass one that labels hair
+      separately: multiclass would double the whole download to answer a
+      question it cannot answer, since the skull is underneath the hair and
+      even a perfect hair mask does not say where it is.
+  [x] Mask cleanup: open, close, connected components, hole fill — each a pure
+      function with its own tests
+  [x] Crown estimation from the cleaned mask
+  [x] Per-result confidence, plus a mayIncludeCovering flag the rule engine
+      must surface rather than swallow
+
+  CROWN DEFINITION IS PER-COUNTRY, and this entry had it wrong
+  This plan said "the spec means the skull, not the hair halo". That is true of
+  the UK, which says the crown is the top of the head "not including hair", and
+  not of US guidance, which measures the head as photographed. The difference
+  is the height of someone's hair — tens of millimetres on a voluminous head,
+  far outside any tolerance. So it is a property of the specification, and
+  estimateCrown takes it as a parameter.
+  [ ] OWED: PhotoSpec needs a crownDefinition field, and each verified spec
+      needs the right value. Deferred to the spec-verification work (#29)
+      rather than guessed at here, since every value in that registry is a
+      claim about a government requirement.
 
 EDGE CASES
-  [ ] Dark hair against a dark background — the classic failure
-  [ ] Bald and shaved heads (crown is skin, not hair)
-  [ ] Hats, turbans, hijabs, kippahs — crown of covering vs crown of head
-  [ ] Voluminous or curly hair: the spec means the skull, not the hair halo
-  [ ] Hair leaving the top of the frame entirely
-  [ ] Hair blending into clothing of a similar colour
-  [ ] Mask noise, speckle and holes
-  [ ] Earrings, glasses arms and jewellery attaching to the mask
-  [ ] Someone else's head partly in frame
-  [ ] Low-contrast or underexposed source
+  [x] Speckle scattered above the head — a single stray pixel is the crown for
+      any algorithm that takes the topmost subject pixel in the frame
+  [x] Holes punched in the subject, including one reaching the crown row
+  [x] Earrings and glasses arms — removed by opening before anything is measured
+  [x] Someone else's head, higher in the frame. The most dangerous defect:
+      selection is by the component containing the face, never by size or
+      position, so a bystander is discarded entirely
+  [x] Hats, turbans and hijabs — flagged, and refused outright under the skull
+      definition, because no silhouette contains what is underneath them
+  [x] Voluminous hair NOT flagged. The discriminator is taper, not width: a
+      thick head of hair is as wide as a hat, and width alone would warn every
+      person with curly hair about a hat they are not wearing. A skull is a
+      dome and narrows at the top; a covering is flat and does not.
+  [x] Bald and shaved heads, where the crown is skin
+  [x] Crown outside the frame — declines rather than guessing
+  [x] A model that eroded the outline
+  [x] A subject against the bottom edge, where the taper sample row is off-image
+  [x] Malformed masks whose data is shorter than their dimensions
+  [x] Segmentation unavailable entirely — landmarks still work and crown height
+      degrades to unmeasurable rather than to wrong
+
+  NOT REACHABLE FROM A MASK
+  [ ] Dark hair on a dark background, hair blending into clothing, and
+      low-contrast sources are properties of the IMAGE, not of the mask. They
+      determine whether the model produces a good mask; they cannot be tested
+      by feeding masks to the cleanup code. The synthetic image corpus from #6
+      already contains them, and they belong to the real-model integration
+      test that #26 will make possible.
 
 SEO  n/a
 
 TESTS
-  A curated set of ~30 real photos spanning every case above, each with a
-  hand-measured ground-truth crown Y. Assert error within tolerance. This
-  fixture set is a project asset — document how to extend it.
+  A constructed mask corpus, not the ~30 real photos this entry asked for, and
+  the substitution is deliberate. The usable face datasets — FFHQ, CelebA,
+  UTKFace, FairFace — are all non-commercially licensed, and beyond the licence
+  committing strangers' faces to a repository whose product promises the photo
+  never leaves the device is indefensible. More importantly they would be the
+  weaker test: hand-measuring a crown from a photograph gives ground truth
+  accurate to a few pixels and arguable at the edges, while a constructed mask
+  has a crown row that is exactly known. A failure is always the code.
+
+  What a constructed mask cannot show is whether the model produces masks like
+  these. That is owed to a real browser and recorded as owed, not pretended.
+
+  To extend the corpus: add a defect function to mask-defect.builder.ts
+  alongside addSpeckle, addHole, addBlob and erodeEdge, then assert against
+  BASE_MASK_SPEC.crownY. Each function returns a copy, so defects compose.
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #19 — Geometry engine

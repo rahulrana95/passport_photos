@@ -10,10 +10,17 @@
  * lookup, a TLS handshake and somebody else's uptime from the critical path.
  *
  * MEASURED COST OF A FIRST CHECK
- *   WASM runtime   11.76 MB raw -> 3.42 MB gzipped
- *   Landmark model  3.76 MB raw -> 3.33 MB gzipped (float16; barely compresses)
- *   ------------------------------------------------------------------
- *   Total          15.52 MB raw -> 6.75 MB gzipped, less again with brotli
+ *   WASM runtime      11.76 MB raw -> 3.42 MB gzipped
+ *   Landmark model     3.76 MB raw -> 3.33 MB gzipped (float16; hardly compresses)
+ *   Segmenter model    0.25 MB raw
+ *   ---------------------------------------------------------------------
+ *   Total             15.77 MB raw -> roughly 7 MB gzipped, less with brotli
+ *
+ * The segmenter is the binary person/background model, not the 16 MB
+ * multiclass one that labels hair separately. Multiclass would double the
+ * whole download to answer a question it cannot actually answer: the skull is
+ * underneath the hair, so even a perfect hair mask does not say where it is.
+ * A silhouette is what crown-to-chin needs, and this is 4% of the landmarker.
  *
  * Every byte is lazy, so LCP is untouched — nothing here loads until someone
  * chooses a photo. But it is also the whole of the wait before a first result,
@@ -29,6 +36,7 @@ export const MODEL_CACHE_NAME = 'passport-photo-models-v1';
 export const MODEL_BASE_PATH = '/models';
 
 export const FACE_LANDMARKER_MODEL_PATH = `${MODEL_BASE_PATH}/face_landmarker.task`;
+export const SELFIE_SEGMENTER_MODEL_PATH = `${MODEL_BASE_PATH}/selfie_segmenter.tflite`;
 export const WASM_BASE_PATH = `${MODEL_BASE_PATH}/wasm`;
 
 /**
@@ -46,6 +54,15 @@ export const FACE_LANDMARKER_SHA256 =
 
 export const FACE_LANDMARKER_BYTES = 3_758_596;
 
+export const SELFIE_SEGMENTER_UPSTREAM_URL =
+  'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/1/selfie_segmenter.tflite';
+
+export const SELFIE_SEGMENTER_SHA256 =
+  '191ac9529ae506ee0beefa6b2c945a172dab9d07d1e802a290a4e4038226658b';
+
+export const SELFIE_SEGMENTER_BYTES = 249_537;
+
 /** Total bytes the loader reports progress against, for an honest percentage. */
 export const WASM_RUNTIME_BYTES = 11_756_954;
-export const TOTAL_MODEL_BYTES = FACE_LANDMARKER_BYTES + WASM_RUNTIME_BYTES;
+export const TOTAL_MODEL_BYTES =
+  FACE_LANDMARKER_BYTES + SELFIE_SEGMENTER_BYTES + WASM_RUNTIME_BYTES;

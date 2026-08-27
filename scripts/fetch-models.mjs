@@ -55,7 +55,7 @@ const fetchModel = async (url, expectedDigest, expectedBytes, destination) => {
   if (await exists(destination)) {
     const cached = await readFile(destination);
     if (sha256(cached) === expectedDigest) {
-      console.log(`models: face_landmarker.task already present and verified`);
+      console.log(`models: ${destination.split('/').pop()} already present and verified`);
       return;
     }
     console.log('models: cached copy failed verification, re-downloading');
@@ -100,15 +100,25 @@ const copyWasmRuntime = async () => {
   console.log(`models: copied ${files.length} runtime files from node_modules`);
 };
 
+const MODELS = [
+  { prefix: 'FACE_LANDMARKER', file: 'face_landmarker.task' },
+  { prefix: 'SELFIE_SEGMENTER', file: 'selfie_segmenter.tflite' },
+];
+
 const main = async () => {
   const source = await readFile(CONSTANTS, 'utf8');
-  const url = readConstant(source, 'FACE_LANDMARKER_UPSTREAM_URL');
-  const digest = readConstant(source, 'FACE_LANDMARKER_SHA256');
-  const bytes = readNumericConstant(source, 'FACE_LANDMARKER_BYTES');
 
   await mkdir(OUTPUT_DIR, { recursive: true });
   await copyWasmRuntime();
-  await fetchModel(url, digest, bytes, join(OUTPUT_DIR, 'face_landmarker.task'));
+
+  for (const model of MODELS) {
+    await fetchModel(
+      readConstant(source, `${model.prefix}_UPSTREAM_URL`),
+      readConstant(source, `${model.prefix}_SHA256`),
+      readNumericConstant(source, `${model.prefix}_BYTES`),
+      join(OUTPUT_DIR, model.file),
+    );
+  }
 };
 
 main().catch((error) => {

@@ -9,6 +9,14 @@ export interface FakeFace {
 
 export interface FakeMediaPipeOptions {
   readonly faces?: readonly FakeFace[];
+  /** Category values the segmenter returns; 0 is background. Omit for none. */
+  readonly segmentCategories?: Uint8Array;
+  /** Reproduces a browser where the segmenter cannot start but landmarks can. */
+  readonly segmenterUnavailable?: boolean;
+  /** Reproduces a segmenter that runs and produces no category mask. */
+  readonly segmenterReturnsNoMask?: boolean;
+  /** Records that the WASM-backed mask was released. */
+  readonly onMaskClosed?: () => void;
   readonly blendshapes?: Readonly<Record<string, number>>;
   /** Reproduces a browser with WebGL disabled, where only the CPU path works. */
   readonly gpuUnavailable?: boolean;
@@ -51,6 +59,15 @@ export const createFakeMediaPipe = (options: FakeMediaPipeOptions = {}): MediaPi
           ],
   });
 
+  const categories = options.segmentCategories;
+  const segment = (): unknown => ({
+    categoryMask:
+      options.segmenterReturnsNoMask === true || categories === undefined
+        ? undefined
+        : { getAsUint8Array: (): Uint8Array => categories },
+    close: (): void => options.onMaskClosed?.(),
+  });
+
   const modules = {
     FilesetResolver: {
       forVisionTasks: (): Promise<unknown> =>
@@ -71,6 +88,25 @@ export const createFakeMediaPipe = (options: FakeMediaPipeOptions = {}): MediaPi
 
         options.onBuild?.(delegate);
         return Promise.resolve({ detect });
+      },
+    },
+    ImageSegmenter: {
+      createFromOptions: (
+        _fileset: unknown,
+        segmenterOptions: { baseOptions: { delegate: string } },
+      ): Promise<unknown> => {
+        if (options.segmenterUnavailable === true) {
+          return Promise.reject(new Error('segmenter unavailable'));
+        }
+
+        // WebGL being disabled is a property of the browser, not of one task,
+        // so it must refuse both delegates the same way.
+        if (segmenterOptions.baseOptions.delegate === 'GPU' && options.gpuUnavailable === true) {
+          return Promise.reject(new Error('WebGL unavailable'));
+        }
+
+        options.onBuild?.(`segmenter:${segmenterOptions.baseOptions.delegate}`);
+        return Promise.resolve({ segment });
       },
     },
   };
