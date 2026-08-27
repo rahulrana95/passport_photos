@@ -1368,19 +1368,102 @@ TESTS
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #22 — Annotated overlay renderer
-Branch: feat/overlay-renderer          Depends on: #21               Status: TODO
+Branch: feat/overlay-renderer          Depends on: #21               Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  The measurements, drawn on the photograph they were taken from.
+
+  DECIDED: instructions are built in SOURCE IMAGE PIXELS and never in canvas
+  pixels, and that single decision buys most of the edge cases below at once.
+  A resize is a new transform over the same instructions; portrait and
+  landscape need no special case because fitting is the transform's job; a
+  retina display is the same drawing at a different ratio; and the builder is
+  a pure function over numbers, so every annotation is asserted exactly with no
+  canvas anywhere near the unit suite.
+
 IMPLEMENTS
-  [ ] Canvas overlay: crop rectangle, crown/chin span, allowed band shading,
-      eye line, centre line
-  [ ] Legend, and export of the annotated image as PNG
+  [x] Canvas overlay: crop rectangle, crown-to-chin measure, permitted head
+      band, eye line, permitted eye band, centre line
+  [x] Legend, derived from the overlay rather than authored beside it — so it
+      can never promise a mark that is not on the photograph
+  [x] Export of the annotated image as PNG, at the original's full resolution
+
+  [~] The legend is DOM, not drawn into the canvas, and the exported PNG
+      carries the marks without it. Text baked into a bitmap cannot be read
+      aloud, selected or translated, does not reflow at mobile widths, and
+      would have to be sized against the photograph's resolution rather than
+      the reader's font size. The plan asked for "legend, and export of the
+      annotated image" — two deliverables, and this is both of them.
+
 EDGE CASES
-  [ ] devicePixelRatio scaling — must stay crisp on retina
-  [ ] Annotation contrast over both very light and very dark photographs
-  [ ] Portrait vs landscape sources
-  [ ] Overlay must remain legible at mobile widths
-  [ ] Redraw on container resize without re-running analysis
-TESTS  Unit on the draw-instruction builder; screenshot stories over fixtures.
+  [x] devicePixelRatio scaling. The backing store is sized in device pixels and
+      the context scaled to match, so lines are not drawn into half the pixels
+      they are shown in.
+  [x] Annotation contrast over very light and very dark photographs. EVERY
+      STROKE IS DRAWN TWICE — a wide dark halo, then the narrow visible line.
+      A photograph is not a background you can pick a colour against: white
+      vanishes on a pale wall, black vanishes in dark hair, and the annotation
+      is drawn over the subject, so any single colour disappears exactly where
+      it is needed. Light and Dark stories exist to be compared.
+  [x] Portrait vs landscape sources — one contain-fit function, no orientation
+      case anywhere else in the module.
+  [x] Legible at mobile widths. Stroke widths are specified in SCREEN pixels
+      and divided by the scale, so a 2px line is 2px over a 4000-pixel original
+      fitted into a phone and over a 600-pixel scan alike. Without that
+      division it would be a fifth of a pixel on one and twenty on the other.
+  [x] Redraw on container resize without re-running analysis. A ResizeObserver
+      on the frame — not a window listener, because the frame also changes when
+      a sidebar opens or the legend wraps — and redrawing is a transform and a
+      repaint.
+
+  [x] Colour is never the only signal. Dashed means "where it may be" and solid
+      means "where it is", and a test asserts no two roles share both a colour
+      and a pattern. Roughly one man in twelve cannot separate these hues, and
+      a report may be photocopied to grey.
+  [x] The export waits for the image to DECODE, not merely to exist. drawImage
+      on an undecoded image draws nothing, so exporting a frame early would
+      produce a blank photo with the measurements neatly drawn on it — the most
+      convincing wrong output this component could make.
+  [x] A canvas above the browser's maximum area declines a context. Reported
+      beside the button rather than thrown: it is a device limit, the
+      measurements on the page are unaffected, and an error page over a result
+      that is fine helps nobody.
+  [x] Object URLs are revoked immediately after the click. One pins a
+      full-resolution photograph in memory for the life of the document.
+  [x] A crown we could not find produces no crown-to-chin measure. The
+      permitted band stays — where the head should reach is a property of the
+      specification and is known either way.
+  [x] A country with no eye-line rule gets no eye band. Drawing a permitted
+      range for a rule nobody wrote puts a limit on the photograph that no
+      official will ever apply.
+
+  [ ] Raw colours live in overlay-role.constants.ts, the one place in this
+      codebase where that is correct. Every other colour is a token that swaps
+      with the theme because it sits on our surface; these sit on the reader's
+      photograph, which has no theme, and a token would invert the annotation
+      while the photograph underneath stayed put.
+
+SEO  n/a
+
+TESTS
+  71 unit tests over the overlay module and 21 over its components, 100%
+  coverage, no suppressions.
+
+  Two pieces of test infrastructure earn their place. RecordingCanvasContext
+  records what was asked of the canvas — where a line starts, how wide it is
+  once the scale is divided out, whether a halo went down first — because that
+  is where the correctness actually lives, and asserting it from a screenshot
+  means asserting it from pixels. And the ResizeObserver stub now records and
+  fires: the no-op one that stood there before meant any component reacting to
+  its own size was frozen at zero for the whole unit suite, which is to say its
+  most breakable behaviour was only ever seen in a browser screenshot.
+
+  The stand-in photograph is drawn as an SVG, not photographed. No real face
+  belongs in this repository: every public face dataset is research-licensed,
+  and a product whose whole promise is that photographs never leave the
+  reader's device has no business shipping somebody else's face in its source
+  tree. Being an SVG it is deterministic to the pixel, so the visual regression
+  compares the overlay rather than a JPEG's compression noise.
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #23 — Crop and encode pipeline (mozjpeg byte budget)

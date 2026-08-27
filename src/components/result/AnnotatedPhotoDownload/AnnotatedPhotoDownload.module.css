@@ -1,0 +1,12 @@
+.action {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-space-3xs);
+  align-items: flex-start;
+}
+
+.note {
+  margin: 0;
+  font-size: var(--tk-text-xs);
+  color: var(--tk-text-secondary);
+}

@@ -1,0 +1,36 @@
+.figure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-space-xs);
+  margin: 0;
+}
+
+/* The frame carries the photograph's own aspect ratio, so the canvas laid over
+   it is exactly the box the image is fitted into — and so the layout reserves
+   the right shape before the photograph decodes rather than jumping when it
+   does. */
+.frame {
+  position: relative;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  aspect-ratio: var(--overlay-aspect);
+  overflow: hidden;
+  border: 1px solid var(--tk-border-default);
+  border-radius: var(--tk-radius-md);
+  background: var(--tk-surface-sunken, var(--tk-surface));
+}
+
+.photo {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+}
+
+/* Stretched over the photograph in CSS pixels. Its backing store is sized
+   separately, in device pixels, so the lines stay sharp on a retina display. */
+.canvas {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+}

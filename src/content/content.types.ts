@@ -5,6 +5,7 @@ import type {
 import type { FixActionKind, RuleMessageId } from '@/rules/rule-message.constants';
 import type { RuleId } from '@/rules/rule-id.constants';
 import type { RequirementCoverage } from '@/rules/rule.types';
+import type { OverlayRole } from '@/overlay/overlay-role.constants';
 
 /** The four answers the coverage map can give about a requirement. */
 export type CoverageKind = RequirementCoverage['kind'];
@@ -66,6 +67,25 @@ export interface ErrorContent {
   readonly unexpectedBody: string;
 }
 
+/**
+ * Words for the marks drawn on the photograph.
+ *
+ * The canvas carries no text of its own. Text baked into a bitmap cannot be
+ * read by a screen reader, cannot be selected, does not reflow at mobile
+ * widths, and would have to be scaled against the photograph's resolution
+ * rather than the reader's font size. So every annotation is geometry, and the
+ * legend beside it — real text, in the DOM — is what says what the geometry
+ * means.
+ */
+export interface OverlayContent {
+  readonly photoAlt: string;
+  readonly legendHeading: string;
+  readonly roles: Readonly<Record<OverlayRole, string>>;
+  readonly download: string;
+  readonly downloadFilename: string;
+  readonly downloadFailed: string;
+}
+
 export interface ContentTree {
   readonly common: CommonContent;
   readonly upload: UploadContent;
@@ -73,6 +93,7 @@ export interface ContentTree {
   readonly legal: LegalContent;
   readonly errors: ErrorContent;
   readonly rules: RuleContent;
+  readonly overlay: OverlayContent;
 }
 
 /**
