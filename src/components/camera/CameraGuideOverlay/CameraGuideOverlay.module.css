@@ -1,0 +1,44 @@
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  pointer-events: none;
+}
+
+.guide {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+/* The instruction sits over the picture, so it carries its own surface rather
+   than relying on whatever happens to be behind it. */
+.instruction {
+  position: relative;
+  margin-block-end: var(--tk-space-md);
+  padding: var(--tk-space-2xs) var(--tk-space-sm);
+  border-radius: var(--tk-radius-md);
+  background: var(--tk-surface);
+  font-size: var(--tk-text-lg);
+  font-weight: 600;
+  color: var(--tk-text-primary);
+  text-align: center;
+}
+
+.instruction[data-ready='true'] {
+  color: var(--tk-status-pass);
+}
+
+.readout {
+  position: relative;
+  margin-block-end: var(--tk-space-2xs);
+  padding: var(--tk-space-3xs) var(--tk-space-2xs);
+  border-radius: var(--tk-radius-sm);
+  background: var(--tk-surface);
+  font-size: var(--tk-text-xs);
+  color: var(--tk-text-secondary);
+}

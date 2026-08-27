@@ -53,8 +53,11 @@ const landmarksFromSpec = (
   spec: SyntheticHeadSpec,
   options: FakeDetectorOptions,
 ): LandmarkResult => ({
+  // Chin, then the two iris centres — the minimum the geometry engine needs.
+  // The order is asserted against the shared index constants rather than left
+  // as a comment, because a reader and a producer that disagree about which
+  // point is the chin both compile.
   points: [
-    // Chin, then the two iris centres — the minimum the geometry engine needs.
     { x: spec.centreX / spec.widthPx, y: spec.chinY / spec.heightPx },
     {
       x: (spec.centreX - spec.headWidthPx * EYE_OFFSET_FRACTION_OF_HEAD_WIDTH) / spec.widthPx,
