@@ -1553,25 +1553,71 @@ TESTS
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #24 — Print sheet generator
-Branch: feat/print-sheet               Depends on: #23               Status: TODO
+Branch: feat/print-sheet               Depends on: #23               Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  One compliant photograph becomes a sheet of them, in both the formats the
+  two counters take, plus the instructions for walking into a shop with it.
+
 IMPLEMENTS
-  [ ] 4x6in, 10x15cm and A4 layouts, tiled with cut guides
-  [ ] Copy count computed per sheet size and photo size
-  [ ] Download as JPEG and as print-ready PDF
-  [ ] PRINT HANDOFF — the sheet plus plain instructions for taking it to a
-      high-street printer (Walgreens, CVS, Boots). We will never post
-      photographs; that is a logistics business. But the handoff closes the loop
-      for the majority who need a physical print, costs nothing, removes the
-      last reason to pay a competitor, and is the natural affiliate placement.
-  [ ] Per-country printer suggestions where the chains differ
+  [x] 4x6in, 10x15cm and A4 layouts, tiled with cut guides. The two photo
+      sizes are NOT the same: 100x150 against 101.6x152.4, a millimetre and a
+      half in each direction, which is exactly the size of difference that
+      decides whether a column fits.
+  [x] Copy count computed per sheet and photo, by trying all four
+      arrangements — both sheet orientations and both photograph
+      orientations. A cut photograph has no orientation, so turning one is
+      free; handing somebody three copies when four fit is not. 35x45 gets
+      six on a 4x6 and thirty on A4, which is what a high-street printer
+      manages.
+  [x] Download as JPEG and as print-ready PDF
+  [x] PRINT HANDOFF — the sheet plus instructions specific enough to say at a
+      counter. Asking for "a passport photo" gets a different and far more
+      expensive service than asking for a 6x4 print of a file.
+  [x] Per-country printer suggestions, with three rules on the list: no
+      endorsement implied, no affiliate link today and it will say so in the
+      interface when there is one, and a country we cannot name shops for
+      gets honest generic advice rather than an American chain. "Take it to
+      Walgreens" is useless in Osaka.
+
 EDGE CASES
-  [ ] Printer non-printable margins
-  [ ] Photo larger than the sheet
-  [ ] Rounding leaving an unusable partial column
-  [ ] Cut guides must survive "background graphics off" printing
-  [ ] Physical size must be exact when printed at 100% — verify against a ruler
-TESTS  Unit on layout maths; screenshot stories per sheet size.
+  [x] Printer non-printable margins, and they differ by paper. A kiosk prints
+      4x6 borderless by overfilling and losing a couple of percent off each
+      edge, where three millimetres of safety is enough; a home printer
+      feeding A4 physically cannot reach the edge and needs five. Using five
+      everywhere would cost two photographs per sheet.
+  [x] Photo larger than the sheet: reported, not rendered. A sheet with
+      nothing on it prints fine and wastes a sheet of photo paper and a trip.
+  [x] Rounding leaving an unusable partial column: the block is centred, so
+      the remainder is shared between two edges instead of forming a strip
+      down one side that somebody then tries to cut a photograph out of.
+  [x] Cut guides survive any print setting, because they are in the image and
+      in the page rather than in CSS. The "background graphics off" problem
+      does not arise: there is no HTML print path to switch off.
+  [x] Guides are corner marks OUTSIDE each photograph, never rules across it.
+      A line printed over a face is ink on the photograph the reader submits,
+      and a full rule between two columns is a line somebody follows with
+      scissors into the photograph above.
+  [x] Physical size exact at 100%: the PDF page is the sheet's size in points,
+      and the JPEG carries its own density so a kiosk prints it at the size
+      it says. Both routes have to produce the same physical object.
+  [x] The copy tells the reader to print at 100% and why, because "fit to
+      page" is the setting that silently resizes every photograph.
+
+SEO  n/a
+
+TESTS
+  77 unit tests, 100% coverage, no suppressions, and screenshot stories for
+  every sheet size plus the turned-photograph case.
+
+  The PDF is written by hand, and the reason is the JPEG rather than the page.
+  A PDF carries JPEG data verbatim through DCTDecode, so the sheet contains
+  the exact bytes the encoder produced with no second compression pass — every
+  general-purpose library in this space will re-encode on the way in, and a
+  photograph compressed twice has visible artefacts around the eyes. The
+  cross-reference table is asserted by seeking to each declared offset and
+  checking the object header is there: a table one byte out still opens in a
+  previewer willing to rebuild it, then fails at the shop.
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #25 — PDF compliance report

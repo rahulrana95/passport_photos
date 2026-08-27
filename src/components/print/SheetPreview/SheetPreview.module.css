@@ -1,0 +1,24 @@
+.sheet {
+  position: relative;
+  inline-size: 100%;
+  max-inline-size: 22rem;
+  aspect-ratio: var(--sheet-aspect);
+  border: 1px solid var(--tk-border-default);
+  border-radius: var(--tk-radius-sm);
+  background: var(--tk-surface);
+}
+
+/* Each slot is placed as a share of the sheet, so the preview is the same
+   drawing at any size on the page. */
+.slot {
+  position: absolute;
+  overflow: hidden;
+  border: 1px dashed var(--tk-border-strong, var(--tk-border-default));
+  background: var(--tk-skeleton, var(--tk-surface));
+}
+
+.photo {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
