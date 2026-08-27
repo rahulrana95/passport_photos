@@ -27,6 +27,7 @@ const faceAt = (
     confidence: 0.95,
     yawDegrees: 0,
     rollDegrees: 0,
+    pitchDegrees: 0,
     ...overrides,
   };
 };
@@ -72,6 +73,7 @@ describe('choosing between faces', () => {
       confidence: 0.1,
       yawDegrees: 0,
       rollDegrees: 0,
+      pitchDegrees: 0,
     };
     const real = faceAt(0.5, 0.5, 0.6);
 
@@ -91,7 +93,7 @@ describe('declining to measure', () => {
 
   it('reports no face when every candidate is empty', () => {
     expect(
-      selectFace([{ points: [], confidence: 0, yawDegrees: 0, rollDegrees: 0 }]),
+      selectFace([{ points: [], confidence: 0, yawDegrees: 0, rollDegrees: 0, pitchDegrees: 0 }]),
     ).toEqual({ ok: false, reason: 'no-face' });
   });
 
@@ -183,7 +185,7 @@ describe('declining to measure', () => {
 
 describe('faceArea', () => {
   it('is zero for a candidate with no points', () => {
-    expect(faceArea({ points: [], confidence: 0, yawDegrees: 0, rollDegrees: 0 })).toBe(0);
+    expect(faceArea({ points: [], confidence: 0, yawDegrees: 0, rollDegrees: 0, pitchDegrees: 0 })).toBe(0);
   });
 
   it('grows with the bounding box', () => {

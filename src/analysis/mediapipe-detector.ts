@@ -49,6 +49,7 @@ const ROW_X = 0;
 const ROW_Y = 1;
 const ROW_Z = 2;
 const COLUMN_X = 0;
+const COLUMN_Y = 1;
 const COLUMN_Z = 2;
 const NO_ANGLE = 0;
 /** An element outside the matrix reads as zero, so a short matrix is no rotation. */
@@ -81,16 +82,28 @@ const at = (matrix: readonly number[], row: number, column: number): number =>
 const withoutNegativeZero = (angle: number): number => (angle === 0 ? NO_ANGLE : angle);
 
 /**
- * Recovers roll and yaw from the 4x4 facial transformation matrix.
+ * Recovers roll, yaw and pitch from the 4x4 facial transformation matrix.
  *
  * MediaPipe reports the pose as a matrix; the rules that matter — head
- * tilted, head turned — are written in degrees, and signed, because "turned
- * left" and "turned right" are different failures and the user needs to be
- * told which way to move.
+ * tilted, head turned, chin up or down — are written in degrees. Roll and yaw
+ * are signed, because "turned left" and "turned right" are different failures
+ * and the user needs to be told which way to move.
+ *
+ * Pitch is returned signed too, but nothing downstream reads its sign — see
+ * the pitch rule for why. The decomposition is the standard ZYX one, so:
+ *
+ *   roll  = atan2( R[1][0], R[0][0] )
+ *   yaw   = atan2( -R[2][0], hypot(R[0][0], R[1][0]) )
+ *   pitch = atan2( R[2][1], R[2][2] )
+ *
+ * The yaw denominator is a hypotenuse rather than R[2][2] alone, which is what
+ * it was first written as. The two agree exactly while the head is level and
+ * diverge as it nods — so a photo with the chin down had its yaw overstated,
+ * in the direction that reports a straight-on face as turned.
  */
 export const poseFromMatrix = (
   matrix: readonly number[],
-): { rollDegrees: number; yawDegrees: number } => {
+): { rollDegrees: number; yawDegrees: number; pitchDegrees: number } => {
   // No length guard. A missing element reads as zero, and an absent or short
   // matrix therefore falls out as no rotation at all — which is the answer a
   // separate guard would have returned anyway, through one mechanism instead
@@ -98,11 +111,15 @@ export const poseFromMatrix = (
   const xAxisX = at(matrix, ROW_X, COLUMN_X);
   const xAxisY = at(matrix, ROW_Y, COLUMN_X);
   const xAxisZ = at(matrix, ROW_Z, COLUMN_X);
+  const yAxisZ = at(matrix, ROW_Z, COLUMN_Y);
   const zAxisZ = at(matrix, ROW_Z, COLUMN_Z);
 
   return {
     rollDegrees: withoutNegativeZero(Math.atan2(xAxisY, xAxisX) * DEGREES_PER_RADIAN),
-    yawDegrees: withoutNegativeZero(Math.atan2(-xAxisZ, zAxisZ) * DEGREES_PER_RADIAN),
+    yawDegrees: withoutNegativeZero(
+      Math.atan2(-xAxisZ, Math.hypot(xAxisX, xAxisY)) * DEGREES_PER_RADIAN,
+    ),
+    pitchDegrees: withoutNegativeZero(Math.atan2(yAxisZ, zAxisZ) * DEGREES_PER_RADIAN),
   };
 };
 
@@ -171,6 +188,7 @@ export const createMediaPipeDetector = async (
         confidence: selection.face.confidence,
         rollDegrees: selection.face.rollDegrees,
         yawDegrees: selection.face.yawDegrees,
+        pitchDegrees: selection.face.pitchDegrees,
         blendshapes,
       });
     },

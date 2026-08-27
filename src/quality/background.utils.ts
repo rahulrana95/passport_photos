@@ -39,11 +39,30 @@ export const MIN_BACKGROUND_SAMPLES = 2_000;
 export const MAX_SHADOW_GRADIENT = 12;
 
 export interface BackgroundResult {
+  /**
+   * The single most important thing wrong with the background, for a caller
+   * that wants one answer.
+   */
   readonly verdict: BackgroundVerdict;
   readonly sampleCount: number;
   readonly uniformity: number;
   readonly shadowGradient: number;
   readonly meanColour: Rgb;
+
+  /**
+   * The four questions, answered independently.
+   *
+   * The verdict above is ordered, so it reports only the first thing it finds:
+   * a blue patterned wall comes back as 'wrong-colour' and says nothing about
+   * the pattern. A caller reading only the verdict would then report the
+   * pattern as acceptable — a pass it never established. These flags are what
+   * the rule engine reads, so each of its background rules answers its own
+   * question from its own evidence.
+   */
+  readonly hasEnoughSamples: boolean;
+  readonly colourWithinRange: boolean;
+  readonly isUniform: boolean;
+  readonly isEvenlyLit: boolean;
 }
 
 export interface BackgroundRequirement {
@@ -117,20 +136,16 @@ export const evaluateBackground = (
     uniformity: stats.standardDeviation,
     shadowGradient,
     meanColour: colour,
+    hasEnoughSamples: stats.sampleCount >= MIN_BACKGROUND_SAMPLES,
+    colourWithinRange: withinHexRange(colour, requirement.hexRange),
+    isUniform: stats.standardDeviation <= requirement.uniformityTolerance,
+    isEvenlyLit: shadowGradient <= MAX_SHADOW_GRADIENT,
   };
 
-  if (stats.sampleCount < MIN_BACKGROUND_SAMPLES) {
-    return { verdict: 'too-little-background', ...shared };
-  }
-  if (!withinHexRange(colour, requirement.hexRange)) {
-    return { verdict: 'wrong-colour', ...shared };
-  }
-  if (shadowGradient > MAX_SHADOW_GRADIENT) {
-    return { verdict: 'shadowed', ...shared };
-  }
-  if (stats.standardDeviation > requirement.uniformityTolerance) {
-    return { verdict: 'not-uniform', ...shared };
-  }
+  if (!shared.hasEnoughSamples) return { verdict: 'too-little-background', ...shared };
+  if (!shared.colourWithinRange) return { verdict: 'wrong-colour', ...shared };
+  if (!shared.isEvenlyLit) return { verdict: 'shadowed', ...shared };
+  if (!shared.isUniform) return { verdict: 'not-uniform', ...shared };
 
   return { verdict: 'acceptable', ...shared };
 };

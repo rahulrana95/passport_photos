@@ -92,6 +92,21 @@ describe('ordering of verdicts', () => {
     expect(blueAndPatterned.verdict).toBe('wrong-colour');
   });
 
+  it('still reports the pattern the ordered verdict had to leave out', () => {
+    // The ordered verdict says one thing, and a caller reading only that would
+    // report the pattern as acceptable — a pass it never established. The four
+    // questions are answered independently so the rule engine can say a wall
+    // is both blue and patterned, which it is.
+    const blueAndPatterned = backgroundOf({
+      background: { red: 90, green: 130, blue: 200 },
+      backgroundPatternAmplitude: 30,
+    });
+
+    expect(blueAndPatterned.colourWithinRange).toBe(false);
+    expect(blueAndPatterned.isUniform).toBe(false);
+    expect(blueAndPatterned.hasEnoughSamples).toBe(true);
+  });
+
   it('reports too little background before anything else', () => {
     // No other verdict from a handful of corner pixels would mean anything.
     const buffer = buildTonedFace();
