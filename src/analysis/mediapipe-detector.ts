@@ -1,4 +1,5 @@
 import type { FaceLandmarker, FilesetResolver, ImageSegmenter } from '@mediapipe/tasks-vision';
+import { DEGREES_PER_RADIAN } from '@/measurement/angle.constants';
 import { selectFace } from './landmark-selection.utils';
 import {
   FACE_LANDMARKER_MODEL_PATH,
@@ -42,8 +43,6 @@ const LANDMARKER_OPTIONS = {
   outputFacialTransformationMatrixes: true,
 } as const;
 
-const HALF_TURN_DEGREES = 180;
-const DEGREES_PER_RADIAN = HALF_TURN_DEGREES / Math.PI;
 const MATRIX_STRIDE = 4;
 /** Row and column indices, named so the reads say which axis they are about. */
 const ROW_X = 0;

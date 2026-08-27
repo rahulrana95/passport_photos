@@ -1078,29 +1078,75 @@ TESTS
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #19 — Geometry engine
-Branch: feat/geometry-engine           Depends on: #18               Status: TODO
+Branch: feat/geometry-engine           Depends on: #18               Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   Landmarks plus crown plus spec, in. Millimetre measurements and the crop
   rectangle, out. Pure functions — no imaging, fully unit-testable.
 
+  TWO FUNCTIONS, NOT ONE, and the second was not in this entry.
+  planCrop answers "make me a compliant photo": it chooses the crop, so the
+  head lands mid-band and the face is centred by construction.
+  measureFraming answers "is this photo compliant?": the framing is fixed, and
+  whether the head is the right size and centred is exactly the question.
+  Writing only the first made horizontal centring — which this entry asks for —
+  structurally impossible to fail, and a check that cannot fail is not a check.
+  Someone checking a photo a booth already produced is a real user of a product
+  called a checker.
+
 IMPLEMENTS
-  [ ] Head height (crown→chin), eye-line height, horizontal centring
-  [ ] Roll from the inter-ocular line; yaw/pitch from the transform matrix
-  [ ] Ideal crop rectangle satisfying the spec, plus achievability check
+  [x] Head height (crown→chin), eye-line height, horizontal centring
+  [x] Roll from the inter-ocular line, shared by both functions
+  [x] Ideal crop rectangle satisfying the spec, plus achievability check
+  [x] Aspect check on an already-cropped photo: a 51x51 print submitted to a
+      Schengen application is the wrong shape before anything about the face
+      is considered
+
+  The crop is DERIVED from the head, not chosen and then checked. Printing a
+  crop of height H at the spec's physical height fixes the scale, so a target
+  head height in millimetres names exactly one crop height. Aiming at the
+  middle of the band rather than an edge is deliberate: the edges are where a
+  rejection lives, and landmark jitter of a pixel or two between runs would
+  otherwise flip a photo from pass to fail with nothing about it changing.
+
+  [ ] NOT DONE — yaw and pitch from the transform matrix. Yaw is already
+      recovered in mediapipe-detector, where the matrix is; re-deriving it here
+      would mean two sources for one number. Pitch is not extracted anywhere
+      yet and belongs with the rule that needs it (#21). Reading the matrix in
+      two places is how the two answers drift apart.
 
 EDGE CASES
-  [ ] Crown above the top edge, or chin below the bottom edge
-  [ ] Required crop extends outside the source image
-  [ ] Source resolution too low to crop at the spec's DPI
-  [ ] Extreme source aspect ratios
-  [ ] Head correctly sized but positioned so no valid crop exists
-  [ ] Rounding must be consistent with PR #14's policy
+  [x] Crown above the top edge, chin below the bottom edge, chin above crown
+  [x] Required crop extends outside the source, on any side
+  [x] Source resolution too low for the spec's DPI — declines rather than
+      upscaling, since enlargement invents detail the printer renders as
+      softness, itself a rejection reason
+  [x] Extreme aspect ratios: a wide panorama crops fine when the head is small
+      enough, and is declined when it is not, because height is the constraint
+  [x] Head correctly sized but positioned so no valid crop exists
+  [x] A head too few pixels tall to measure — the arithmetic still produces a
+      crop and every millimetre in it is noise
+  [x] Rounding consistent with #14: every value returned is raw, and rounding
+      happens only at display, so nothing is nudged across a band edge by
+      being formatted on the way through
 
 SEO  n/a
 
 TESTS
-  Unit across synthetic geometries plus every fixture from PR #18.
+  43 unit tests, 100% coverage. Includes the property that matters: across
+  head sizes from 200 to 2400 pixels, the measured head height is the band
+  midpoint to six decimal places. If that ever fails, the derivation is wrong
+  rather than a threshold being off.
+
+  [ ] The PR #18 mask fixtures are not wired in here. They produce a crownY,
+      which this engine takes as an input — the seam between them is a single
+      number, and testing it twice would test the fixture rather than the
+      geometry. They meet in the pipeline assembly (#21).
+
+NOTE
+  DEGREES_PER_RADIAN had been written out three times — the pose reader, the
+  crop planner and the framing measurer — before this PR gave it a home in
+  measurement/angle.constants.ts. Roll had been implemented twice.
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #20 — Image quality analysis
