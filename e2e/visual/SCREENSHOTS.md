@@ -8,6 +8,150 @@ suite compares it. Browsable here without downloading a CI artifact.
 A change to any of these images is a change a reviewer must approve:
 `npm run test:visual` fails on a single differing pixel.
 
+## Camera Cameracapture
+
+### Idle
+
+**desktop-dark**
+
+![Idle — desktop-dark](./story-screenshots.spec.ts-snapshots/camera-cameracapture/idle-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Idle — desktop-light](./story-screenshots.spec.ts-snapshots/camera-cameracapture/idle-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Idle — mobile-light](./story-screenshots.spec.ts-snapshots/camera-cameracapture/idle-mobile-light-stories-linux.png)
+
+### Mobile
+
+**desktop-dark**
+
+![Mobile — desktop-dark](./story-screenshots.spec.ts-snapshots/camera-cameracapture/mobile-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Mobile — desktop-light](./story-screenshots.spec.ts-snapshots/camera-cameracapture/mobile-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Mobile — mobile-light](./story-screenshots.spec.ts-snapshots/camera-cameracapture/mobile-mobile-light-stories-linux.png)
+
+### No Camera On This Device
+
+**desktop-dark**
+
+![No Camera On This Device — desktop-dark](./story-screenshots.spec.ts-snapshots/camera-cameracapture/no-camera-on-this-device-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![No Camera On This Device — desktop-light](./story-screenshots.spec.ts-snapshots/camera-cameracapture/no-camera-on-this-device-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![No Camera On This Device — mobile-light](./story-screenshots.spec.ts-snapshots/camera-cameracapture/no-camera-on-this-device-mobile-light-stories-linux.png)
+
+### Permission Denied
+
+**desktop-dark**
+
+![Permission Denied — desktop-dark](./story-screenshots.spec.ts-snapshots/camera-cameracapture/permission-denied-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Permission Denied — desktop-light](./story-screenshots.spec.ts-snapshots/camera-cameracapture/permission-denied-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Permission Denied — mobile-light](./story-screenshots.spec.ts-snapshots/camera-cameracapture/permission-denied-mobile-light-stories-linux.png)
+
+### With Upload Fallback
+
+**desktop-dark**
+
+![With Upload Fallback — desktop-dark](./story-screenshots.spec.ts-snapshots/camera-cameracapture/with-upload-fallback-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![With Upload Fallback — desktop-light](./story-screenshots.spec.ts-snapshots/camera-cameracapture/with-upload-fallback-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![With Upload Fallback — mobile-light](./story-screenshots.spec.ts-snapshots/camera-cameracapture/with-upload-fallback-mobile-light-stories-linux.png)
+
+## Camera Cameraguideoverlay
+
+### Longest Instruction
+
+**desktop-dark**
+
+![Longest Instruction — desktop-dark](./story-screenshots.spec.ts-snapshots/camera-cameraguideoverlay/longest-instruction-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Longest Instruction — desktop-light](./story-screenshots.spec.ts-snapshots/camera-cameraguideoverlay/longest-instruction-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Longest Instruction — mobile-light](./story-screenshots.spec.ts-snapshots/camera-cameraguideoverlay/longest-instruction-mobile-light-stories-linux.png)
+
+### Move Closer
+
+**desktop-dark**
+
+![Move Closer — desktop-dark](./story-screenshots.spec.ts-snapshots/camera-cameraguideoverlay/move-closer-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Move Closer — desktop-light](./story-screenshots.spec.ts-snapshots/camera-cameraguideoverlay/move-closer-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Move Closer — mobile-light](./story-screenshots.spec.ts-snapshots/camera-cameraguideoverlay/move-closer-mobile-light-stories-linux.png)
+
+### No Head Yet
+
+**desktop-dark**
+
+![No Head Yet — desktop-dark](./story-screenshots.spec.ts-snapshots/camera-cameraguideoverlay/no-head-yet-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![No Head Yet — desktop-light](./story-screenshots.spec.ts-snapshots/camera-cameraguideoverlay/no-head-yet-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![No Head Yet — mobile-light](./story-screenshots.spec.ts-snapshots/camera-cameraguideoverlay/no-head-yet-mobile-light-stories-linux.png)
+
+### Ready
+
+**desktop-dark**
+
+![Ready — desktop-dark](./story-screenshots.spec.ts-snapshots/camera-cameraguideoverlay/ready-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Ready — desktop-light](./story-screenshots.spec.ts-snapshots/camera-cameraguideoverlay/ready-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Ready — mobile-light](./story-screenshots.spec.ts-snapshots/camera-cameraguideoverlay/ready-mobile-light-stories-linux.png)
+
+### Starting
+
+**desktop-dark**
+
+![Starting — desktop-dark](./story-screenshots.spec.ts-snapshots/camera-cameraguideoverlay/starting-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Starting — desktop-light](./story-screenshots.spec.ts-snapshots/camera-cameraguideoverlay/starting-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Starting — mobile-light](./story-screenshots.spec.ts-snapshots/camera-cameraguideoverlay/starting-mobile-light-stories-linux.png)
+
 ## Common Pageheading
 
 ### Long Title Overflow
@@ -928,4 +1072,4 @@ A change to any of these images is a change a reviewer must approve:
 
 ---
 
-189 baselines across 18 components.
+219 baselines across 20 components.

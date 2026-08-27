@@ -8,6 +8,8 @@ import type { RequirementCoverage } from '@/rules/rule.types';
 import type { OverlayRole } from '@/overlay/overlay-role.constants';
 import type { SheetSizeId } from '@/sheet/sheet-size.constants';
 import type { IngestionMessageId } from '@/ingestion/ingestion-failure.types';
+import type { CameraFailureCode } from '@/camera/camera-failure.types';
+import type { GuidanceId } from '@/camera/guidance/guidance.types';
 
 /** The four answers the coverage map can give about a requirement. */
 export type CoverageKind = RequirementCoverage['kind'];
@@ -56,6 +58,30 @@ export interface UploadContent {
   readonly nothingDropped: string;
   /** Every refusal the ingestion pipeline can produce, keyed by its id. */
   readonly failures: Readonly<Record<IngestionMessageId, IngestionMessage>>;
+}
+
+/**
+ * Every word the live camera can say.
+ *
+ * Keyed by the guidance engine's own union, so a new instruction cannot be
+ * added without its words: the record fails to compile, rather than rendering
+ * an empty banner over somebody's face while they wait to be told what to do.
+ *
+ * The instructions are deliberately short. They are read at arm's length, by
+ * somebody who is holding a phone and trying to keep still, and a sentence
+ * they have to stop and parse is a sentence that moves the camera.
+ */
+export interface CameraContent {
+  readonly startLabel: string;
+  readonly stopLabel: string;
+  readonly captureLabel: string;
+  readonly switchCameraLabel: string;
+  readonly previewLabel: string;
+  readonly fallbackToUpload: string;
+  /** Interpolated with {percent}. */
+  readonly headHeightReadout: string;
+  readonly guidance: Readonly<Record<GuidanceId, string>>;
+  readonly failures: Readonly<Record<CameraFailureCode, IngestionMessage>>;
 }
 
 export interface ResultContent {
@@ -159,6 +185,7 @@ export interface ReportContent {
 export interface ContentTree {
   readonly common: CommonContent;
   readonly upload: UploadContent;
+  readonly camera: CameraContent;
   readonly result: ResultContent;
   readonly legal: LegalContent;
   readonly errors: ErrorContent;

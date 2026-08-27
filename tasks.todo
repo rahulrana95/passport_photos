@@ -1824,7 +1824,7 @@ TESTS
 ───────────────────────────────────────────────────────────────────────────────
 ───────────────────────────────────────────────────────────────────────────────
 PR #27 — Live camera capture with real-time guidance
-Branch: feat/camera-capture            Depends on: #26               Status: TODO
+Branch: feat/camera-capture            Depends on: #26               Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   PULLED FORWARD from v1.1 into v1, on competitive evidence. PhotoAiD's mobile
@@ -1839,33 +1839,113 @@ DESCRIPTION
   both of which already exist by this point.
 
 IMPLEMENTS
-  [ ] getUserMedia capture with rear/front camera switching
-  [ ] Live overlay: head oval guide, real-time head-height percentage, a
+  [x] getUserMedia capture with rear/front camera switching
+  [x] Live overlay: a fixed head oval, a real-time head-height readout, and a
       background-uniformity warning before the shutter rather than after
-  [ ] Analysis on a throttled frame loop, not per frame — full detection at
-      camera rate would melt a mid-range phone
-  [ ] Capture at the sensor's full resolution, not the preview's
-  [ ] Falls back cleanly to file upload wherever camera access is unavailable
+  [x] Analysis on a throttled frame loop, not per frame
+  [x] Capture at the sensor's full resolution, not the preview's
+  [x] Falls back cleanly to file upload wherever camera access is unavailable —
+      and alongside it where it is. Most desktops have no camera worth using
+      and plenty of readers already have a better photograph on their phone; a
+      camera-only screen turns those people away at the first step.
+
+  ONE INSTRUCTION AT A TIME. The guidance engine produces an ordered list and
+  the overlay renders exactly the first item. A live view that lists five
+  faults gets none of them fixed — the reader reads, looks up, and the picture
+  has already changed. The loop the plan asked for, "move closer… closer…
+  hold there", only works if there is one thing to do.
+
+  EVERY THRESHOLD IS IMPORTED, NONE ARE CHOSEN. Level, confident, plain, far
+  enough away — all come from the constants the still analyser uses. Guidance
+  with its own numbers would walk somebody into a photograph the analyser then
+  rejects, having told them it was fine, which is worse than no guidance at
+  all because they followed it.
+
+  [~] REFACTOR: planRawCrop extracted from planCrop into crop-geometry.utils.
+      Where the crop goes is now computed in ONE place and used by both the
+      still pipeline and the live preview. Two derivations would have let the
+      preview say "hold there" for a frame the analyser then refused. What is
+      left in planCrop is the part the camera does not want: refusing.
+
+  [~] FIXED, found by writing the guidance tests: the landmark point order —
+      chin, left eye, right eye — was a comment inside the fake detector,
+      which is to say a convention two consumers could disagree about while
+      both compiled. It is now landmark-points.constants.ts, and a test pins
+      the fake to it.
+
+  [~] FIXED, found by chasing an uncovered branch: unmounting while
+      getUserMedia was still in flight leaked the camera. The cleanup ran
+      before the stream existed, found nothing to stop, and the indicator
+      light stayed on over an empty page — on the one product where a light
+      that stays on is the accusation. There is now a mounted flag, and the
+      stream is stopped on arrival if the reader has already gone.
+
+  [~] FIXED, same way: the background was judged by indexing a segmentation
+      mask with frame-pixel indices. For a mask at a different resolution
+      index n names a different pixel in each, so the verdict would have been
+      computed from a scrambled selection and delivered with full confidence.
+      A size mismatch now reports "not judged", which is always available and
+      always honest.
 
 EDGE CASES
-  [ ] Permission denied, or dismissed without answering
-  [ ] No camera present (most desktops)
-  [ ] iOS Safari requires a user gesture and refuses getUserMedia over http
-  [ ] Preview resolution far below capture resolution — guidance computed on the
-      preview must still hold for the captured frame
-  [ ] Device rotation mid-session
-  [ ] Front camera mirroring: the preview is mirrored, the capture must not be
-  [ ] Battery and thermal cost of a sustained analysis loop
-  [ ] Stream must be stopped on unmount, or the camera light stays on — which
-      for this product looks exactly like the surveillance we promise we are not
-  [ ] Low light, where guidance would be confidently wrong
+  [x] Permission denied — named as the browser blocking it, with where the
+      button is. Eight distinct failure codes, each with its own remedy,
+      because "camera unavailable" collapses them all into an apology.
+  [x] No camera present (most desktops) — told to upload instead, not sent
+      hunting through settings for a device they do not have.
+  [x] iOS Safari refuses getUserMedia over http, and does it by withholding
+      the whole API — which looks exactly like having no camera. Checked
+      separately and blamed on the protocol, because telling somebody to buy a
+      webcam when they need https would be wrong.
+  [x] Preview resolution far below capture resolution — guidance is computed
+      on videoWidth/videoHeight, the STREAM's size, never the element's. The
+      browser suite asserts videoWidth exceeds clientWidth, which is the whole
+      distinction in one line.
+  [~] Device rotation mid-session — the frame grab reads the stream's current
+      dimensions every tick, so a rotated frame is measured as it arrives
+      rather than against a size cached at start. NOT verified on a physical
+      device; no phone in CI. Flagged for #34 with the iOS capture checks.
+  [x] Front camera mirroring: the preview is flipped by a CSS transform on the
+      element and the capture is not. drawImage reads the stream, which was
+      never flipped, so captureStill has no un-mirroring step and must never
+      grow one — a mirrored passport photograph is rejected for the parting
+      being on the wrong side, and the reader cannot see it coming. Asserted
+      in the browser (the transform is on the element) and in the unit suite
+      (drawImage gets a plain destination rectangle and nothing else).
+  [x] Battery and thermal cost — the interval is measured from the END of the
+      last analysis, not on a fixed schedule. setInterval at 300ms where
+      detection takes 400ms does not give three analyses a second; it gives an
+      unbounded queue, a hot phone, and guidance about where somebody's head
+      was several seconds ago. A hidden tab stops the loop entirely.
+  [x] Stream stopped on unmount — and on stop, on failure, on camera switch,
+      and on arriving after the reader has already left.
+  [x] Low light, where guidance would be confidently wrong — reported BEFORE
+      anything read off the detector. Landmarks from a dark room come back
+      with points and a confidence, both wrong, and "move left" on that basis
+      is worse than admitting the light is the problem. The threshold is far
+      below any exposure judgement, deliberately: a band on face luminance is
+      a band on skin tone (see src/quality/exposure.utils.ts).
 
 SEO
-  [ ] Camera UI is client-only and must not enter the static HTML of any page
+  [x] Camera UI is client-only and enters no static HTML: nothing imports it
+      from a route yet, and the build output is unchanged.
 
 TESTS
-  Unit against a mocked MediaStream; the fixture corpus drives the guidance
-  logic. Integration with Playwright's fake camera device.
+  158 unit + axe across the camera layer and its two components. 100%
+  coverage, no suppressions.
+
+  8 Playwright tests against Chromium's fake capture device
+  (--use-fake-device-for-media-stream), which gives getUserMedia a real
+  MediaStream. Real tracks, real frames, real readyState — the things jsdom
+  cannot produce at all. They drive the SAME story the screenshots use, with
+  its stub environment unset through Storybook's `!undefined` URL arg: a
+  dedicated real-camera story would have been captured by the screenshot suite
+  too, and its baseline would then depend on whether the runner had a camera.
+
+  10 stories, 30 baselines: the oval at each state, the ready ring, and the
+  two refusals that matter most. The refusal stories press their own button
+  from a callback ref, which React runs during commit, so the refused state is
+  the first frame painted and the screenshot cannot race it.
 
 PR #28 — Result panel
 Branch: feat/result-panel              Depends on: #27               Status: TODO

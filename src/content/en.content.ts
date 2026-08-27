@@ -74,6 +74,70 @@ export const EN_CONTENT: ContentTree = {
       },
     },
   },
+  camera: {
+    startLabel: 'Use my camera',
+    stopLabel: 'Turn the camera off',
+    captureLabel: 'Take the photo',
+    switchCameraLabel: 'Switch camera',
+    previewLabel: 'Camera preview',
+    fallbackToUpload: 'Upload a photo instead',
+    headHeightReadout: 'Head fills {percent}% of the frame',
+    guidance: {
+      'no-face': 'Looking for your face',
+      'many-faces': 'Only you should be in the picture',
+      'crown-hidden': 'Show the top of your head',
+      'head-cut-off': 'Fit your whole head in the frame',
+      'move-back': 'Move back a little',
+      'move-closer': 'Move a little closer',
+      'move-left': 'Move to your left',
+      'move-right': 'Move to your right',
+      'raise-camera': 'Raise the camera',
+      'lower-camera': 'Lower the camera',
+      'level-head': 'Hold your head level',
+      'face-camera': 'Look straight at the camera',
+      'too-dark': 'Find somewhere brighter',
+      'plain-background': 'Stand against a plain wall',
+      ready: 'Hold still',
+    },
+    failures: {
+      'permission-denied': {
+        message: 'Your browser is blocking camera access for this page.',
+        remedy:
+          'Look for the camera icon in the address bar and allow access, then try again. Nothing is recorded or sent anywhere — the picture is analysed on your device.',
+      },
+      'no-camera': {
+        message: 'No camera was found on this device.',
+        remedy: 'Take a photo on your phone and upload it here instead. That works just as well.',
+      },
+      'camera-in-use': {
+        message: 'The camera is already being used by another app.',
+        remedy:
+          'Close any video call or camera app that is open, then try again. On a laptop this is usually a meeting window you have forgotten about.',
+      },
+      'insecure-context': {
+        message: 'The camera only works on a secure connection.',
+        remedy: 'Open this page over https and the camera button will work.',
+      },
+      unsupported: {
+        message: 'This browser cannot open a camera.',
+        remedy:
+          'Upload a photo instead, or open this page in Chrome, Safari, Firefox or Edge, where the camera works.',
+      },
+      'constraints-unsatisfiable': {
+        message: 'That camera could not be opened at a usable size.',
+        remedy: 'Try the other camera, or upload a photo you have already taken.',
+      },
+      dismissed: {
+        message: 'The camera permission prompt was closed without an answer.',
+        remedy: 'Press the camera button again and choose Allow, or upload a photo instead.',
+      },
+      unknown: {
+        message: 'The camera could not be started.',
+        remedy:
+          'Try again, or upload a photo instead — the checks are exactly the same either way.',
+      },
+    },
+  },
   result: {
     verdictPass: 'Meets the published requirements',
     verdictFail: 'Does not meet the requirements yet',
