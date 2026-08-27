@@ -278,6 +278,35 @@ export const EN_CONTENT: ContentTree = {
     downloadFailed:
       'Your browser could not build the marked-up image, which usually means the photo is larger than it will open on a canvas. The measurements above are unaffected.',
   },
+  print: {
+    sheetHeading: 'Print a sheet',
+    sheetSizes: {
+      '4x6in': '4 x 6 inches',
+      '10x15cm': '10 x 15 cm',
+      a4: 'A4',
+    },
+    copiesPerSheet: '{count} copies on one sheet',
+    downloadJpeg: 'Download the sheet as an image',
+    downloadPdf: 'Download the sheet as a PDF',
+    cutGuidesNote:
+      'The small marks sit outside each photo, never across it. Cut along them and nothing on the photo is lost.',
+    scaleWarning:
+      'Print at 100%. Any “fit to page” or “scale to fit” setting resizes the photos, and a photo of the wrong size is the most common reason one is refused.',
+    tooLargeForSheet:
+      'This photo is larger than that sheet. Choose a bigger sheet, or print a single photo instead.',
+    handoffHeading: 'Taking it to a shop',
+    handoffSteps: [
+      'Download the sheet as an image and put it on your phone, or on a USB stick.',
+      'Ask for a single 6x4 photo print of that file — not a passport photo, which is a different and far more expensive service.',
+      'Check at the counter that it was printed at full size and not cropped or resized.',
+      'Cut along the small marks at the corners of each photo.',
+    ],
+    printersHeading: 'Shops that print photos near you',
+    printersNote:
+      'These are chains people recognise, listed because they print photos from a file. Nobody has paid to be here, and if that ever changes it will say so on this page.',
+    printersUnknown:
+      'We do not have shop suggestions for this country yet. Any photo shop, print shop or stationery shop that prints from a file will do it — ask for a 6x4 photo print.',
+  },
   legal: {
     acceptanceDisclaimer:
       'We check your photo against the issuing authority’s published specification. The final decision always belongs to that authority.',

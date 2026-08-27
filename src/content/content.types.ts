@@ -6,6 +6,7 @@ import type { FixActionKind, RuleMessageId } from '@/rules/rule-message.constant
 import type { RuleId } from '@/rules/rule-id.constants';
 import type { RequirementCoverage } from '@/rules/rule.types';
 import type { OverlayRole } from '@/overlay/overlay-role.constants';
+import type { SheetSizeId } from '@/sheet/sheet-size.constants';
 
 /** The four answers the coverage map can give about a requirement. */
 export type CoverageKind = RequirementCoverage['kind'];
@@ -86,6 +87,33 @@ export interface OverlayContent {
   readonly downloadFailed: string;
 }
 
+/**
+ * Words for the printed sheet and for getting it printed.
+ *
+ * The handoff copy is load-bearing rather than decorative. Most people who
+ * need a passport photograph need a physical one, and the step they are
+ * actually stuck on is the one between a file and a print — so the
+ * instructions have to be specific enough to say at a counter.
+ */
+export interface PrintContent {
+  readonly sheetHeading: string;
+  readonly sheetSizes: Readonly<Record<SheetSizeId, string>>;
+  /** Interpolated with {count}. */
+  readonly copiesPerSheet: string;
+  readonly downloadJpeg: string;
+  readonly downloadPdf: string;
+  readonly cutGuidesNote: string;
+  readonly scaleWarning: string;
+  readonly tooLargeForSheet: string;
+  readonly handoffHeading: string;
+  readonly handoffSteps: readonly string[];
+  readonly printersHeading: string;
+  /** Shown above the list, and it says plainly that nobody paid for a place. */
+  readonly printersNote: string;
+  /** Shown instead of a list where we cannot name shops honestly. */
+  readonly printersUnknown: string;
+}
+
 export interface ContentTree {
   readonly common: CommonContent;
   readonly upload: UploadContent;
@@ -94,6 +122,7 @@ export interface ContentTree {
   readonly errors: ErrorContent;
   readonly rules: RuleContent;
   readonly overlay: OverlayContent;
+  readonly print: PrintContent;
 }
 
 /**
