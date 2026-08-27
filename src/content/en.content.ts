@@ -307,6 +307,20 @@ export const EN_CONTENT: ContentTree = {
     printersUnknown:
       'We do not have shop suggestions for this country yet. Any photo shop, print shop or stationery shop that prints from a file will do it — ask for a 6x4 photo print.',
   },
+  report: {
+    title: 'Photo compliance report',
+    checkedOn: 'Checked on {date}',
+    overallHeading: 'What we found',
+    resultsHeading: 'Every check we ran',
+    checklistHeading: 'Checks only you can make',
+    coverageHeading: 'What this report covers',
+    coverageSummary:
+      'Of {total} published requirements: {checked} measured, {manual} for you to check, {undetectable} that cannot be judged from a photo, {planned} not built yet.',
+    sourceHeading: 'Where these requirements come from',
+    sourceVerified: 'Last checked against that page on {date}',
+    requirementLabel: 'Required',
+    pageLabel: 'Page {page} of {total}',
+  },
   legal: {
     acceptanceDisclaimer:
       'We check your photo against the issuing authority’s published specification. The final decision always belongs to that authority.',

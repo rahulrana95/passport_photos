@@ -1,7 +1,7 @@
 import { DEFAULT_JPEG_QUALITY } from '@/encode/encode.constants';
 import { setJfifDensity } from '@/encode/jfif-density.utils';
 import { planSheet } from './sheet-layout.utils';
-import { buildJpegPdf } from './pdf-writer.utils';
+import { buildJpegPdf } from '@/pdf/image-page.utils';
 import { renderSheet } from './render-sheet.utils';
 import { SHEET_PRINT_DPI } from './sheet-size.constants';
 import type { JpegEncoder } from '@/encode/jpeg-encoder.types';

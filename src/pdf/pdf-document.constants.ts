@@ -13,13 +13,20 @@ export const XREF_FIRST_GENERATION = 0;
 /** The free-list head, which every file has and which points nowhere. */
 export const XREF_FREE_GENERATION = 65535;
 
-/** Object numbers, in the order they are written. */
+/**
+ * The two objects every document has, at fixed numbers.
+ *
+ * Everything after them is allocated as the document is laid out — two objects
+ * per page, then a font, then one per image — so the numbers cannot be
+ * constants. These two can be, and being able to write /Root 1 0 R without
+ * looking it up is worth the pair.
+ */
 export const PDF_CATALOG_OBJECT = 1;
 export const PDF_PAGES_OBJECT = 2;
-export const PDF_PAGE_OBJECT = 3;
-export const PDF_CONTENTS_OBJECT = 4;
-export const PDF_IMAGE_OBJECT = 5;
-export const PDF_OBJECT_COUNT = 6;
+export const PDF_FIRST_ALLOCATED_OBJECT = 3;
+
+/** Two objects per page: the page itself and the stream of its content. */
+export const PDF_OBJECTS_PER_PAGE = 2;
 
 /** Coordinates are written to this many places. A tenth of a point is 35 microns. */
 export const PDF_PRECISION_DIGITS = 3;

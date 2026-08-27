@@ -1,10 +1,7 @@
 import { RULE_STATUS_TOKENS } from '@/constants/rule-status.constants';
 import { getContent } from '@/content/content.registry';
-import {
-  RULE_STATUS_ICON_SIZE,
-  RULE_STATUS_ICONS,
-  ruleStatusLabel,
-} from './RuleResultRow.constants';
+import { ruleStatusLabel } from '@/rules/rule-status-label.utils';
+import { RULE_STATUS_ICON_SIZE, RULE_STATUS_ICONS } from './RuleResultRow.constants';
 import type { RuleResultRowProps } from './RuleResultRow.types';
 import styles from './RuleResultRow.module.css';
 

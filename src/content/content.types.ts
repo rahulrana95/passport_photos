@@ -114,6 +114,31 @@ export interface PrintContent {
   readonly printersUnknown: string;
 }
 
+/**
+ * Words for the downloadable report.
+ *
+ * All of them, and this is the property that lets the report be set in a font
+ * nobody has to embed: it contains no text the reader supplied. There is no
+ * name field and no free-text box anywhere in this product, so its character
+ * repertoire is whatever the shipped locale uses.
+ */
+export interface ReportContent {
+  readonly title: string;
+  /** Interpolated with {date}. */
+  readonly checkedOn: string;
+  readonly overallHeading: string;
+  readonly resultsHeading: string;
+  readonly checklistHeading: string;
+  readonly coverageHeading: string;
+  /** Interpolated with {checked}, {manual}, {undetectable}, {planned}, {total}. */
+  readonly coverageSummary: string;
+  readonly sourceHeading: string;
+  /** Interpolated with {date}. */
+  readonly sourceVerified: string;
+  readonly requirementLabel: string;
+  readonly pageLabel: string;
+}
+
 export interface ContentTree {
   readonly common: CommonContent;
   readonly upload: UploadContent;
@@ -123,6 +148,7 @@ export interface ContentTree {
   readonly rules: RuleContent;
   readonly overlay: OverlayContent;
   readonly print: PrintContent;
+  readonly report: ReportContent;
 }
 
 /**

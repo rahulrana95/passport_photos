@@ -1621,18 +1621,65 @@ TESTS
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #25 — PDF compliance report
-Branch: feat/pdf-report                Depends on: #24               Status: TODO
+Branch: feat/pdf-report                Depends on: #24               Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
-IMPLEMENTS
-  [ ] Per-rule results, measurements, annotated image, spec source and date
-  [ ] The legal disclaimer, verbatim from the content module
-EDGE CASES
-  [ ] Font embedding and non-Latin names
-  [ ] Long failure lists spanning pages
-  [ ] File size with an embedded photo
-  [ ] Must never contain the words "guaranteed" or "approved"
-TESTS  Unit on document construction; integration asserting text extraction.
+DESCRIPTION
+  A document somebody can file. A photograph is submitted to a person or a
+  system that may disagree with us; when that happens the reader needs to be
+  able to say what was checked, against which published requirement, on what
+  date, and point at the page it came from. A screen full of green ticks is
+  not evidence.
 
+IMPLEMENTS
+  [x] Per-rule results with measurements and the requirement each was judged
+      against, the manual checklist, the coverage map, the annotated image,
+      the specification's source URL and the date it was last verified
+  [x] The legal disclaimer, verbatim from the content module
+
+  [~] REFACTOR: there were two hand-written PDF writers after #24. There is
+      one now, in src/pdf, and the sheet uses it. Two writers for one format
+      is two places to get an offset table wrong.
+
+EDGE CASES
+  [x] Font embedding and non-Latin names — and the honest answer is that this
+      product has no name field. Nothing in the report is text the reader
+      supplied: every word comes from the content module and every number from
+      a measurement, so the character repertoire is whatever the shipped
+      locale uses. That is what makes shipping no embedded font safe, and it
+      buys a document of a few kilobytes rather than a few hundred.
+      The boundary is enforced rather than assumed. Text reaches the writer
+      only as a WinAnsiText, which can be made in exactly one place, so an
+      unwritable character is refused where the words are chosen and the
+      writer has no failure path at all. A test asserts every string in the
+      shipped locale is writable — if a locale ever grows a character the
+      report cannot set, that fails before anybody ships it rather than after
+      somebody prints it. A report that renders a rule as a black diamond is
+      worse than one that failed to build: the first gets printed and handed
+      to somebody.
+  [x] Long failure lists spanning pages. Blocks are atomic: a rule's finding
+      at the foot of one page and the thing to do about it at the head of the
+      next is how a reader comes away having read the problem and not the
+      remedy.
+  [x] File size with an embedded photo. The photograph goes in verbatim
+      through DCTDecode — no second compression pass — and a report without
+      one is asserted under 40KB.
+  [x] Never contains "guaranteed" or "approved". Asserted against the
+      FINISHED document, by extracting its text, on a passing photo, a
+      failing one and one that could not be measured at all. The content
+      module's own invariants already forbid the words; this is the last
+      place they could get in.
+
+SEO  n/a
+
+TESTS
+  72 unit tests, 100% coverage, no suppressions.
+
+  The integration test extracts the text back out of the finished PDF with a
+  second, independent implementation. Asserting that a document contains the
+  bytes we just wrote proves only that concatenation works; asserting that the
+  text comes back out the way a reader gets it out is the claim that matters —
+  a report whose text cannot be selected, searched or read aloud is a picture
+  of a report.
 
 ═══════════════════════════════════════════════════════════════════════════════
  PHASE 5 — INTERFACE
