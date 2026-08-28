@@ -71,6 +71,14 @@ const layout = (
         the heading order jump h1 to h3 on the checker page and on all forty
         country pages, which is a real defect for anyone navigating by heading
         and which the budget never saw while it only measured the homepage. */}
+    {/* Beside the answer, not only in the footer.
+
+        A reader who has just been told their photo meets the requirements is
+        at the exact moment they might read that as "this will be accepted".
+        The footer says otherwise three hundred pixels further down, which is
+        not where the sentence does any work. Who actually decides belongs
+        next to the verdict. */}
+    <p className={styles['disclaimer']}>{content.legal.acceptanceDisclaimer}</p>
     <h2 className={styles['heading']}>{content.result.resultsHeading}</h2>
     <div className={styles['rows']}>{parts.ruleRows}</div>
     <div className={styles['checklist']}>

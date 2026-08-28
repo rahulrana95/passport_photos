@@ -516,6 +516,94 @@ export const EN_CONTENT: ContentTree = {
       'Open your browser’s developer tools and watch the Network tab while you run a check. You will not see your photo leave.',
     specVerifiedOn: 'Requirements last verified on',
   },
+  legalPages: {
+    breadcrumbHome: 'Home',
+    privacy: {
+      title: 'Privacy',
+      metaTitle: 'Privacy — your photo never leaves your device',
+      metaDescription:
+        'What happens to your photograph (nothing leaves your browser), what is measured, and exactly what this site records about its own use.',
+      updated: 'Last updated 28 August 2026',
+      sections: [
+        {
+          heading: 'Your photograph never leaves your device',
+          paragraphs: [
+            'Every check runs inside your browser. Your photograph is read into the page, measured, and discarded when you close the tab. It is never uploaded, never stored on a server, and never seen by us or by anyone else.',
+            'This is not a policy we are asking you to trust. Load this page, disconnect from the internet, and run a check: it still works, because there is nothing on the other end of a connection to wait for.',
+            'You can also watch it happen. Open your browser’s developer tools, choose the Network tab, and check a photo. You will see the page and the measurement models being downloaded to you. You will not see your photograph being sent anywhere.',
+          ],
+        },
+        {
+          heading: 'What is measured, and where it goes',
+          paragraphs: [
+            'To check a photograph the tool has to find your face in it: the outline of your head, the position of your eyes, the line of your chin. Those measurements are what let it say whether your head is the right height in the frame.',
+            'That information is derived on your device and stays there. It is never transmitted. We never receive it, so we never hold it, and there is nothing for us to disclose, sell or lose.',
+            'If you are asking because of the GDPR’s rules on biometric data: the processing happens entirely in your own browser and none of the resulting data reaches us. What we do receive is described in full below — and it contains nothing derived from your photograph.',
+          ],
+        },
+        {
+          heading: 'What this site does record',
+          paragraphs: [
+            'Claiming that nothing at all is collected would be false, so here is the whole of it.',
+            'Page views and loading speed, through Vercel Analytics and Speed Insights. Both are served from this site’s own domain rather than a third party’s, and neither sets a cookie.',
+            'How the tool is used: which country and document you chose, whether a check passed or failed, how many requirements it failed, which requirements those were, what file format your photo was in, and whether a photo was refused before it could be read.',
+            'That last list is deliberately narrow. Knowing which requirement people fail most often is what tells us which guidance to write first. Knowing anything measured from a face would tell us nothing useful and would break the promise at the top of this page, so no field in that data can hold such a value — and there is an automated test that fails the build if one ever does.',
+            'None of it identifies you. There is no account, no cookie, no advertising identifier, and nothing that links one visit to another.',
+          ],
+        },
+        {
+          heading: 'Downloads',
+          paragraphs: [
+            'When you download your checked photograph or a report, the file is produced in your browser and saved straight to your device. It does not pass through a server.',
+          ],
+        },
+        {
+          heading: 'Changes and contact',
+          paragraphs: [
+            'If what this site collects ever changes, this page changes with it and the date above changes too.',
+          ],
+        },
+      ],
+    },
+    terms: {
+      title: 'Terms and disclaimer',
+      metaTitle: 'Terms and disclaimer',
+      metaDescription:
+        'What this tool does, what it cannot promise, and where the requirements it checks against come from.',
+      updated: 'Last updated 28 August 2026',
+      sections: [
+        {
+          heading: 'What this tool does',
+          paragraphs: [
+            'It measures your photograph against the requirements an issuing authority has published, and tells you which of them it meets.',
+            'Some requirements can be measured from a photograph and some cannot. Whether your expression is neutral can be judged; whether the photograph was taken in the last six months cannot be, by us or by any other tool. Those are listed separately for you to confirm yourself, and they are marked as such rather than quietly counted as passes.',
+          ],
+        },
+        {
+          heading: 'What it cannot promise',
+          paragraphs: [
+            'It cannot promise the authority will accept your application. That decision belongs to the authority you apply to, and it is made by a person or a system we have no part in.',
+            'A photograph that meets every requirement here can still be refused — for a reason outside the published specification, or by a judgement call we cannot see. Treat a pass as good evidence that the obvious problems are absent, and nothing more than that.',
+          ],
+        },
+        {
+          heading: 'Where the requirements come from',
+          paragraphs: [
+            'Every specification is taken from the issuing authority’s own published guidance. Each country page cites the exact page it came from and the date it was last checked against it, so you can read the source yourself.',
+            'Governments change these rules without announcement. If the date on a page is old, check the authority’s page as well — and if you find a difference, the authority is right and we are wrong.',
+            'A country appears here only once its requirements have been verified against that source. Where an authority publishes no figure for something, no figure is shown, rather than one borrowed from a neighbour.',
+          ],
+        },
+        {
+          heading: 'Liability',
+          paragraphs: [
+            'This tool is provided as it is, without warranty. We are not liable for a rejected application, a wasted fee, a missed appointment or a delayed journey.',
+            'If that matters to your circumstances — a deadline you cannot move, a trip already booked — use an authorised photographer as well.',
+          ],
+        },
+      ],
+    },
+  },
   country: {
     title: '{country} {document} photo requirements',
     metaTitle: '{country} {document} photo: size, head height and rules',
@@ -526,7 +614,12 @@ export const EN_CONTENT: ContentTree = {
     requirementsHeading: 'What {country} requires',
     requirementsCaption: '{country} {document} photo requirements',
     faqHeading: 'Questions people ask about {country} {document} photos',
-    howToName: 'How to take a {country} {document} photo that will be accepted',
+    // "that will be accepted" until 2026-08-28, which promised the one thing
+    // this product must never promise — and did it in structured data, where a
+    // search engine may repeat it as a rich result on forty-one pages. The
+    // rule was in this file's own header the whole time; the test enforcing it
+    // had a hole exactly the size of this phrase.
+    howToName: 'How to take a {country} {document} photo that meets the requirements',
     otherCountriesHeading: 'Other countries',
     alsoKnownAsHeading: 'This size, and who else uses it',
     breadcrumbHome: 'Home',

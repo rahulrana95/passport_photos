@@ -622,6 +622,50 @@ A change to any of these images is a change a reviewer must approve:
 
 ![Default — mobile-light](./story-screenshots.spec.ts-snapshots/layout-skiplink/default-mobile-light-stories-linux.png)
 
+## Legal Legalpage
+
+### Minimal
+
+**desktop-dark**
+
+![Minimal — desktop-dark](./story-screenshots.spec.ts-snapshots/legal-legalpage/minimal-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Minimal — desktop-light](./story-screenshots.spec.ts-snapshots/legal-legalpage/minimal-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Minimal — mobile-light](./story-screenshots.spec.ts-snapshots/legal-legalpage/minimal-mobile-light-stories-linux.png)
+
+### Privacy
+
+**desktop-dark**
+
+![Privacy — desktop-dark](./story-screenshots.spec.ts-snapshots/legal-legalpage/privacy-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Privacy — desktop-light](./story-screenshots.spec.ts-snapshots/legal-legalpage/privacy-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Privacy — mobile-light](./story-screenshots.spec.ts-snapshots/legal-legalpage/privacy-mobile-light-stories-linux.png)
+
+### Terms
+
+**desktop-dark**
+
+![Terms — desktop-dark](./story-screenshots.spec.ts-snapshots/legal-legalpage/terms-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![Terms — desktop-light](./story-screenshots.spec.ts-snapshots/legal-legalpage/terms-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![Terms — mobile-light](./story-screenshots.spec.ts-snapshots/legal-legalpage/terms-mobile-light-stories-linux.png)
+
 ## Navigation Countrylinkgrid
 
 ### All Countries
@@ -1448,4 +1492,4 @@ A change to any of these images is a change a reviewer must approve:
 
 ---
 
-297 baselines across 26 components.
+306 baselines across 27 components.
