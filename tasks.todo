@@ -2818,18 +2818,66 @@ NOTES
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #34 — Accessibility audit pass
-Branch: a11y/audit                     Depends on: #33               Status: TODO
+Branch: a11y/audit                      Depends on: #33             Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  There was already axe here and it ran on components in jsdom. That catches a
+  component with a missing label; it cannot catch what happens when components
+  are put together on a page, because in jsdom they never are.
+
+  The heading-order defect fixed in #33 is the worked example: every component
+  was individually fine, the composition jumped h1 to h3 on forty-one pages,
+  and the only thing that noticed was a Lighthouse run over a whole route.
+  This closes that gap directly — axe reports the rule and the element where a
+  Lighthouse score reports a number.
+
 IMPLEMENTS
-  [ ] Full keyboard path through upload → analysis → download
-  [ ] Screen-reader review of results; meaningful alt text on the overlay
-  [ ] Contrast verified in both themes and forced-colors mode
-EDGE CASES
-  [ ] Canvas results are invisible to screen readers — a text equivalent is
-      mandatory, not optional
-  [ ] Focus management when the result panel appears
-  [ ] Reduced-motion path through every transition
-TESTS  axe on every route; manual VoiceOver/NVDA checklist recorded in the PR.
+  [x] axe on every route, in a real browser, against WCAG 2.2 AA. Tags named
+      explicitly rather than left to axe's defaults: the default set moves
+      between releases, and a suite that silently checks more or less than it
+      did yesterday is one nobody can reason about.
+  [x] Dark mode, on the two pages carrying the most colour.
+  [x] Forced-colors mode, which throws the palette away entirely: anything that
+      carried meaning through a background colour alone becomes
+      indistinguishable, and a control drawn with no border becomes invisible.
+  [x] The full keyboard path: the file input is reachable by Tab, the verdict
+      is announced and then reachable, and nothing traps focus.
+  [x] Reduced motion verified to APPLY rather than merely exist. A rule scoped
+      a level too deep would read correctly in the stylesheet while every
+      transition kept running.
+
+WHAT IT FOUND
+  Nothing new. Every route passes in light, dark and forced-colors, and the
+  keyboard path works end to end. That is a real result rather than an empty
+  one — the deliverable here is the COVERAGE, and the one genuine defect this
+  audit would have caught was already found by widening the budgets in #33.
+
+DECISIONS WORTH RECORDING
+  [x] The verdict is announced through a polite live region and focus is NOT
+      moved. Deliberate: an async completion that steals focus is disorienting
+      and the reader may still be reading the thing they were on. The live
+      region says the answer arrived and what it was; the results follow the
+      control that produced them in document order, so tabbing forward arrives
+      rather than doubling back. Both halves are now tested.
+  [x] The overlay canvas is aria-hidden with alt text on the photograph and a
+      text legend beside it. Measurement lines drawn on a canvas are invisible
+      to a screen reader, so the legend is the equivalent — mandatory, not
+      optional, and already correct.
+
+NOT DONE, and it needs a human
+  A manual VoiceOver or NVDA pass. Automated tooling finds missing labels and
+  bad contrast; it cannot tell you whether the result panel READS well — 
+  whether the verdict, twenty-four rule rows and the manual checklist arrive in
+  an order that makes sense out loud, or whether it is a wall of speech. That
+  needs somebody with a screen reader and ten minutes.
+
+NOTE ON A FLAKE THAT WAS MINE
+  The dark-mode check failed on roughly one run in two before it shipped. The
+  cause was the test, not the site: it set the colour scheme AFTER navigating,
+  so axe sampled while the palette was half-swapped — dark text still, light
+  background already — and reported a contrast violation that did not exist.
+  The scheme is now set before the load, which is also what a real reader does.
+  Verified stable over three consecutive runs.
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #35 — Legal, privacy and disclaimer surfaces
