@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { servedSizeFamilies } from '@/dimension-page/size-family.utils';
 import { COUNTRY_SLUGS } from './country.constants';
 import { DOCUMENT_TYPES } from './document-type.constants';
 import {
   absoluteUrl,
   countryDocumentRoute,
+  dimensionFamilyRoute,
   dimensionRoute,
   homeRoute,
   ROUTE_SEGMENTS,
@@ -28,6 +30,20 @@ describe('countryDocumentRoute', () => {
       expect(route.startsWith('/')).toBe(true);
       expect(route.endsWith('/')).toBe(false);
       expect(route).not.toContain('//');
+    }
+  });
+});
+
+describe('dimensionFamilyRoute', () => {
+  it('publishes a size family at the phrase people search for', () => {
+    // Not a size this can compute: 50.8x50.8mm and "2x2 inch" are the same
+    // square and only one of them is ever typed into a search box.
+    expect(dimensionFamilyRoute('2x2-inch-photo')).toBe('/2x2-inch-photo');
+  });
+
+  it('is what the size pages are generated at', () => {
+    for (const served of servedSizeFamilies()) {
+      expect(dimensionFamilyRoute(served.family.slug)).toBe(`/${served.family.slug}`);
     }
   });
 });

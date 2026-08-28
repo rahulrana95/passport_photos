@@ -12,3 +12,12 @@
   flex-direction: column;
   gap: var(--tk-space-sm);
 }
+
+.sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tk-space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

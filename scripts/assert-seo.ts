@@ -39,6 +39,25 @@ const COUNTRY_PATTERNS: readonly (readonly [string, RegExp])[] = [
 ];
 
 /**
+ * Everything a size page has to carry.
+ *
+ * The list of countries is the reason the page exists: somebody searching a
+ * number has been told it by a form and does not know whose rule it is. A page
+ * that only restated the number would be a dictionary entry competing with the
+ * country pages for the same reader.
+ */
+const DIMENSION_PATTERNS: readonly (readonly [string, RegExp])[] = [
+  ['a link to at least one country page', /href="\/[a-z-]+\/[a-z-]+-photo"/i],
+  ['breadcrumb structured data', /"@type":"BreadcrumbList"/],
+  ['no unfilled copy placeholder', /^(?!.*\{(size|width|height|edge)\}).*$/s],
+];
+
+/** Pages whose file sits directly in the app directory rather than in a folder. */
+const DIMENSION_SLUGS = new Set(
+  ['2x2-inch-photo', '35x45mm-photo', '50x70mm-photo', '600x600-photo', 'resize-photo-to-240kb'],
+);
+
+/**
  * Discovered from the build output rather than listed here.
  *
  * A hand-maintained list falls behind the day a country is added, and it falls
@@ -46,12 +65,26 @@ const COUNTRY_PATTERNS: readonly (readonly [string, RegExp])[] = [
  * means every page the build produced is asserted, including ones nobody
  * remembered to mention.
  */
-const countryRoutes = async (): Promise<readonly RouteExpectation[]> => {
+const generatedRoutes = async (): Promise<readonly RouteExpectation[]> => {
   const entries = await readdir(join('.next', APP_DIR), { withFileTypes: true });
   const routes: RouteExpectation[] = [];
 
   for (const entry of entries) {
-    if (!entry.isDirectory() || entry.name.startsWith('[') || entry.name.startsWith('_')) continue;
+    if (entry.name.startsWith('[') || entry.name.startsWith('_')) continue;
+
+    if (entry.isFile()) {
+      const slug = entry.name.replace('.html', '');
+      if (entry.name.endsWith('.html') && DIMENSION_SLUGS.has(slug)) {
+        routes.push({
+          htmlPath: join(APP_DIR, entry.name),
+          label: `/${slug}`,
+          extra: DIMENSION_PATTERNS,
+        });
+      }
+      continue;
+    }
+
+    if (!entry.isDirectory()) continue;
 
     const files = await readdir(join('.next', APP_DIR, entry.name));
 
@@ -70,7 +103,7 @@ const countryRoutes = async (): Promise<readonly RouteExpectation[]> => {
 const ROUTES: readonly RouteExpectation[] = [
   { htmlPath: `${APP_DIR}/index.html`, label: '/' },
   { htmlPath: `${APP_DIR}/passport-photo-checker.html`, label: '/passport-photo-checker' },
-  ...(await countryRoutes()),
+  ...(await generatedRoutes()),
 ];
 
 const REQUIRED_PATTERNS: readonly (readonly [string, RegExp])[] = [

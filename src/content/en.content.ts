@@ -526,6 +526,7 @@ export const EN_CONTENT: ContentTree = {
     faqHeading: 'Questions people ask about {country} {document} photos',
     howToName: 'How to take a {country} {document} photo that will be accepted',
     otherCountriesHeading: 'Other countries',
+    alsoKnownAsHeading: 'This size, and who else uses it',
     breadcrumbHome: 'Home',
     breadcrumbChecker: 'Photo checker',
     labels: {
@@ -617,6 +618,42 @@ export const EN_CONTENT: ContentTree = {
       fixName: 'Fix and re-check',
       fixText:
         'Anything that falls outside the range comes with the correction to make. Take the photo again and check it once more before you pay for anything.',
+    },
+  },
+  dimension: {
+    headings: {
+      print: '{size} photo requirements',
+      pixels: '{size} photo requirements',
+      'file-size': 'How to get a passport photo under {size}',
+    },
+    metaTitles: {
+      print: '{size} photo: which countries accept it, and how to check yours',
+      pixels: '{size} photo: which forms accept it, and how to check yours',
+      'file-size': 'Resize a passport photo to {size} without ruining it',
+    },
+    metaDescriptions: {
+      print:
+        'Which countries ask for a {size} photo, what else each one requires, and a free checker that measures your photo against them in your browser.',
+      pixels:
+        'Which application forms accept a {size} photo, what else each one requires, and a free checker that measures your photo in your browser.',
+      'file-size':
+        'How to get a passport photo under {size} without cropping it wrong — and a free checker that measures the result in your browser.',
+    },
+    intros: {
+      print:
+        'A {size} photo is asked for by the countries below. The size is only part of it: each of them also states how much of the frame your head must fill, and that is where most photos fail.',
+      pixels:
+        'A {size} upload is accepted by the forms below. The pixel size is only part of it: each of them also states how much of the frame your head must fill, and that is where most photos fail.',
+      'file-size':
+        'A photo under {size} is what the forms below ask for. Compressing to hit it is the easy part — staying inside the head-height and background rules while you do is where photos fail.',
+    },
+    usedByHeading: 'Who asks for this',
+    usedByItem: '{country} {document}',
+    checkHeading: 'Check your photo against one of them',
+    breadcrumbHome: 'Home',
+    values: {
+      printSize: '{width} × {height}',
+      pixelSize: '{edge} × {edge} pixel',
     },
   },
 };

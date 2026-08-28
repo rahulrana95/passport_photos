@@ -12,6 +12,7 @@ import type { AnalysisErrorCode, AnalysisStage } from '@/analysis/analysis-proto
 import type { CameraFailureCode } from '@/camera/camera-failure.types';
 import type { RuleStatus } from '@/constants/rule-status.constants';
 import type { CrownDefinition } from '@/analysis/crown-detection.utils';
+import type { SizeFamily } from '@/dimension-page/size-family.types';
 import type {
   AiEditingPolicy,
   BackgroundColour,
@@ -20,6 +21,9 @@ import type {
   HeadCoveringPolicy,
 } from '@/photo-spec/photo-spec.constants';
 import type { GuidanceId } from '@/camera/guidance/guidance.types';
+
+/** Which kind of number a dimension page is about. */
+export type SizeFamilyKind = SizeFamily['kind'];
 
 /** The four answers the coverage map can give about a requirement. */
 export type CoverageKind = RequirementCoverage['kind'];
@@ -257,6 +261,8 @@ export interface CountryPageContent {
   readonly faqHeading: string;
   readonly howToName: string;
   readonly otherCountriesHeading: string;
+  /** Heads the links out to the size pages this specification belongs on. */
+  readonly alsoKnownAsHeading: string;
   readonly breadcrumbHome: string;
   readonly breadcrumbChecker: string;
   /** Row labels for the requirements table. */
@@ -339,6 +345,34 @@ export interface CountryHowToContent {
   readonly fixText: string;
 }
 
+/**
+ * A page about a number rather than about a country.
+ *
+ * "2x2 photo", "600x600 photo", "resize photo to 240kb" — searches with no
+ * country in them, made by somebody who has been given a number by a form and
+ * wants to know what it means and who accepts it.
+ */
+export interface DimensionPageContent {
+  /** Interpolated with {size}. One per kind of number. */
+  readonly headings: Readonly<Record<SizeFamilyKind, string>>;
+  readonly metaTitles: Readonly<Record<SizeFamilyKind, string>>;
+  readonly metaDescriptions: Readonly<Record<SizeFamilyKind, string>>;
+  readonly intros: Readonly<Record<SizeFamilyKind, string>>;
+  readonly usedByHeading: string;
+  /** Interpolated with {country} and {document}. */
+  readonly usedByItem: string;
+  readonly checkHeading: string;
+  readonly breadcrumbHome: string;
+  readonly values: DimensionValueContent;
+}
+
+export interface DimensionValueContent {
+  /** Interpolated with {width} and {height}. */
+  readonly printSize: string;
+  /** Interpolated with {edge}. */
+  readonly pixelSize: string;
+}
+
 export interface ContentTree {
   readonly common: CommonContent;
   readonly upload: UploadContent;
@@ -352,6 +386,7 @@ export interface ContentTree {
   readonly print: PrintContent;
   readonly report: ReportContent;
   readonly country: CountryPageContent;
+  readonly dimension: DimensionPageContent;
 }
 
 /**
