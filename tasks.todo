@@ -1,7 +1,7 @@
 ###############################################################################
 #  PASSPORT PHOTO CHECKER — DELIVERY PLAN
 #  One task = one PR. Branch fresh from `main`. Never start N+1 before N merges.
-#  Last updated: 2026-08-27
+#  Last updated: 2026-08-28
 ###############################################################################
 
 ═══════════════════════════════════════════════════════════════════════════════
@@ -2424,19 +2424,52 @@ NOTES
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #30b — Problem route family
-Branch: feat/problem-pages             Depends on: #30a             Status: TODO
+Branch: feat/problem-pages             Depends on: #30a             Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
+The mirror of a country page. A country page answers "what does the United
+States want?"; these answer "what does everybody want about head size?" and
+"why did mine come back?" — same registry, different axis.
+
 IMPLEMENTS
-  [ ] /why-was-my-passport-photo-rejected, /passport-photo-head-size,
-      /passport-photo-background-check
-  [ ] The header and footer link to the rejected page again once it exists —
-      PR #29 removed the link because it pointed at a 404.
+  [x] /why-was-my-passport-photo-rejected — every reason a photo comes back,
+      built from ALL_RULES rather than written as a list. The page cannot
+      describe a rule the engine does not measure, and cannot fall silent about
+      one it does. The order is the registry's own, which is the order worth
+      dealing with them in.
+  [x] /passport-photo-head-size and /passport-photo-background-check — one
+      requirement compared across every served specification, rendered by the
+      same RequirementsTable a country page uses, with the rows being countries
+      instead of requirements.
+  [x] The header and footer link to the rejected page again — PR #29 removed
+      the link because it pointed at a 404 on every page of the site.
+
 EDGE CASES
-  [ ] Reverse mode needs its own entry flow, not a redirect: somebody arriving
-      there has a rejection letter, not a photo they are hopeful about.
-  [ ] Each page must say something the country pages do not, or it is a
-      duplicate with a different title.
-TESTS  Integration asserting cross-links and per-route metadata.
+  [x] Reverse mode is its own entry flow, not a redirect. Somebody arriving
+      with a rejection letter already has the verdict and wants the diagnosis,
+      so the reasons come BEFORE the upload. A Playwright test asserts the
+      ordering by bounding box rather than by DOM order, because the thing that
+      matters is what is above the fold, not what is earlier in the markup.
+  [x] Each page says something the country pages do not. The rejection page
+      carries the 24 rules; the head-size page carries both units AND the crown
+      definition, which is the reason the same photograph passes in one country
+      and fails in another; the background page carries the fact that the answer
+      is not the same everywhere, which is the assumption it exists to correct.
+  [x] Every reason is in the SERVED HTML. The reader who needs it most arrived
+      from a search, and a crawler that must run JavaScript to find the reasons
+      may never see them.
+  [x] Rows are matched by role=rowheader in the tests, not by text: the checker
+      below the table offers the same countries as radio labels, and matching
+      either would pass while asserting nothing about the comparison.
+  [x] FAQ structured data on the rejection page, canonical at its own URL on all
+      three, and no link on any of them leads anywhere that does not exist.
+
+TESTS
+  11 unit tests on the reasons and the comparison rows at 100% coverage —
+  including that no placeholder is left unfilled and that the background values
+  are not all identical — plus 7 Playwright specs. Coverage stands at
+  3820/3820 statements, 1520 branches, 761 functions. SEO assertions now cover
+  13 routes, discovered from the build output. 18 header and footer visual
+  baselines regenerated because the navigation link came back.
 
 
 ═══════════════════════════════════════════════════════════════════════════════

@@ -13,12 +13,11 @@ export interface NavLink {
  * page nobody has built is not one broken link — it is two on every page of the
  * site. `/why-was-my-passport-photo-rejected` was exactly that until a crawl of
  * the country pages caught it: the sitemap had already dropped it for 404ing
- * and the navigation kept pointing at it.
- *
- * It comes back the day its page does.
+ * and the navigation kept pointing at it. It is back because the page is.
  */
 export const PRIMARY_NAV: readonly NavLink[] = [
   { label: 'Check a photo', href: ROUTE_SEGMENTS.checker },
+  { label: 'Why was mine rejected?', href: ROUTE_SEGMENTS.rejected },
 ];
 
 /**

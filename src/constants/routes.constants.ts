@@ -14,6 +14,8 @@ export const ROUTE_SEGMENTS = {
   home: '/',
   checker: '/passport-photo-checker',
   rejected: '/why-was-my-passport-photo-rejected',
+  headSize: '/passport-photo-head-size',
+  backgroundCheck: '/passport-photo-background-check',
   privacy: '/privacy',
   terms: '/terms',
 } as const;
