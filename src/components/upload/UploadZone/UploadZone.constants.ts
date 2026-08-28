@@ -3,9 +3,10 @@ import { ACCEPTED_IMAGE_MIME_TYPES } from '@/constants/limits.constants';
 /**
  * What the file picker offers.
  *
- * HEIC is in the list even though many browsers cannot decode it. Leaving it
- * out does not stop somebody choosing one — it stops the picker showing them
- * their own photographs on an iPhone, which is where most of them are.
+ * HEIC is in the list because HEIC now works: natively on Safari and iOS, and
+ * through the libheif fallback everywhere else. Leaving it out would not stop
+ * somebody choosing one anyway — it would stop the picker showing them their
+ * own photographs on an iPhone, which is where most of them are.
  */
 export const UPLOAD_ACCEPT = ACCEPTED_IMAGE_MIME_TYPES.join(',');
 

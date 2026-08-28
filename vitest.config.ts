@@ -50,6 +50,13 @@ export default defineConfig({
         // that has no business being in a unit test. Everything that decides
         // anything is in detector.factory.ts, with this injected.
         'src/analysis/mediapipe-module.loader.ts',
+        // The dynamic import of libheif, and nothing else. Unlike the two
+        // above, this one's real loading IS asserted — e2e/heic.spec.ts proves
+        // in Chromium that the chunk is absent until a HEIC arrives and is
+        // fetched when one does, which is the only failure this line can have.
+        // Everything that decides anything — which image in the container is
+        // the photograph, what gets freed — is in decode-heic.ts and covered.
+        'src/ingestion/heic/libheif-module.loader.ts',
         // The axe wrapper is thin test-support glue and is verified by its own
         // test. Everything else under src/testing IS covered: the fixture
         // generator is load-bearing, and a bug there would silently corrupt
@@ -59,7 +66,8 @@ export default defineConfig({
         // an OffscreenCanvas, and nothing else. jsdom has neither, and a jsdom
         // stub of them would only assert that the stub was called. It is
         // exercised for real in e2e/checker.spec.ts, which decodes a real JPEG
-        // through this exact path in Chromium — the same split the analysis
+        // through this exact path in Chromium, and in e2e/heic.spec.ts, which
+        // drives the HEIC fallback through it — the same split the analysis
         // worker's model loader uses. Everything that DECIDES anything about a
         // decode is in browser-decoder.ts, with this injected, and covered.
         'src/ingestion/browser-decode-environment.ts',

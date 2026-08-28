@@ -24,12 +24,28 @@ export interface DecodeCanvasContext {
 
 export interface DecodeEnvironment {
   /**
-   * Decodes the bytes into a frame, WITHOUT applying the file's own
-   * orientation tag — the request already carries it, read once by the
-   * ingestion pipeline, and letting the browser apply it as well rotates the
-   * photograph twice.
+   * Decodes the bytes into a frame.
+   *
+   * `applyStoredOrientation` is false for every format whose orientation this
+   * pipeline reads itself — the request already carries it, and letting the
+   * browser apply it as well rotates the photograph twice.
+   *
+   * It is true for HEIC alone, whose rotation lives in container boxes this
+   * pipeline does not parse rather than in the JPEG EXIF block it does. There
+   * the browser is the only thing that knows which way up the picture goes,
+   * and a photograph taken in portrait arrives on its side without it.
    */
-  readonly createBitmap: (blob: Blob) => Promise<BitmapLike>;
+  readonly createBitmap: (blob: Blob, applyStoredOrientation: boolean) => Promise<BitmapLike>;
+  /**
+   * Decodes a HEIC the browser itself refused, or returns undefined where no
+   * fallback is available.
+   *
+   * Optional because it is: a decoder assembled without one still handles
+   * every format a browser can open, and the tests that care about the
+   * decisions around a decode should not have to provide a megabyte of
+   * WebAssembly to make them.
+   */
+  readonly decodeHeic?: (bytes: Uint8Array) => Promise<BitmapLike | undefined>;
   /**
    * A drawing surface of exactly this size, or undefined where one cannot be
    * had — a browser with the canvas disabled, or a size it refuses.

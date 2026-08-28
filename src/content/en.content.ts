@@ -49,9 +49,9 @@ export const EN_CONTENT: ContentTree = {
           'Open the photo on your device and export or save it as a JPEG, then upload that. Every phone and photo app can do this.',
       },
       'heic-not-decodable': {
-        message: 'This browser cannot open HEIC photos, which is how iPhones save them by default.',
+        message: 'This HEIC photo could not be opened here, which is unusual — HEIC normally works.',
         remedy:
-          'On iPhone: open the photo in Photos, tap Share, choose Copy Photo, and paste it here — iOS converts it to JPEG automatically. On a computer: open it in Preview or Photos and export as JPEG. Or upload from your iPhone directly, where this works without converting.',
+          'On iPhone: open the photo in Photos, tap Share, choose Copy Photo, and paste it here — iOS converts it to JPEG automatically. On a computer: open it in Preview or Photos and export as JPEG.',
       },
       'decode-failed': {
         message: 'That image could not be opened — the file looks damaged or incomplete.',

@@ -28,17 +28,47 @@ import type { OrientationTransform } from './exif-orientation.types';
  * and nobody looking at it can tell.
  */
 export const createBrowserDecoder = (environment: DecodeEnvironment): ImageDecoder => {
+  /**
+   * HEIC counts as decodable when either route exists.
+   *
+   * It used to be judged against a fixed list, and the list said no. That was
+   * wrong on precisely the browsers where it mattered most: Safari and iOS
+   * open HEIC natively, and they are what iPhone photographs arrive on. Every
+   * one of those readers was told their browser could not open their own
+   * camera roll, and sent away to convert a file by hand.
+   */
   const canDecode = (format: ImageFormat): boolean =>
-    NATIVELY_DECODABLE_FORMATS.includes(format);
+    NATIVELY_DECODABLE_FORMATS.includes(format) ||
+    (format === 'heic' && environment.decodeHeic !== undefined);
+
+  /**
+   * Native first, always, and the fallback only where the browser refused.
+   *
+   * The order is what keeps the WebAssembly off the wire for the people most
+   * likely to hold a HEIC. On Safari the native decode succeeds and nothing
+   * further is loaded; the megabyte is spent only by a browser that genuinely
+   * cannot open the file, which is a browser whose user is otherwise stuck.
+   */
+  const bitmapFor = async (bytes: Uint8Array, format: ImageFormat): Promise<BitmapLike | undefined> => {
+    // A damaged JPEG is an expected input, not an exceptional one. People
+    // upload photographs that stopped halfway through a transfer every day.
+    const native = await environment
+      .createBitmap(
+        new Blob([bytes as Uint8Array<ArrayBuffer>], { type: FORMAT_MIME_TYPES[format] }),
+        format === 'heic',
+      )
+      .catch(() => undefined);
+
+    if (native !== undefined) return native;
+    if (format !== 'heic') return undefined;
+
+    return environment.decodeHeic?.(bytes).catch(() => undefined);
+  };
 
   const decode = async (request: DecodeRequest): Promise<DecodedImage | undefined> => {
     const { bytes, format, orientation, maxEdgePx } = request;
 
-    // A damaged JPEG is an expected input, not an exceptional one. People
-    // upload photographs that stopped halfway through a transfer every day.
-    const bitmap = await environment
-      .createBitmap(new Blob([bytes as Uint8Array<ArrayBuffer>], { type: FORMAT_MIME_TYPES[format] }))
-      .catch(() => undefined);
+    const bitmap = await bitmapFor(bytes, format);
 
     if (bitmap === undefined) return undefined;
 

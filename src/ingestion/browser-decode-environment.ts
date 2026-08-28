@@ -1,4 +1,6 @@
 import { DECODE_COLOUR_SPACE } from './browser-decoder.constants';
+import { decodeHeicToPixels } from './heic/decode-heic';
+import { loadLibheif } from './heic/libheif-module.loader';
 import type {
   BitmapLike,
   DecodeCanvasContext,
@@ -15,15 +17,47 @@ import type {
  *
  */
 export const browserDecodeEnvironment = (): DecodeEnvironment => ({
-  createBitmap: async (blob: Blob): Promise<BitmapLike> =>
+  createBitmap: async (blob: Blob, applyStoredOrientation: boolean): Promise<BitmapLike> =>
     // 'none' switches OFF the browser's own EXIF handling. The orientation is
     // already on the request, read once from the file, and letting the browser
-    // apply it as well rotates the photograph twice.
-    createImageBitmap(blob, { imageOrientation: 'none', colorSpaceConversion: 'default' }),
+    // apply it as well rotates the photograph twice. HEIC is the exception:
+    // see createBitmap on DecodeEnvironment.
+    createImageBitmap(blob, {
+      imageOrientation: applyStoredOrientation ? 'from-image' : 'none',
+      colorSpaceConversion: 'default',
+    }),
 
   createSurface: (widthPx: number, heightPx: number): DecodeCanvasContext | undefined =>
     context2d(widthPx, heightPx),
+
+  decodeHeic: heicBitmap,
 });
+
+/**
+ * libheif, loaded once per page and only if a HEIC ever reaches this.
+ *
+ * The promise is cached rather than the module, so two photographs chosen in
+ * quick succession share one instantiation instead of racing to build two
+ * megabyte-sized runtimes.
+ */
+let libheifPromise: ReturnType<typeof loadLibheif> | undefined;
+
+/**
+ * A HEIC the browser refused, decoded by libheif and handed back as a frame.
+ *
+ * The pixels go through createImageBitmap so that everything downstream — the
+ * orientation transform, the working-size plan, the paint — is the identical
+ * code path a JPEG takes. A second path for HEIC would be a second place for
+ * the mirrored-orientation bug to live.
+ */
+const heicBitmap = async (bytes: Uint8Array): Promise<BitmapLike | undefined> => {
+  if (typeof createImageBitmap === 'undefined') return undefined;
+
+  libheifPromise ??= loadLibheif();
+  const pixels = await decodeHeicToPixels(bytes, await libheifPromise);
+
+  return pixels === undefined ? undefined : createImageBitmap(pixels);
+};
 
 /**
  * A 2D context, from OffscreenCanvas where there is one.
