@@ -2949,7 +2949,22 @@ NOT DONE, and it needs a person
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #36 — Ads integration and launch checklist
-Branch: chore/launch                   Depends on: #35               Status: TODO
+Branch: chore/launch                   Depends on: #35            Status: BLOCKED
+───────────────────────────────────────────────────────────────────────────────
+BLOCKED ON THE ARCHITECT, and correctly so. Which ad network, which affiliate
+partners, and Search Console submission all need accounts and commercial
+decisions that are not mine to make. The technical groundwork below is what
+can be done without them.
+
+DONE AHEAD OF IT
+  [x] The social preview image, which did not exist. /og-default.png returned
+      a 404 in production while every page declared it as its og:image, so
+      every link shared to a chat app rendered with no preview at all. Nothing
+      caught it because nothing had ever fetched the URL the metadata was
+      promising — a test asserting the tag exists would have passed throughout.
+      Generated from the same content module the pages read, so the card cannot
+      quote a promise the site has stopped making, and forced static because
+      crawlers fetch it far more often than people load the site.
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
   [ ] Ad slots on content pages only, never the checker
