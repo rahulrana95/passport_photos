@@ -17,6 +17,9 @@ export const COUNTRY_SLUGS = [
   'china',
   'brazil',
   'new-zealand',
+  'france',
+  'germany',
+  'netherlands',
 ] as const;
 
 export type CountrySlug = (typeof COUNTRY_SLUGS)[number];
@@ -32,6 +35,9 @@ export const COUNTRY_NAMES: Readonly<Record<CountrySlug, string>> = {
   china: 'China',
   brazil: 'Brazil',
   'new-zealand': 'New Zealand',
+  france: 'France',
+  germany: 'Germany',
+  netherlands: 'Netherlands',
 };
 
 export const isCountrySlug = (value: string): value is CountrySlug =>

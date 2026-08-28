@@ -46,9 +46,14 @@ export const resolveRuleMessage = (
 
   return {
     label: content.labels[result.ruleId],
-    message: interpolate(content.messages[result.messageId], {
-      months: formatMonths(spec.maxAgeMonths, locale),
-    }),
+    message: interpolate(
+      content.messages[result.messageId],
+      // Only where the authority published one. The message chosen for a spec
+      // without a maximum age has no {months} in it to fill.
+      spec.maxAgeMonths === undefined
+        ? {}
+        : { months: formatMonths(spec.maxAgeMonths, locale) },
+    ),
     measurement:
       result.measurement === undefined
         ? undefined

@@ -82,6 +82,7 @@ export const RULE_MESSAGE_IDS = [
   'hair-across-eyes.check',
   'ink-or-crease.check',
   'photo-age.check',
+  'photo-age.check-current',
 ] as const;
 
 export type RuleMessageId = (typeof RULE_MESSAGE_IDS)[number];

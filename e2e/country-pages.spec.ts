@@ -104,7 +104,12 @@ test.describe('country pages', () => {
   test('an unknown country is a real 404, not a page saying nothing', async ({ page }) => {
     // A soft 404 — status 200 with an apology on it — is indexed, competes
     // with the real pages, and never gets removed.
-    const response = await page.request.get('/france/passport-photo');
+    //
+    // A PLACE THAT WILL NEVER BE A COUNTRY, deliberately. This test used to
+    // point at France, and passed until the morning France was added to the
+    // registry — at which point it failed for the best possible reason and
+    // could easily have been "fixed" by weakening it.
+    const response = await page.request.get('/atlantis/passport-photo');
 
     expect(response.status()).toBe(404);
   });

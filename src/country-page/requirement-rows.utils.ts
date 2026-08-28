@@ -3,7 +3,7 @@ import { interpolate } from '@/content/interpolate.utils';
 import { MONTHS_PER_YEAR } from './country-page.constants';
 import { formatFileSize } from './file-size.utils';
 import type { ContentTree } from '@/content/content.types';
-import type { PrintSize } from '@/photo-spec/photo-spec.schemas';
+import type { DigitalRequirement, PrintSize } from '@/photo-spec/photo-spec.schemas';
 import type { RequirementRow } from '@/components/content/RequirementsTable/RequirementsTable.types';
 import type { ResolvedPhotoSpec } from '@/photo-spec/photo-spec.types';
 
@@ -26,13 +26,8 @@ export const buildRequirementRows = (
   const { labels, values } = content.country;
 
   return [
-    {
-      label: labels.printSize,
-      value: printSize(spec.print, values.printSize, locale),
-      note: printNote(spec, values, locale),
-    },
-    { label: labels.digitalSize, value: digitalSize(spec, values) },
-    ...fileRow(spec, labels, values, locale),
+    printRow(spec, labels, values, locale),
+    ...digitalRows(spec, labels, values, locale),
     {
       label: labels.headHeight,
       value: headHeight(spec, values, locale),
@@ -43,9 +38,31 @@ export const buildRequirementRows = (
     { label: labels.glasses, value: values.glasses[spec.glasses] },
     { label: labels.headCovering, value: values.headCovering[spec.headCovering] },
     { label: labels.expression, value: values.expression[spec.expression] },
-    { label: labels.photoAge, value: photoAge(spec.maxAgeMonths, values.photoAge, locale) },
+    ...photoAgeRow(spec, labels, values, locale),
     { label: labels.aiEditing, value: values.aiEditing[spec.aiEditingPolicy] },
+    { label: labels.submission, value: values.submission[spec.submission] },
   ];
+};
+
+/**
+ * The size, and the resolution and legacy formats only where they exist.
+ *
+ * Built by spread rather than by assigning `undefined`, so a spec whose
+ * authority published neither carries no note at all instead of an empty one.
+ */
+const printRow = (
+  spec: ResolvedPhotoSpec,
+  labels: ContentTree['country']['labels'],
+  values: ContentTree['country']['values'],
+  locale: string,
+): RequirementRow => {
+  const note = printNote(spec, values, locale);
+
+  return {
+    label: labels.printSize,
+    value: printSize(spec.print, values.printSize, locale),
+    ...(note === undefined ? {} : { note }),
+  };
 };
 
 const printSize = (size: PrintSize, template: string, locale: string): string =>
@@ -67,28 +84,53 @@ const printNote = (
   spec: ResolvedPhotoSpec,
   values: ContentTree['country']['values'],
   locale: string,
-): string => {
-  const resolution = interpolate(values.printResolution, { dpi: String(spec.print.dpi) });
+): string | undefined => {
+  const { dpi } = spec.print;
+  const resolution =
+    dpi === undefined ? undefined : interpolate(values.printResolution, { dpi: String(dpi) });
+
   const alternatives = spec.alternativePrintSizes ?? [];
+  const sizes =
+    alternatives.length === 0
+      ? undefined
+      : interpolate(values.alsoAccepted, {
+          sizes: alternatives.map((size) => printSize(size, values.printSize, locale)).join(', '),
+        });
 
-  if (alternatives.length === 0) return resolution;
+  return [resolution, sizes].filter((part) => part !== undefined).join('. ') || undefined;
+};
 
-  const sizes = alternatives
-    .map((size) => printSize(size, values.printSize, locale))
-    .join(', ');
+/**
+ * Both digital rows, or neither.
+ *
+ * An authority that never published a pixel requirement gets no pixel row and
+ * no file row. The same rule the eye line follows: a table that lists a
+ * requirement the authority never stated is a table a reader will act on.
+ */
+const digitalRows = (
+  spec: ResolvedPhotoSpec,
+  labels: ContentTree['country']['labels'],
+  values: ContentTree['country']['values'],
+  locale: string,
+): readonly RequirementRow[] => {
+  const { digital } = spec;
+  if (digital === undefined) return [];
 
-  return `${resolution}. ${interpolate(values.alsoAccepted, { sizes })}`;
+  return [
+    { label: labels.digitalSize, value: digitalSize(digital, values) },
+    fileRow(digital, labels, values, locale),
+  ];
 };
 
 const digitalSize = (
-  spec: ResolvedPhotoSpec,
+  digital: DigitalRequirement,
   values: ContentTree['country']['values'],
 ): string => {
-  const min = String(spec.digital.minEdgePx);
+  const min = String(digital.minEdgePx);
 
-  return spec.digital.maxEdgePx === undefined
+  return digital.maxEdgePx === undefined
     ? interpolate(values.pixelMinimum, { min })
-    : interpolate(values.pixelRange, { min, max: String(spec.digital.maxEdgePx) });
+    : interpolate(values.pixelRange, { min, max: String(digital.maxEdgePx) });
 };
 
 /**
@@ -99,25 +141,21 @@ const digitalSize = (
  * untouched — so it earns a row of its own rather than a clause in another.
  */
 const fileRow = (
-  spec: ResolvedPhotoSpec,
+  digital: DigitalRequirement,
   labels: ContentTree['country']['labels'],
   values: ContentTree['country']['values'],
   locale: string,
-): readonly RequirementRow[] => {
-  const format = interpolate(values.fileFormat, { format: spec.digital.format.toUpperCase() });
+): RequirementRow => {
+  const format = interpolate(values.fileFormat, { format: digital.format.toUpperCase() });
 
-  if (spec.digital.maxBytes === undefined) {
-    return [{ label: labels.fileSize, value: format }];
-  }
+  if (digital.maxBytes === undefined) return { label: labels.fileSize, value: format };
 
-  const size = formatFileSize(spec.digital.maxBytes, locale);
+  const size = formatFileSize(digital.maxBytes, locale);
 
-  return [
-    {
-      label: labels.fileSize,
-      value: `${format}. ${interpolate(values.maxFileSize, { size })}`,
-    },
-  ];
+  return {
+    label: labels.fileSize,
+    value: `${format}. ${interpolate(values.maxFileSize, { size })}`,
+  };
 };
 
 /**
@@ -173,6 +211,18 @@ const eyeLineRow = (
  * months" is technically the same sentence as "within the last two years" and
  * nobody reads it the same way.
  */
+const photoAgeRow = (
+  spec: ResolvedPhotoSpec,
+  labels: ContentTree['country']['labels'],
+  values: ContentTree['country']['values'],
+  locale: string,
+): readonly RequirementRow[] => {
+  const months = spec.maxAgeMonths;
+  if (months === undefined) return [];
+
+  return [{ label: labels.photoAge, value: photoAge(months, values.photoAge, locale) }];
+};
+
 export const photoAge = (months: number, template: string, locale: string): string => {
   const asYears = months / MONTHS_PER_YEAR;
   const unit = Number.isInteger(asYears) ? 'year' : 'month';

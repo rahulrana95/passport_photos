@@ -26,6 +26,7 @@
     "test:visual:report": "playwright show-report",
     "screenshots:gallery": "node scripts/generate-screenshot-gallery.mjs",
     "validate:specs": "vitest run src/photo-spec",
+    "audit:sources": "NODE_USE_ENV_PROXY=1 node --experimental-strip-types scripts/audit-sources.ts",
     "models": "node scripts/fetch-models.mjs",
     "build:worker": "node scripts/build-worker.mjs",
     "prebuild": "node scripts/fetch-models.mjs && node scripts/build-worker.mjs"

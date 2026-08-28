@@ -5,6 +5,7 @@ import { HALF } from '@/measurement/angle.constants';
 import { planRawCrop } from './crop-geometry.utils';
 import { rollFromEyes } from './roll.utils';
 import type { GeometryMeasurements, GeometryResult, SubjectGeometry } from './geometry.types';
+import { exportDpi } from '@/photo-spec/photo-spec.utils';
 
 /**
  * Plans the crop that would satisfy the specification, and measures the result.
@@ -31,7 +32,7 @@ export const planCrop = (subject: SubjectGeometry, spec: ResolvedPhotoSpec): Geo
   // Never upscale. The crop is what will be printed, and enlarging it to reach
   // the required pixel count invents detail that the printer then renders as
   // softness — which is itself a rejection reason.
-  const requiredHeightPx = millimetresToPixels(spec.print.heightMm, spec.print.dpi);
+  const requiredHeightPx = millimetresToPixels(spec.print.heightMm, exportDpi(spec.print));
   if (crop.heightPx < requiredHeightPx) {
     return { ok: false, reason: 'source-resolution-too-low' };
   }

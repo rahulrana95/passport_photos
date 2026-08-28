@@ -357,6 +357,8 @@ export const EN_CONTENT: ContentTree = {
         'If you are printing this photo, check the print for marks, creases or ink before you send it.',
       'photo-age.check':
         'This document needs a photo taken within the last {months}. Only you know when this one was taken.',
+      'photo-age.check-current':
+        'This authority does not publish a maximum age, only that the photo must be current and still look like you. Only you know when this one was taken.',
     },
     fixes: {
       'move-closer':
@@ -541,6 +543,7 @@ export const EN_CONTENT: ContentTree = {
       expression: 'Expression',
       photoAge: 'How recent',
       aiEditing: 'Editing and AI',
+      submission: 'Who may take it',
     },
     values: {
       backgroundColours: {
@@ -573,6 +576,14 @@ export const EN_CONTENT: ContentTree = {
         discouraged: 'Best avoided — retouching risks a rejection you cannot appeal',
         allowed: 'Allowed, though the photo must still look like you on the day',
       },
+      submission: {
+        'self-service':
+          'Anyone — take it yourself, or have it taken, and submit it with your application',
+        'authorised-photographer':
+          'A photographer or booth authorised by the government. A photo you took yourself cannot be submitted, so check yours before you pay for a session',
+        'authority-capture':
+          'The passport office itself, or a photographer sending it there directly. A photo you took yourself cannot be submitted, so check yours before your appointment',
+      },
       crown: {
         'visible-top': 'measured to the top of your head including your hair',
         skull: 'measured to the crown of your skull, not to the top of your hair',
@@ -593,6 +604,8 @@ export const EN_CONTENT: ContentTree = {
       sizeQuestion: 'What size is a {country} {document} photo?',
       sizeAnswer:
         'A {country} {document} photo is {print}. Digitally it must be {digital}.',
+      sizePrintOnlyAnswer:
+        'A {country} {document} photo is {print}. {country} publishes no separate digital size, because the photo is not one you upload yourself.',
       headQuestion: 'How big should my head be in a {country} {document} photo?',
       headAnswer:
         'Your head must measure {head}, {crown}. That is {ratio} of the photo’s height.',

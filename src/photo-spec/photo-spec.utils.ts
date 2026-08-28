@@ -1,5 +1,6 @@
 import { roundMeasurement } from '@/measurement/format-measurement.utils';
 import {
+  EXPORT_DPI_FALLBACK,
   HOURS_PER_DAY,
   MINUTES_PER_HOUR,
   MS_PER_SECOND,
@@ -37,6 +38,16 @@ export const resolveHeadHeight = (
         maxRatio: headHeight.maxRatio,
         authoredUnit: 'ratio',
       };
+
+/**
+ * The resolution to render at: the authority's, or ours where it published none.
+ *
+ * Every caller of this is an export or a geometry check — something that has to
+ * turn millimetres into pixels to do its job. None of them is the requirements
+ * table, which shows a resolution only where the authority actually stated one.
+ */
+export const exportDpi = (print: PhotoSpec['print']): number =>
+  print.dpi ?? EXPORT_DPI_FALLBACK;
 
 /**
  * `now` is injected rather than read from the clock, so a test cannot become

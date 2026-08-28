@@ -22,7 +22,10 @@ export const resolutionRule: RuleDefinition = {
   fixGroup: undefined,
   measures: true,
   evaluate: (input, spec): RuleOutcome => {
-    if (input.outputPx === undefined) return unmeasured();
+    // Nothing to measure against where the authority published no pixel
+    // requirement. Reporting a pass would claim it met a rule that does not
+    // exist; reporting a fail would invent one.
+    if (input.outputPx === undefined || spec.digital === undefined) return unmeasured();
 
     // The shorter edge, because that is the one a minimum bites on. Only a
     // minimum is checked: an image larger than the maximum is not a problem

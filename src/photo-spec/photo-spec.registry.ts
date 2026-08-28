@@ -3,11 +3,22 @@ import type { DocumentType } from '@/constants/document-type.constants';
 import { photoSpecSchema, type PhotoSpec } from './photo-spec.schemas';
 import { deepFreeze, resolveSpec } from './photo-spec.utils';
 import type { SpecKey, SpecLookupResult } from './photo-spec.types';
+import { FRANCE_PASSPORT } from './specs/france.spec';
+import { GERMANY_PASSPORT } from './specs/germany.spec';
+import { NETHERLANDS_PASSPORT } from './specs/netherlands.spec';
 import { SCHENGEN_VISA } from './specs/schengen.spec';
 import { UK_PASSPORT } from './specs/uk.spec';
 import { US_PASSPORT, US_VISA } from './specs/us.spec';
 
-const AUTHORED_SPECS: readonly PhotoSpec[] = [US_PASSPORT, US_VISA, UK_PASSPORT, SCHENGEN_VISA];
+const AUTHORED_SPECS: readonly PhotoSpec[] = [
+  US_PASSPORT,
+  US_VISA,
+  UK_PASSPORT,
+  SCHENGEN_VISA,
+  FRANCE_PASSPORT,
+  GERMANY_PASSPORT,
+  NETHERLANDS_PASSPORT,
+];
 
 export const specKey = (country: CountrySlug, document: DocumentType): SpecKey =>
   `${country}:${document}`;

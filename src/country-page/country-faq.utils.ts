@@ -46,10 +46,7 @@ export const buildFaqEntries = (
     },
     { question: ask(faq.glassesQuestion), answer: values.glasses[spec.glasses] },
     { question: ask(faq.smileQuestion), answer: values.expression[spec.expression] },
-    {
-      question: ask(faq.ageQuestion),
-      answer: interpolate(faq.ageAnswer, { months: ageWords(spec.maxAgeMonths, locale) }),
-    },
+    ...ageEntry(spec, faq, locale, ask),
     { question: faq.costQuestion, answer: faq.costAnswer },
   ];
 };
@@ -71,15 +68,21 @@ const sizeAnswer = (
     height: formatMeasurement(spec.print.heightMm, 'millimeter', locale),
   });
 
-  const digital =
-    spec.digital.maxEdgePx === undefined
-      ? interpolate(values.pixelMinimum, { min: String(spec.digital.minEdgePx) })
+  // Where no pixel requirement was published there is no second sentence to
+  // write. Saying "and digitally, nothing specified" answers a question the
+  // authority never posed.
+  const { digital } = spec;
+  if (digital === undefined) return interpolate(faq.sizePrintOnlyAnswer, { ...names, print });
+
+  const pixels =
+    digital.maxEdgePx === undefined
+      ? interpolate(values.pixelMinimum, { min: String(digital.minEdgePx) })
       : interpolate(values.pixelRange, {
-          min: String(spec.digital.minEdgePx),
-          max: String(spec.digital.maxEdgePx),
+          min: String(digital.minEdgePx),
+          max: String(digital.maxEdgePx),
         });
 
-  return interpolate(faq.sizeAnswer, { ...names, print, digital: digital.toLowerCase() });
+  return interpolate(faq.sizeAnswer, { ...names, print, digital: pixels.toLowerCase() });
 };
 
 /**
@@ -111,6 +114,30 @@ const headAnswer = (
       max: formatMeasurement(head.maxRatio, 'percent', locale),
     }),
   });
+};
+
+/**
+ * Only where the authority published a maximum age.
+ *
+ * A question-and-answer pair saying "no maximum is published" is worse than no
+ * pair at all: it fills the page with a non-answer and it puts the words in
+ * search results under a question somebody asked hoping for a number.
+ */
+const ageEntry = (
+  spec: ResolvedPhotoSpec,
+  faq: ContentTree['country']['faq'],
+  locale: string,
+  ask: (template: string) => string,
+): readonly FaqEntry[] => {
+  const months = spec.maxAgeMonths;
+  if (months === undefined) return [];
+
+  return [
+    {
+      question: ask(faq.ageQuestion),
+      answer: interpolate(faq.ageAnswer, { months: ageWords(months, locale) }),
+    },
+  ];
 };
 
 const ageWords = (months: number, locale: string): string => {

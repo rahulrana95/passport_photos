@@ -14,6 +14,7 @@ import {
   MIN_GUIDANCE_LUMINANCE,
 } from './guidance.constants';
 import type { GuidanceId, LiveGuidance } from './guidance.types';
+import { exportDpi } from '@/photo-spec/photo-spec.utils';
 
 export interface LiveObservation {
   /** Undefined when this frame contained no face the detector would vouch for. */
@@ -104,7 +105,7 @@ export const deriveGuidance = (
     crop.heightPx > frameHeightPx * MAX_CROP_FRAME_OCCUPANCY ||
     crop.widthPx > frameWidthPx * MAX_CROP_FRAME_OCCUPANCY;
 
-  const requiredHeightPx = millimetresToPixels(spec.print.heightMm, spec.print.dpi);
+  const requiredHeightPx = millimetresToPixels(spec.print.heightMm, exportDpi(spec.print));
   const tooSmall = crop.heightPx < requiredHeightPx * LIVE_RESOLUTION_MARGIN;
 
   if (tooBig) add('move-back');

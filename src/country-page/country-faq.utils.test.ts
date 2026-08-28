@@ -5,6 +5,7 @@ import { listServableSpecs } from '@/photo-spec/photo-spec.registry';
 import { resolveSpec } from '@/photo-spec/photo-spec.utils';
 import { buildFaqEntries } from './country-faq.utils';
 import type { FaqEntry } from '@/components/content/FaqList/FaqList.types';
+import { GERMANY_PASSPORT } from '@/photo-spec/specs/germany.spec';
 
 const content = getContent();
 const NOW = new Date('2026-01-01T00:00:00Z');
@@ -114,6 +115,33 @@ describe('the questions a country page answers', () => {
         expect(entry.question.length).toBeGreaterThan(0);
         expect(entry.answer.length).toBeGreaterThan(0);
       }
+    }
+  });
+});
+
+describe('a country that publishes less', () => {
+  const entries = buildFaqEntries(resolveSpec(GERMANY_PASSPORT, NOW), content, DEFAULT_LOCALE);
+
+  it('asks no question it cannot answer', () => {
+    // Germany publishes no maximum photo age. A pair reading "no maximum is
+    // published" puts a non-answer into search results under a question
+    // somebody asked hoping for a number.
+    const questions = entries.map((entry) => entry.question);
+
+    expect(questions.some((question) => question.includes('recent'))).toBe(false);
+  });
+
+  it('still answers the size question, without inventing a digital one', () => {
+    const size = entries[0];
+
+    expect(size?.answer).toContain('35');
+    expect(size?.answer).toContain('publishes no separate digital size');
+  });
+
+  it('leaves no placeholder unfilled', () => {
+    for (const entry of entries) {
+      expect(entry.question).not.toMatch(/\{\w+\}/);
+      expect(entry.answer).not.toMatch(/\{\w+\}/);
     }
   });
 });

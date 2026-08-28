@@ -2477,8 +2477,103 @@ TESTS
 ═══════════════════════════════════════════════════════════════════════════════
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #31 — Registry expansion to 100+ countries
-Branch: feat/registry-40               Depends on: #30               Status: TODO
+PR #31a — Registry expansion, first European tranche
+Branch: feat/registry-europe            Depends on: #30b            Status: DONE
+───────────────────────────────────────────────────────────────────────────────
+SPLIT FROM #31, on evidence gathered while starting it. The target is still
+100+; what changed is that the grind turned out to have a shape, and the shape
+needs code before it needs countries.
+
+DESCRIPTION
+  Three countries, and the three schema changes they forced. France, Germany
+  and the Netherlands are neighbours who publish the same photo size and
+  disagree about almost everything else, which makes them the best possible
+  first tranche: they break every assumption the registry had absorbed from
+  four English-speaking specs.
+
+IMPLEMENTS
+  [x] France, Germany and the Netherlands, verified against the issuing
+      authority's own published guidance, with source and date recorded.
+  [x] `digital` is now OPTIONAL. A digital requirement is something an
+      authority publishes when you can upload the photo yourself. Where
+      submission goes through a booth, an authorised photographer or the
+      counter, there is no upload to constrain and the authority states a
+      printed size and nothing about pixels. Same treatment the eye line
+      already had: no row rather than an invented one.
+  [x] `print.dpi` is now optional, for the same reason. Most authorities never
+      state one. `exportDpi()` supplies our own rendering resolution where they
+      did not — kept deliberately separate from the published field so it can
+      never appear in a requirements table as though a government had said it.
+  [x] `maxAgeMonths` is now optional. "Six months" is repeated so widely it
+      reads like a universal rule; Germany's published standard states no
+      figure at all. The photo-age check has a second message for that case
+      rather than quoting a rule the reader's government never wrote.
+  [x] A `submission` field — self-service, authorised-photographer,
+      authority-capture — with its own requirements row.
+  [x] `npm run audit:sources`: fetches every cited source and reports dead
+      links, redirects and specs past the re-verification window.
+
+EDGE CASES
+  [x] Requirements published only as a PDF. Germany's numbers live on a
+      printable template, not a web page, so the template is what is cited and
+      what was read.
+  [x] Countries that reject a self-taken photo entirely. France requires an
+      authorised photographer or booth; Germany since 1 May 2025 requires
+      capture at the authority itself. Both still publish the requirements, so
+      checking a photo is still worth doing — you find out what is wrong before
+      you pay for the session rather than after.
+  [x] Non-white backgrounds, and one authority that FORBIDS white: "Le fond
+      blanc est interdit". The exact opposite of the United States rule, and
+      the sharpest evidence in the registry that one photograph cannot serve
+      two applications.
+  [x] The same size measured differently. France measures to the top of the
+      skull with hair excluded, Germany to the top of the head as photographed.
+      Same 35 x 45mm photo, same 70-80% proportion, four millimetres of
+      tolerance, and the difference eats most of it.
+  [x] Child exemptions recorded in notes where published (Germany 50-80% under
+      10, Netherlands 19-30mm under 11).
+  [x] An authority publishing a measurement no other does — the Dutch face
+      width, 16 to 20mm ear to ear — goes in notes, not the schema. One
+      authority's extra number does not earn a field every other spec leaves
+      empty.
+
+BLOCKED, AND WHY  (recorded so the next tranche is planned, not rediscovered)
+  Most authority sites refuse automated requests from a datacentre address.
+  Verified unreachable from CI and dev egress: the United States
+  (travel.state.gov 403), Canada (canada.ca refused outright), Australia,
+  Japan, New Zealand's passport office, South Korea, Turkey, Pakistan, Nigeria
+  and South Africa. Reachable and readable: France, Germany, the Netherlands,
+  Ireland, Italy, Spain, Singapore, Brazil, China, the UAE and the EU's own
+  document server.
+  This is a sourcing constraint, not a code one. The next tranches take the
+  reachable list; the blocked ones need their text supplied or the egress
+  policy widened.
+
+  Ireland is deliberately NOT in this tranche. Its guidance publishes a print
+  size range, a pixel minimum, background, glasses and head covering — and no
+  head height at all. A spec cannot be completed without inventing the one
+  number the whole geometry hangs on.
+
+TESTS
+  26 new unit tests at 100% coverage (3150 total), plus 8 Playwright specs
+  asserting each page says the thing that is true of ITS country and would be
+  wrong of its neighbour — a tranche of three near-identical pages would pass a
+  page-exists test and be worthless. Including that Germany and France
+  disagree about the crown, that Germany's two published forms of the head band
+  agree with each other, that a country publishing no pixel requirement matches
+  a print size family and no pixel family, and that no FAQ asks a question the
+  authority did not answer. The source audit found two stale citations on its
+  first run: service-public.fr had moved to service-public.gouv.fr and the
+  German PDF had moved host. Both fixed here.
+
+  One existing test failed for the best possible reason: the soft-404 check
+  used /france/passport-photo as its example of an unknown country, and France
+  became real. Repointed at a slug that will never be a country rather than
+  weakened.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #31b.. — Registry expansion, remaining tranches
+Branch: feat/registry-<tranche>        Depends on: #31a             Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 DESCRIPTION
   The grind, and the moat. Every spec verified against the issuing authority's

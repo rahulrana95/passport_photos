@@ -10,6 +10,7 @@ import type { EncodePhotoResult } from './encode-photo.types';
 import type { JpegEncoder } from './jpeg-encoder.types';
 import type { PixelBuffer } from '@/testing/fixtures/synthetic-head.types';
 import type { ResolvedPhotoSpec } from '@/photo-spec/photo-spec.types';
+import { exportDpi } from '@/photo-spec/photo-spec.utils';
 
 /**
  * How large the exported file should be, in pixels.
@@ -25,14 +26,21 @@ import type { ResolvedPhotoSpec } from '@/photo-spec/photo-spec.types';
  * person.
  */
 const targetSize = (spec: ResolvedPhotoSpec): { widthPx: number; heightPx: number } => {
-  const printWidth = millimetresToPixels(spec.print.widthMm, spec.print.dpi);
-  const printHeight = millimetresToPixels(spec.print.heightMm, spec.print.dpi);
+  const dpi = exportDpi(spec.print);
+  const printWidth = millimetresToPixels(spec.print.widthMm, dpi);
+  const printHeight = millimetresToPixels(spec.print.heightMm, dpi);
+
+  // No published pixel requirement means nothing to grow towards: the printed
+  // size at the export resolution is the whole answer.
+  const { digital } = spec;
+  if (digital === undefined) return { widthPx: printWidth, heightPx: printHeight };
+
   const shortest = Math.min(printWidth, printHeight);
   const longest = Math.max(printWidth, printHeight);
 
-  const growth = Math.max(1, spec.digital.minEdgePx / shortest);
+  const growth = Math.max(1, digital.minEdgePx / shortest);
   const ceiling =
-    spec.digital.maxEdgePx === undefined ? growth : Math.min(growth, spec.digital.maxEdgePx / longest);
+    digital.maxEdgePx === undefined ? growth : Math.min(growth, digital.maxEdgePx / longest);
 
   return {
     widthPx: Math.round(printWidth * ceiling),
@@ -84,17 +92,18 @@ export const encodePhoto = async (
   const image = resampleArea(source, crop, target);
   const dpi = densityFor(target.widthPx, spec.print.widthMm);
 
+  const maxBytes = spec.digital?.maxBytes;
+
   const encoded =
-    spec.digital.maxBytes === undefined
+    maxBytes === undefined
       ? {
           ok: true as const,
           quality: DEFAULT_JPEG_QUALITY,
           bytes: await encoder.encode(image, DEFAULT_JPEG_QUALITY),
         }
-      : await searchQualityForBytes(encoder, image, spec.digital.maxBytes);
+      : await searchQualityForBytes(encoder, image, maxBytes);
 
   const bytes = setJfifDensity(stripExifSegments(encoded.bytes), dpi);
-  const maxBytes = spec.digital.maxBytes;
 
   return {
     ok: true,
