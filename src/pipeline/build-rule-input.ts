@@ -19,6 +19,7 @@ import type { IngestedImage } from '@/ingestion/image-decoder.types';
 import type { ResolvedPhotoSpec } from '@/photo-spec/photo-spec.types';
 import type { RuleInput } from '@/rules/rule.types';
 import type { SourcePoint, SubjectGeometry } from '@/geometry/geometry.types';
+import { exportDpi } from '@/photo-spec/photo-spec.utils';
 
 export interface BuildRuleInputOptions {
   readonly image: IngestedImage;
@@ -96,9 +97,10 @@ export const buildRuleInput = (options: BuildRuleInputOptions): RuleInput => {
   );
   const isFace = withinBox(image.working, faceBox);
 
+  const dpi = exportDpi(spec.print);
   const outputPx = {
-    widthPx: millimetresToPixels(spec.print.widthMm, spec.print.dpi),
-    heightPx: millimetresToPixels(spec.print.heightMm, spec.print.dpi),
+    widthPx: millimetresToPixels(spec.print.widthMm, dpi),
+    heightPx: millimetresToPixels(spec.print.heightMm, dpi),
   };
 
   return {

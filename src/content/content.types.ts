@@ -15,6 +15,7 @@ import type { CrownDefinition } from '@/analysis/crown-detection.utils';
 import type { SizeFamily } from '@/dimension-page/size-family.types';
 import type {
   AiEditingPolicy,
+  SubmissionRoute,
   BackgroundColour,
   ExpressionPolicy,
   GlassesPolicy,
@@ -285,6 +286,7 @@ export interface CountryRequirementLabels {
   readonly expression: string;
   readonly photoAge: string;
   readonly aiEditing: string;
+  readonly submission: string;
 }
 
 export interface CountryRequirementValues {
@@ -293,6 +295,7 @@ export interface CountryRequirementValues {
   readonly headCovering: Readonly<Record<HeadCoveringPolicy, string>>;
   readonly expression: Readonly<Record<ExpressionPolicy, string>>;
   readonly aiEditing: Readonly<Record<AiEditingPolicy, string>>;
+  readonly submission: Readonly<Record<SubmissionRoute, string>>;
   /** How the top of the head is measured, which differs by authority. */
   readonly crown: Readonly<Record<CrownDefinition, string>>;
   /** Interpolated with {width} and {height}. */
@@ -324,6 +327,8 @@ export interface CountryRequirementValues {
 export interface CountryFaqContent {
   readonly sizeQuestion: string;
   readonly sizeAnswer: string;
+  /** Used where the authority published a printed size and no pixel requirement. */
+  readonly sizePrintOnlyAnswer: string;
   readonly headQuestion: string;
   readonly headAnswer: string;
   readonly backgroundQuestion: string;

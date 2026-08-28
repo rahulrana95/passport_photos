@@ -53,3 +53,36 @@ export type ExpressionPolicy = (typeof EXPRESSION_POLICIES)[number];
  */
 export const AI_EDITING_POLICIES = ['prohibited', 'discouraged', 'allowed'] as const;
 export type AiEditingPolicy = (typeof AI_EDITING_POLICIES)[number];
+
+/**
+ * Who is allowed to take the photograph that gets submitted.
+ *
+ * Not a detail. Where this is not 'self-service' the reader cannot submit a
+ * photograph they took themselves however perfect it is, and a checker that
+ * said "this passes" without saying so would have wasted their afternoon.
+ *
+ * France requires a photographer it has authorised, or a booth running a system
+ * its interior ministry has certified. Germany went further on 1 May 2025: for passports
+ * and identity cards the photograph must be captured at the authority itself or
+ * delivered to it by a photographer over a secure channel, so no self-taken
+ * photograph is submissible at all. Both still publish the requirements the
+ * picture must meet, which is what makes checking one worth doing — you can
+ * find out what will be wrong before you pay somebody to take it.
+ */
+export const SUBMISSION_ROUTES = [
+  'self-service',
+  'authorised-photographer',
+  'authority-capture',
+] as const;
+export type SubmissionRoute = (typeof SUBMISSION_ROUTES)[number];
+
+/**
+ * The resolution we render an export at when the authority published none.
+ *
+ * Deliberately separate from `print.dpi`, which means "the resolution this
+ * authority requires". Most do not state one, and writing 300 into their specs
+ * would put a number in the requirements table that nobody published. This is
+ * our own choice of how finely to render a print, it is never presented as a
+ * requirement, and 300 is the figure the authorities that do state one use.
+ */
+export const EXPORT_DPI_FALLBACK = 300;

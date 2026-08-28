@@ -9,6 +9,7 @@ import {
   EXPRESSION_POLICIES,
   GLASSES_POLICIES,
   HEAD_COVERING_POLICIES,
+  SUBMISSION_ROUTES,
 } from './photo-spec.constants';
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
@@ -23,7 +24,15 @@ export const printSizeSchema = z
   .object({
     widthMm: z.number().positive(),
     heightMm: z.number().positive(),
-    dpi: z.number().int().positive(),
+    /**
+     * Optional because plenty of authorities never state one.
+     *
+     * Every authority publishes the size in millimetres; a print resolution is
+     * something only some of them add. Requiring it would mean writing 300 into
+     * the specs that omit it, and a number nobody published is exactly what
+     * this registry must not contain.
+     */
+    dpi: z.number().int().positive().optional(),
   })
   .describe('Physical size the photo is printed at');
 
@@ -93,7 +102,18 @@ export const photoSpecSchema = z.object({
   print: printSizeSchema,
   /** Additional sizes the authority also accepts, e.g. a legacy format. */
   alternativePrintSizes: z.array(printSizeSchema).optional(),
-  digital: digitalRequirementSchema,
+  /**
+   * Optional, for the same reason the eye line is.
+   *
+   * A digital requirement is something an authority publishes when you can
+   * upload the photograph yourself. Where submission runs through a booth, an
+   * approved photographer or the counter itself — France, Germany, the
+   * Netherlands — there is no upload to constrain, and the authority states a
+   * printed size and nothing about pixels. A spec that says nothing here gets
+   * no digital row rather than an invented one, and the checks that do not
+   * depend on it all still run.
+   */
+  digital: digitalRequirementSchema.optional(),
 
   headHeight: headHeightSchema,
   eyeLine: eyeLineSchema.optional(),
@@ -115,7 +135,17 @@ export const photoSpecSchema = z.object({
   headCovering: z.enum(HEAD_COVERING_POLICIES),
   expression: z.enum(EXPRESSION_POLICIES),
   aiEditingPolicy: z.enum(AI_EDITING_POLICIES),
-  maxAgeMonths: z.number().int().positive(),
+  /** Who may take the photograph that is actually submitted. */
+  submission: z.enum(SUBMISSION_ROUTES),
+  /**
+   * Optional, and for the third time in this schema the reason is the same.
+   *
+   * "Six months" is so widely repeated that it reads like a universal rule, but
+   * several authorities only ever say the photograph must be current. Germany's
+   * published photo standard states no figure at all. Writing six months into
+   * those specs would be inventing the most quotable number on the page.
+   */
+  maxAgeMonths: z.number().int().positive().optional(),
 
   /**
    * Provenance is required, not optional. A specification without a source is a
@@ -130,4 +160,5 @@ export const photoSpecSchema = z.object({
 
 export type PhotoSpec = z.infer<typeof photoSpecSchema>;
 export type PrintSize = z.infer<typeof printSizeSchema>;
+export type DigitalRequirement = z.infer<typeof digitalRequirementSchema>;
 export type Background = z.infer<typeof backgroundSchema>;

@@ -35,6 +35,8 @@ export const SCHENGEN_VISA: PhotoSpec = {
   glasses: 'permitted-no-glare',
   headCovering: 'religious-only',
   expression: 'neutral-mouth-closed',
+  // The common standard governs the photograph, not who may press the shutter; member states differ, and where one restricts it that belongs on the member state's own spec.
+  submission: 'self-service',
   aiEditingPolicy: 'discouraged',
   maxAgeMonths: 6,
   source:

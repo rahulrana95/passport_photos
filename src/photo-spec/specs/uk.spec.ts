@@ -43,6 +43,8 @@ export const UK_PASSPORT: PhotoSpec = {
   glasses: 'permitted-no-glare',
   headCovering: 'religious-only',
   expression: 'neutral-mouth-closed',
+  // HM Passport Office accepts a photo taken at home, and its own guidance explains how.
+  submission: 'self-service',
   aiEditingPolicy: 'discouraged',
   maxAgeMonths: 1,
   source: 'https://www.gov.uk/photos-for-passports',

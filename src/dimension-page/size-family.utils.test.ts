@@ -9,6 +9,7 @@ import {
 } from './size-family.utils';
 import type { PhotoSpec } from '@/photo-spec/photo-spec.schemas';
 import type { SizeFamily } from './size-family.types';
+import { GERMANY_PASSPORT } from '@/photo-spec/specs/germany.spec';
 
 const template = (): PhotoSpec => {
   const [spec] = listServableSpecs();
@@ -147,6 +148,26 @@ describe('the size pages a country belongs on', () => {
       for (const family of familiesForSpec(spec)) {
         expect(published.has(family.slug)).toBe(true);
       }
+    }
+  });
+});
+
+describe('a spec with no published digital requirement', () => {
+  it('still answers a question about the printed size', () => {
+    // Germany publishes 35 x 45 millimetres and nothing else, and 35x45mm is
+    // exactly the size page it belongs on.
+    const served = findSizeFamily('35x45mm-photo');
+    expect(served).toBeDefined();
+    if (served === undefined) return;
+
+    expect(familyMatches(served.family, GERMANY_PASSPORT)).toBe(true);
+  });
+
+  it('answers no question about pixels or file size', () => {
+    // Not "no match because the numbers differ" — no match because the
+    // authority never published a number to compare against.
+    for (const family of SIZE_FAMILIES.filter((candidate) => candidate.kind !== 'print')) {
+      expect(familyMatches(family, GERMANY_PASSPORT), family.slug).toBe(false);
     }
   });
 });

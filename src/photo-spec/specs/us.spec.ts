@@ -40,6 +40,8 @@ export const US_PASSPORT: PhotoSpec = {
   glasses: 'prohibited',
   headCovering: 'religious-only',
   expression: 'neutral-mouth-closed',
+  // The State Department accepts a photo you took yourself, printed or uploaded.
+  submission: 'self-service',
   aiEditingPolicy: 'prohibited',
   maxAgeMonths: 6,
   source: 'https://travel.state.gov/content/travel/en/passports/how-apply/photos.html',

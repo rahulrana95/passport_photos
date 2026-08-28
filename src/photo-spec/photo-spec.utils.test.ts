@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SPEC_REVERIFICATION_DAYS } from './photo-spec.constants';
 import {
+  exportDpi,
   deepFreeze,
   isSpecStale,
   mergeSpecOverride,
@@ -9,6 +10,9 @@ import {
 } from './photo-spec.utils';
 import { US_PASSPORT } from './specs/us.spec';
 import { SCHENGEN_VISA } from './specs/schengen.spec';
+import { GERMANY_PASSPORT } from './specs/germany.spec';
+import { NETHERLANDS_PASSPORT } from './specs/netherlands.spec';
+import { EXPORT_DPI_FALLBACK } from './photo-spec.constants';
 
 const NOW = new Date('2026-08-26T12:00:00Z');
 
@@ -122,5 +126,21 @@ describe('deepFreeze', () => {
   it('is safe to call twice', () => {
     const once = deepFreeze({ a: 1 });
     expect(deepFreeze(once)).toBe(once);
+  });
+});
+
+describe('the resolution an export renders at', () => {
+  it('uses the authority\u2019s own, where it published one', () => {
+    // The Netherlands is the only authority here that states a print
+    // resolution, and states a higher one than everybody else assumes.
+    expect(exportDpi(NETHERLANDS_PASSPORT.print)).toBe(400);
+  });
+
+  it('falls back to ours where the authority published none', () => {
+    // Germany publishes a size in millimetres and no resolution at all. The
+    // export still has to render at some density; that choice is ours and is
+    // never shown as a requirement.
+    expect(GERMANY_PASSPORT.print.dpi).toBeUndefined();
+    expect(exportDpi(GERMANY_PASSPORT.print)).toBe(EXPORT_DPI_FALLBACK);
   });
 });

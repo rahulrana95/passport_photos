@@ -36,12 +36,18 @@ export const familyMatches = (family: SizeFamily, spec: SizedSpec): boolean => {
     );
   }
 
+  // A country that published no digital requirement cannot answer a question
+  // about pixels or file size. It still answers one about the printed size,
+  // which is the only number its authority actually stated.
+  const { digital } = spec;
+  if (digital === undefined) return false;
+
   if (family.kind === 'pixels') {
-    const { minEdgePx, maxEdgePx } = spec.digital;
+    const { minEdgePx, maxEdgePx } = digital;
     return family.edgePx >= minEdgePx && (maxEdgePx === undefined || family.edgePx <= maxEdgePx);
   }
 
-  return spec.digital.maxBytes === family.maxBytes;
+  return digital.maxBytes === family.maxBytes;
 };
 
 const isSamePrintSize = (size: PrintSize, widthMm: number, heightMm: number): boolean =>

@@ -7,6 +7,10 @@ import { buildRequirementRows } from './requirement-rows.utils';
 import type { PhotoSpec } from '@/photo-spec/photo-spec.schemas';
 import type { RequirementRow } from '@/components/content/RequirementsTable/RequirementsTable.types';
 import type { ResolvedPhotoSpec } from '@/photo-spec/photo-spec.types';
+import { FRANCE_PASSPORT } from '@/photo-spec/specs/france.spec';
+import { US_PASSPORT } from '@/photo-spec/specs/us.spec';
+import { GERMANY_PASSPORT } from '@/photo-spec/specs/germany.spec';
+import { NETHERLANDS_PASSPORT } from '@/photo-spec/specs/netherlands.spec';
 
 const content = getContent();
 
@@ -160,5 +164,60 @@ describe('the requirements table', () => {
       expect(rows.length).toBeGreaterThan(0);
       for (const row of rows) expect(row.value.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('a requirement the authority never published', () => {
+  const germany = resolveSpec(GERMANY_PASSPORT, NOW);
+  const rows = buildRequirementRows(germany, content, DEFAULT_LOCALE);
+  const labels = rows.map((row) => row.label);
+
+  it('gets no row rather than a row saying nothing', () => {
+    // Germany publishes no pixel requirement, no file limit and no maximum
+    // age. A table listing them as unspecified is a table a reader will act on.
+    expect(labels).not.toContain(content.country.labels.digitalSize);
+    expect(labels).not.toContain(content.country.labels.fileSize);
+    expect(labels).not.toContain(content.country.labels.photoAge);
+  });
+
+  it('still carries everything the authority did publish', () => {
+    expect(labels).toContain(content.country.labels.printSize);
+    expect(labels).toContain(content.country.labels.headHeight);
+    expect(labels).toContain(content.country.labels.background);
+  });
+
+  it('shows no print resolution where none was stated', () => {
+    const print = rows.find((row) => row.label === content.country.labels.printSize);
+
+    expect(print?.note).toBeUndefined();
+  });
+
+  it('shows the resolution where the authority did state one', () => {
+    // The Netherlands publishes 400 dpi, so the note exists and says so.
+    const dutch = buildRequirementRows(
+      resolveSpec(NETHERLANDS_PASSPORT, NOW),
+      content,
+      DEFAULT_LOCALE,
+    );
+    const print = dutch.find((row) => row.label === content.country.labels.printSize);
+
+    expect(print?.note).toContain('400');
+  });
+});
+
+describe('who may take the photo', () => {
+  it('is a row on every country, because it decides whether the rest matters', () => {
+    for (const spec of [US_PASSPORT, FRANCE_PASSPORT, GERMANY_PASSPORT]) {
+      const rows = buildRequirementRows(resolveSpec(spec, NOW), content, DEFAULT_LOCALE);
+
+      expect(rows.map((row) => row.label)).toContain(content.country.labels.submission);
+    }
+  });
+
+  it('says plainly that a self-taken photo cannot be submitted', () => {
+    const rows = buildRequirementRows(resolveSpec(FRANCE_PASSPORT, NOW), content, DEFAULT_LOCALE);
+    const row = rows.find((entry) => entry.label === content.country.labels.submission);
+
+    expect(row?.value).toContain('cannot be submitted');
   });
 });

@@ -18,6 +18,7 @@ import type { ResolvedPhotoSpec } from '@/photo-spec/photo-spec.types';
 import type { RuleId } from './rule-id.constants';
 import type { RuleMessageId } from './rule-message.constants';
 import type { RuleInput } from './rule.types';
+import { GERMANY_PASSPORT } from '@/photo-spec/specs/germany.spec';
 
 const NOW = new Date('2026-08-27T00:00:00Z');
 const SPEC = resolveSpec(US_PASSPORT, NOW);
@@ -172,6 +173,17 @@ const SCENARIOS: readonly Scenario[] = [
   scenario('hair to check for', 'hair-across-eyes', 'manual', 'hair-across-eyes.check', PASSING_RULE_INPUT),
   scenario('marks to check for', 'ink-or-crease', 'manual', 'ink-or-crease.check', PASSING_RULE_INPUT),
   scenario('a photo whose age only the reader knows', 'photo-age', 'manual', 'photo-age.check', PASSING_RULE_INPUT),
+  // Germany rather than an override: it genuinely publishes no maximum age, so
+  // this asserts the real registry produces the message, not that a synthetic
+  // spec can.
+  scenario(
+    'an authority that publishes no maximum age',
+    'photo-age',
+    'manual',
+    'photo-age.check-current',
+    PASSING_RULE_INPUT,
+    resolveSpec(GERMANY_PASSPORT, NOW),
+  ),
 ];
 
 const resultFor = (entry: Scenario): ReturnType<typeof evaluateRules>['results'][number] => {

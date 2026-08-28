@@ -13,6 +13,7 @@ import { hasExifSegment } from './strip-metadata.utils';
 import { JFIF_UNITS_PER_INCH } from './jpeg-marker.constants';
 import type { PhotoSpec } from '@/photo-spec/photo-spec.schemas';
 import type { PixelBuffer } from '@/testing/fixtures/synthetic-head.types';
+import { GERMANY_PASSPORT } from '@/photo-spec/specs/germany.spec';
 
 const NOW = new Date('2026-08-27T00:00:00Z');
 const SPEC = resolveSpec(US_PASSPORT, NOW);
@@ -45,8 +46,9 @@ const CROP = { x: 20, y: 20, widthPx: 650, heightPx: 650 };
  * had nothing wrong with them.
  */
 const TIGHT_BUDGET_BYTES = 240_000;
+const US_DIGITAL = US_PASSPORT.digital ?? { minEdgePx: 600, format: 'jpeg' as const };
 const BUDGETED = specWith({
-  digital: { ...US_PASSPORT.digital, maxBytes: TIGHT_BUDGET_BYTES },
+  digital: { ...US_DIGITAL, maxBytes: TIGHT_BUDGET_BYTES },
 });
 
 describe('the file the reader submits', () => {
@@ -129,7 +131,7 @@ describe('when the ceiling cannot be met', () => {
       bytesAtMaxQuality: 2_000,
       withJfifSegment: false,
     });
-    const tight = specWith({ digital: { ...US_PASSPORT.digital, maxBytes: 1_000 } });
+    const tight = specWith({ digital: { ...US_DIGITAL, maxBytes: 1_000 } });
 
     const result = await encodePhoto(encoder, SOURCE, CROP, tight);
 
@@ -255,5 +257,35 @@ describe('print and digital sizes that disagree', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.photo.heightPx / result.photo.widthPx).toBeCloseTo(45 / 35, 2);
+  });
+});
+
+describe('an authority that published no digital requirement', () => {
+  it('exports the printed size and nothing larger', async () => {
+    // Germany states 35 x 45 millimetres and no pixel count, because there is
+    // no upload to constrain. With nothing to grow towards, the printed size at
+    // our export resolution is the whole answer: 35mm at 300dpi is 413px.
+    const spec = resolveSpec(GERMANY_PASSPORT, NOW);
+    expect(spec.digital).toBeUndefined();
+
+    const result = await encodePhoto(createFakeJpegEncoder(), SOURCE, CROP, spec);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.photo.widthPx).toBe(413);
+    expect(result.photo.heightPx).toBe(531);
+  });
+
+  it('encodes at the default quality, having no budget to search against', async () => {
+    const result = await encodePhoto(
+      createFakeJpegEncoder(),
+      SOURCE,
+      CROP,
+      resolveSpec(GERMANY_PASSPORT, NOW),
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.photo.quality).toBe(DEFAULT_JPEG_QUALITY);
   });
 });

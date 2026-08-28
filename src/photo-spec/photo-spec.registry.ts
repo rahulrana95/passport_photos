@@ -3,11 +3,22 @@ import type { DocumentType } from '@/constants/document-type.constants';
 import { photoSpecSchema, type PhotoSpec } from './photo-spec.schemas';
 import { deepFreeze, resolveSpec } from './photo-spec.utils';
 import type { SpecKey, SpecLookupResult } from './photo-spec.types';
+import { FRANCE_PASSPORT } from './specs/france.spec';
+import { GERMANY_PASSPORT } from './specs/germany.spec';
+import { NETHERLANDS_PASSPORT } from './specs/netherlands.spec';
 import { SCHENGEN_VISA } from './specs/schengen.spec';
 import { UK_PASSPORT } from './specs/uk.spec';
 import { US_PASSPORT, US_VISA } from './specs/us.spec';
 
-const AUTHORED_SPECS: readonly PhotoSpec[] = [US_PASSPORT, US_VISA, UK_PASSPORT, SCHENGEN_VISA];
+const AUTHORED_SPECS: readonly PhotoSpec[] = [
+  US_PASSPORT,
+  US_VISA,
+  UK_PASSPORT,
+  SCHENGEN_VISA,
+  FRANCE_PASSPORT,
+  GERMANY_PASSPORT,
+  NETHERLANDS_PASSPORT,
+];
 
 export const specKey = (country: CountrySlug, document: DocumentType): SpecKey =>
   `${country}:${document}`;
@@ -43,6 +54,20 @@ export const listAuthoredSpecs = (): readonly PhotoSpec[] => [...REGISTRY.values
 
 export const listServableSpecs = (): readonly PhotoSpec[] =>
   [...REGISTRY.values()].filter(isServable);
+
+/**
+ * The countries that actually have a page, in registry order.
+ *
+ * Not COUNTRY_SLUGS. A slug is declared as soon as somebody intends to cover a
+ * country; a page exists only once a specification has been verified against
+ * its authority. Linking by slug advertises URLs that 404 — seven of them, at
+ * the time this was written — and a 404 reached from our own navigation is
+ * worse than an absent link, because a crawler records it as a broken site
+ * rather than a small one.
+ */
+export const listServedCountries = (): readonly CountrySlug[] => [
+  ...new Set(listServableSpecs().map((spec) => spec.country)),
+];
 
 /**
  * Returns a typed not-found rather than undefined, so a caller cannot

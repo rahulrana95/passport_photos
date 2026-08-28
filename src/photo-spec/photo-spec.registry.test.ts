@@ -16,7 +16,14 @@ const NOW = new Date('2026-08-26T12:00:00Z');
 describe('the authored registry', () => {
   it('holds at least one specification per seeded country', () => {
     const countries = new Set(listAuthoredSpecs().map((spec) => spec.country));
-    expect([...countries].sort()).toEqual(['schengen', 'uk', 'us']);
+    expect([...countries].sort()).toEqual([
+      'france',
+      'germany',
+      'netherlands',
+      'schengen',
+      'uk',
+      'us',
+    ]);
   });
 
   it.each(listAuthoredSpecs())('$country:$document parses against the schema', (spec) => {

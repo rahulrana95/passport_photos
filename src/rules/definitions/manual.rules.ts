@@ -101,5 +101,13 @@ export const photoAgeRule: RuleDefinition = {
   evidence: 'none',
   fixGroup: undefined,
   measures: false,
-  evaluate: (): RuleOutcome => ruleOutcome('manual', 'photo-age.check'),
+  // Two messages, because two things are true. Most authorities publish a
+  // maximum age and the reader should be told it; a few publish only that the
+  // photograph must be current, and quoting six months at them would be
+  // quoting a rule their government never wrote.
+  evaluate: (_input, spec): RuleOutcome =>
+    ruleOutcome(
+      'manual',
+      spec.maxAgeMonths === undefined ? 'photo-age.check-current' : 'photo-age.check',
+    ),
 };
