@@ -2,6 +2,7 @@ import type { AnalysisResult, AnalysisStage } from '@/analysis/analysis-protocol
 import type { CameraEnvironment } from '@/camera/media-devices.types';
 import type { ImageDecoder } from '@/ingestion/image-decoder.types';
 import type { PixelBuffer } from '@/testing/fixtures/synthetic-head.types';
+import type { AnalyticsTransport } from '@/analytics/analytics-event.types';
 import type { ResolvedPhotoSpec } from '@/photo-spec/photo-spec.types';
 
 export interface AnalyseOptions {
@@ -33,4 +34,12 @@ export interface CheckerPanelProps {
    * produces reaching the analysis — is reachable only in a real browser.
    */
   readonly cameraEnvironment?: CameraEnvironment | undefined;
+  /**
+   * Where usage events go, defaulting to Vercel Analytics.
+   *
+   * Injected for the same reason everything else here is: a test that checks
+   * WHICH events a check emits should not need a network, and a story should
+   * not put its own renders in the production metrics.
+   */
+  readonly track?: AnalyticsTransport | undefined;
 }

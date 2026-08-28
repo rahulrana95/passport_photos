@@ -8,6 +8,9 @@ import { createBrowserWorker } from '@/analysis/analysis-worker.factory';
 import { createBrowserDecoder } from '@/ingestion/browser-decoder';
 import { browserDecodeEnvironment } from '@/ingestion/browser-decode-environment';
 import { analysePhoto } from '@/pipeline/analyse-photo';
+import { trackEvent } from '@/analytics/track-event';
+import { vercelTransport } from '@/analytics/vercel-transport';
+import { reportEvents } from '@/analytics/report-events.utils';
 import { getContent } from '@/content/content.registry';
 import { ingestImage } from '@/ingestion/ingest-image';
 import { interpolate } from '@/content/interpolate.utils';
@@ -52,6 +55,7 @@ export const CheckerPanel = ({
   decoder,
   analyse,
   cameraEnvironment,
+  track = vercelTransport,
 }: CheckerPanelProps): React.JSX.Element => {
   const content = getContent();
   const [selected, setSelected] = useState(0);
@@ -87,15 +91,21 @@ export const CheckerPanel = ({
     setRejected(undefined);
     setState({ kind: 'analysing', stage: FIRST_STAGE, stageRatio: 0 });
 
+    const identity = { country: against.country, document: against.document };
+    trackEvent({ name: 'check-started', spec: identity }, track);
+
     const ingested = await ingestImage(new Uint8Array(await file.arrayBuffer()), decodeWith());
 
     if (!ingested.ok) {
       // Back to waiting, with the refusal shown on the control that can fix
       // it. An error where the answer goes would be in the wrong place.
+      trackEvent({ name: 'photo-refused', reason: ingested.failure.code }, track);
       setState({ kind: 'idle' });
       setRejected(ingested.failure);
       return;
     }
+
+    trackEvent({ name: 'photo-accepted', format: ingested.image.format }, track);
 
     try {
       const result = await analyseWith()(ingested.image.working, {
@@ -104,10 +114,14 @@ export const CheckerPanel = ({
         },
       });
 
-      setState({
-        kind: 'ready',
-        report: analysePhoto({ image: ingested.image, result, spec: against }),
-      });
+      const report = analysePhoto({ image: ingested.image, result, spec: against });
+
+      // One event per failing rule, plus the verdict. The per-rule events are
+      // what make a failure RATE possible, which is the number that says what
+      // the guidance should explain first.
+      for (const event of reportEvents(report, identity)) trackEvent(event, track);
+
+      setState({ kind: 'ready', report });
     } catch (error) {
       // A code where there is one, 'unknown' where there is not. Every code
       // has its own remedy, and inventing one for a stray exception would
@@ -117,7 +131,7 @@ export const CheckerPanel = ({
         error: error instanceof AnalysisError ? error.code : 'unknown',
       });
     }
-  }, []);
+  }, [track]);
 
   // A checker with nothing to check against is not a degraded checker; it is
   // not one. A dropzone that leads nowhere would invite a photograph and then

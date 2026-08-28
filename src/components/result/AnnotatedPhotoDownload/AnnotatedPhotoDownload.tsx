@@ -4,6 +4,8 @@ import { Button } from '@mantine/core';
 import { useState } from 'react';
 import { getContent } from '@/content/content.registry';
 import { buildAnnotatedPng } from '@/overlay/download-annotated';
+import { trackEvent } from '@/analytics/track-event';
+import { vercelTransport } from '@/analytics/vercel-transport';
 import { saveBlob } from '@/overlay/save-blob.utils';
 import type { AnnotatedPhotoDownloadProps } from './AnnotatedPhotoDownload.types';
 import styles from './AnnotatedPhotoDownload.module.css';
@@ -26,6 +28,7 @@ export const AnnotatedPhotoDownload = ({
   source,
   instructions,
   createCanvas,
+  track = vercelTransport,
 }: AnnotatedPhotoDownloadProps): React.JSX.Element => {
   const content = getContent();
   const [failed, setFailed] = useState(false);
@@ -39,7 +42,13 @@ export const AnnotatedPhotoDownload = ({
     const blob = await buildAnnotatedPng(canvas, image, source, instructions);
 
     if (blob === undefined) setFailed(true);
-    else saveBlob(blob, content.overlay.downloadFilename, document);
+    else {
+      // Only on the path that produced a file. Counting the click instead
+      // would count the failures too, and the number is worth having
+      // precisely because it says how many people got something out.
+      saveBlob(blob, content.overlay.downloadFilename, document);
+      trackEvent({ name: 'photo-downloaded' }, track);
+    }
 
     setWorking(false);
   };
