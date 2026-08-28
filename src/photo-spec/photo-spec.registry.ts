@@ -56,6 +56,20 @@ export const listServableSpecs = (): readonly PhotoSpec[] =>
   [...REGISTRY.values()].filter(isServable);
 
 /**
+ * The countries that actually have a page, in registry order.
+ *
+ * Not COUNTRY_SLUGS. A slug is declared as soon as somebody intends to cover a
+ * country; a page exists only once a specification has been verified against
+ * its authority. Linking by slug advertises URLs that 404 — seven of them, at
+ * the time this was written — and a 404 reached from our own navigation is
+ * worse than an absent link, because a crawler records it as a broken site
+ * rather than a small one.
+ */
+export const listServedCountries = (): readonly CountrySlug[] => [
+  ...new Set(listServableSpecs().map((spec) => spec.country)),
+];
+
+/**
  * Returns a typed not-found rather than undefined, so a caller cannot
  * accidentally render a page for a country we do not cover.
  *

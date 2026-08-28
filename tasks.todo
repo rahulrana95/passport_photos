@@ -2571,6 +2571,16 @@ TESTS
   became real. Repointed at a slug that will never be a country rather than
   weakened.
 
+  A LATENT BUG FOUND BY THE FAILING BASELINES. CountryLinkGrid defaulted to
+  COUNTRY_SLUGS while its own doc comment promised "every country served".
+  Those sets differ by seven — canada, australia, india, japan, china, brazil
+  and new-zealand have slugs reserved and no verified spec — so the default
+  rendered seven links to 404s. The single real caller passes an explicit list,
+  so nothing shipped broken, but adding slugs ahead of specs is exactly what
+  the remaining tranches do, and the next caller to omit the prop would have
+  shipped them. Now defaults to listServedCountries(), with a test that fails
+  if any unserved slug is ever linked.
+
 ───────────────────────────────────────────────────────────────────────────────
 PR #31b.. — Registry expansion, remaining tranches
 Branch: feat/registry-<tranche>        Depends on: #31a             Status: TODO
