@@ -28,3 +28,4 @@ public/models/
 
 # Built at build time by scripts/build-worker.mjs from src/analysis/analysis.worker.ts.
 public/workers/
+.lighthouseci-mobile

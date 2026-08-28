@@ -87,6 +87,18 @@ const eslintConfig = [
   },
 
   {
+    // A CommonJS file loads its dependencies with require, because that is what
+    // CommonJS is. The rule exists to keep application code on ES modules; the
+    // Lighthouse configs are .cjs because lhci loads them that way, and the
+    // mobile one reads the desktop one rather than duplicating thresholds that
+    // would then drift apart.
+    files: ['**/*.cjs'],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
+
+  {
     // Tests may cast and may use literal numbers; that is the point of a test.
     files: ['**/*.test.{ts,tsx}', 'vitest.setup.ts', 'e2e/**/*.ts', '.storybook/**/*.{ts,tsx}', '**/*.stories.tsx'],
     rules: {

@@ -130,5 +130,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - name: Lighthouse budgets
+      - name: Lighthouse budgets (desktop)
         run: npm run test:lighthouse
+      # A separate run rather than more URLs on the first, because the two
+      # profiles need different thresholds: desktop lands around 550ms and
+      # throttled mobile around 1.7s, and one set of limits loose enough for
+      # both would stop the desktop run catching anything. Mobile is where
+      # this product's traffic actually is.
+      - name: Lighthouse budgets (throttled mobile)
+        run: npm run test:lighthouse:mobile

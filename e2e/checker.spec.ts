@@ -25,6 +25,9 @@ const ENGINE_TIMEOUT_MS = 120_000;
 
 const PHOTO_EDGE_PX = 600;
 
+/** The analysis assets, which are the expensive half of this product. */
+const MODEL_ASSET = /\/models\/|\.task(\?|$)|\.wasm(\?|$)/;
+
 /** Every way the engine can fail to run at all, in the reader's words. */
 const ENGINE_FAILURES = [
   'The checks stopped unexpectedly.',
@@ -121,4 +124,27 @@ test.describe('photo checker page', () => {
     expect(response.headers()['content-type']).toContain('javascript');
     expect(await response.text()).not.toContain('import type');
   });
+
+  test('downloads not one byte of the models until a photo is chosen', async ({ page }) => {
+    // Fifteen megabytes of face-detection models. A page that fetched them to
+    // render a heading would spend a reader's mobile data before they had
+    // decided to use the tool — and would blow the LCP budget on the route
+    // that matters most while doing it.
+    //
+    // Asserted by watching the network rather than by reading the source,
+    // because the thing that would break this is a bundler hoisting an import
+    // nobody moved: the code would still say "lazily", and the bytes would
+    // still be on the wire.
+    const modelRequests: string[] = [];
+    page.on('request', (request) => {
+      if (MODEL_ASSET.test(request.url())) modelRequests.push(request.url());
+    });
+
+    await page.goto(PAGE_PATH);
+    await page.getByText('Drop your photo here').waitFor();
+    await page.waitForLoadState('networkidle');
+
+    expect(modelRequests, 'the models loaded before a photo was chosen').toEqual([]);
+  });
+
 });

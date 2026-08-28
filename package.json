@@ -17,6 +17,7 @@
     "test:e2e": "npm run build-storybook && playwright test",
     "test:seo": "node --experimental-strip-types scripts/assert-seo.ts",
     "test:lighthouse": "lhci autorun",
+    "test:lighthouse:mobile": "lhci autorun --config=lighthouserc.mobile.cjs",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "lint:fix": "eslint . --fix && stylelint \"src/**/*.css\" --fix",
