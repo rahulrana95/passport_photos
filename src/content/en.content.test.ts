@@ -20,7 +20,12 @@ describe('copy invariants', () => {
   });
 
   it.each(ALL_COPY)('never promises acceptance: %s', (copy) => {
-    expect(copy.toLowerCase()).not.toMatch(/guarantee|approved|will pass|certified|100% accurate/);
+    // "will be accepted" was missing from this list until 2026-08-28, and the
+    // HowTo name on every country page said exactly that. A rule stated in a
+    // header and enforced by a pattern with a hole in it is not enforced.
+    expect(copy.toLowerCase()).not.toMatch(
+      /guarantee|approved|will pass|certified|100% accurate|will be accepted|accepted for sure/,
+    );
   });
 
   it('tells the reader what to do next in every error message', () => {

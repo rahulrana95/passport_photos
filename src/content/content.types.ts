@@ -164,6 +164,26 @@ export interface LegalContent {
   readonly specVerifiedOn: string;
 }
 
+/** A heading and its paragraphs, which is the shape every legal section takes. */
+export interface LegalSection {
+  readonly heading: string;
+  readonly paragraphs: readonly string[];
+}
+
+export interface LegalPageContent {
+  readonly title: string;
+  readonly metaTitle: string;
+  readonly metaDescription: string;
+  readonly updated: string;
+  readonly sections: readonly LegalSection[];
+}
+
+export interface LegalPagesContent {
+  readonly breadcrumbHome: string;
+  readonly privacy: LegalPageContent;
+  readonly terms: LegalPageContent;
+}
+
 export interface ErrorContent {
   readonly notFoundTitle: string;
   readonly notFoundBody: string;
@@ -435,6 +455,7 @@ export interface ContentTree {
   readonly checker: CheckerContent;
   readonly result: ResultContent;
   readonly legal: LegalContent;
+  readonly legalPages: LegalPagesContent;
   readonly errors: ErrorContent;
   readonly rules: RuleContent;
   readonly overlay: OverlayContent;

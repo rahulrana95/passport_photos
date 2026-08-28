@@ -1,0 +1,30 @@
+.main {
+  max-width: var(--tk-measure);
+  margin-inline: auto;
+  padding: var(--tk-space-xl) var(--tk-space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-space-lg);
+}
+
+.updated {
+  color: var(--tk-text-tertiary);
+  font-size: var(--tk-text-sm);
+  margin: 0;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-space-sm);
+}
+
+.heading {
+  font-size: var(--tk-text-xl);
+  margin: 0;
+}
+
+.paragraph {
+  color: var(--tk-text-secondary);
+  margin: 0;
+}

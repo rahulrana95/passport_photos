@@ -42,6 +42,11 @@ const sitemap = (): MetadataRoute.Sitemap =>
       changeFrequency: 'monthly',
       priority: PRIORITY_SECONDARY,
     },
+    // Low priority and rarely changing, but present: a privacy page nobody can
+    // find is a privacy page that does not do its job, and the promise it
+    // backs up is made on every other page of the site.
+    { route: ROUTE_SEGMENTS.privacy, changeFrequency: 'yearly', priority: PRIORITY_SECONDARY },
+    { route: ROUTE_SEGMENTS.terms, changeFrequency: 'yearly', priority: PRIORITY_SECONDARY },
     ...listServableSpecs().map((spec) => ({
       route: countryDocumentRoute(spec.country, spec.document),
       lastModified: spec.lastVerified,

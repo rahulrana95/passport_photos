@@ -89,3 +89,9 @@
   outline: 2px solid var(--tk-accent);
   outline-offset: 2px;
 }
+
+.disclaimer {
+  color: var(--tk-text-tertiary);
+  font-size: var(--tk-text-sm);
+  margin: 0;
+}

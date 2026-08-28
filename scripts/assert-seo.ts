@@ -121,6 +121,19 @@ const ROUTES: readonly RouteExpectation[] = [
     label: '/passport-photo-background-check',
     extra: [['the comparison table', /<table[\s\S]*?<\/table>/i]],
   },
+  {
+    htmlPath: `${APP_DIR}/privacy.html`,
+    label: '/privacy',
+    // The claim itself has to be in the served HTML. A privacy page whose
+    // central sentence arrives with JavaScript is one a cautious reader — the
+    // only kind who opens it — may never see.
+    extra: [['the promise, in the HTML', /never leaves your device/i]],
+  },
+  {
+    htmlPath: `${APP_DIR}/terms.html`,
+    label: '/terms',
+    extra: [['who actually decides', /decision belongs to the authority|belongs to the authority/i]],
+  },
   ...(await generatedRoutes()),
 ];
 

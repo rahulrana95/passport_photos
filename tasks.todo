@@ -2881,17 +2881,71 @@ NOTE ON A FLAKE THAT WAS MINE
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #35 — Legal, privacy and disclaimer surfaces
-Branch: feat/legal-pages               Depends on: #34               Status: TODO
+Branch: feat/legal-pages                Depends on: #34             Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  The debt LEGAL_NAV has been carrying since #29. That list was emptied rather
+  than left pointing at two 404s, on the grounds that the reader who clicks
+  Privacy is precisely the one who cannot be shown a missing page. This is it
+  paid.
+
 IMPLEMENTS
-  [ ] Privacy policy stating plainly that no image is ever transmitted
-  [ ] Terms, disclaimer, and the "how to verify nothing is uploaded" page
-  [ ] Cookie/consent notice if analytics requires one
+  [x] /privacy — what happens to the photograph (nothing leaves the browser),
+      what is measured and where it goes, and what the site DOES record.
+  [x] /terms — what the tool does, what it cannot promise, where the
+      requirements come from, and liability.
+  [x] Both linked from the footer of every page, and in the sitemap: a privacy
+      page nobody can find does not do its job, and the promise it backs up is
+      made on every other page of the site.
+  [x] The acceptance disclaimer now renders WITH the result, not only in the
+      footer. Somebody just told their photo meets the requirements is at the
+      exact moment they might read that as "this will be accepted"; a sentence
+      three hundred pixels below the fold is not where that correction works.
+
+WHAT IT FOUND — a promise of acceptance on forty-one pages
+  [x] The HowTo structured data on every country page was titled "How to take a
+      {country} {document} photo that WILL BE ACCEPTED". An affirmative promise
+      of the one thing this product must never promise, in the data a search
+      engine may repeat as a rich result.
+
+      The rule was already written at the top of en.content.ts and described as
+      enforced. The enforcing pattern checked guarantee|approved|will pass|
+      certified|100% accurate — a hole exactly the size of the phrase in use. A
+      rule stated in a header and enforced by a pattern with a gap in it is not
+      enforced. Retitled, and the gap closed.
+
 EDGE CASES
-  [ ] Wording must never imply guaranteed acceptance
-  [ ] GDPR biometric-data position stated explicitly
-  [ ] Disclaimer must appear on every result, not only on the legal page
-TESTS  Integration asserting the disclaimer renders with every result.
+  [x] Wording must never imply guaranteed acceptance. Two guards now: the
+      build-time SEO assertion over the rendered HTML, and the content
+      invariant over every string. Both are blunt word-matches and both stay
+      that way — "not a guarantee" and "guaranteed acceptance" are precisely
+      the pair a regex gets wrong, so the copy is reworded around them rather
+      than the guard loosened. Twice during this work the guard fired on a
+      NEGATED sentence and twice the sentence was rewritten. That is the right
+      trade: any future occurrence of those phrases should stop a build and get
+      a human's attention.
+  [x] GDPR biometric position stated explicitly, as fact rather than as legal
+      conclusion: the face measurements are derived in the reader's browser,
+      none of it reaches us, so there is nothing for us to hold or disclose.
+  [x] Consent: nothing to gate, and the page says what IS collected rather than
+      claiming nothing is — which would be false. Vercel Analytics and Speed
+      Insights are named, both cookieless and same-origin, and the usage events
+      from #32 are listed in full.
+  [x] Disclaimer on every result, asserted by driving a real check in a browser
+      and comparing its position against the results heading.
+
+TESTS
+  5 unit tests on the shared page component at 100% coverage (3271 total), 3
+  stories, and 7 Playwright specs: both pages reachable from every page, the
+  privacy claim present in the SERVED HTML rather than injected, the collection
+  disclosure present, no page anywhere promising acceptance, and the disclaimer
+  rendering above the results. SEO assertions now cover 18 routes.
+
+NOT DONE, and it needs a person
+  A lawyer has not read this. What is written is an accurate description of
+  what the code does, which is the part I can be sure of; whether it is
+  sufficient as a privacy notice and a limitation of liability for a site
+  carrying real traffic is a question for somebody qualified to answer it.
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #36 — Ads integration and launch checklist

@@ -42,14 +42,16 @@ export const FOOTER_FEATURED_COUNTRIES: readonly CountrySlug[] = [
 ];
 
 /**
- * Empty until the pages exist, and deliberately not deleted.
+ * Filled in now that both pages exist.
  *
- * A site that states government requirements needs a privacy page and terms,
- * and both are planned. What it must not have in the meantime is a footer
- * linking to two 404s from every route — the reader who clicks Privacy on a
- * page promising their photo never leaves their device is exactly the reader
- * who cannot be shown a missing page.
+ * This list was empty for several releases, deliberately: a footer linking to
+ * two 404s from every route would have been worst on the reader who clicks
+ * Privacy precisely because the page above promised their photo never leaves
+ * their device. That reader cannot be shown a missing page.
  */
-export const LEGAL_NAV: readonly NavLink[] = [];
+export const LEGAL_NAV: readonly NavLink[] = [
+  { label: 'Privacy', href: ROUTE_SEGMENTS.privacy },
+  { label: 'Terms', href: ROUTE_SEGMENTS.terms },
+];
 
 export const SKIP_LINK_TARGET_ID = 'main-content';
