@@ -2363,19 +2363,79 @@ NOTES
     typo in a sentence about how recent a photograph must be.
 
 ───────────────────────────────────────────────────────────────────────────────
-PR #30 — Dimension and problem route families
-Branch: feat/alt-route-families        Depends on: #29               Status: TODO
+PR #30a — Dimension route family
+Branch: feat/alt-route-families        Depends on: #29              Status: DONE
+───────────────────────────────────────────────────────────────────────────────
+SPLIT FROM #30, and the reason is in the plan's own edge cases: "reverse-mode
+needs its own entry flow, not a redirect". That is a feature, not a content
+page, and bundling it with four size pages makes one PR nobody can review.
+The problem-page family is #30b.
+
+IMPLEMENTS
+  [x] /2x2-inch-photo, /35x45mm-photo, /600x600-photo, /resize-photo-to-240kb.
+      /50x70mm-photo is declared and deliberately does not render — see below.
+  [x] A catalogue of size families with three kinds, because the numbers people
+      are handed are three different things: a printed size, a pixel size for
+      an upload, and a file-size ceiling. A union rather than one shape with
+      optional fields, so a family cannot half-declare itself.
+  [x] Cross-linked both ways. The country page owns the requirements and points
+      at the number; the size page owns "who else asks for this" and points
+      back at the countries.
+
+EDGE CASES
+  [x] One size serving many countries: that IS the page. Somebody searching
+      "2x2 photo" has been handed a number by a form and does not know whose
+      rule it is — the list of countries is the answer, and it is also what
+      keeps the page off the thin-content pile.
+  [x] Overlap with country pages is one-directional by design. The size page
+      states its number, names who asks for it, and leaves the full
+      requirements to the page that owns them. No requirement table is
+      duplicated; each page canonicalises to itself.
+  [x] A size no VERIFIED specification uses gets no page. 50x70mm is real and
+      several countries use it, but none is verified, and a page about a
+      requirement nobody checked is the one thing this must not publish. A test
+      asserts it is in the catalogue and absent from the routes.
+  [x] Slugs are the search phrase, not the stored unit. The registry holds
+      50.8mm; nobody has ever searched for that. The matching is done on the
+      measurement, so the two can differ without either being wrong.
+  [x] Print sizes match within a tenth of a millimetre — 50.8 and 50.75 are the
+      same square — but 50mm and 51mm stay separate pages.
+  [x] A pixel size matches a RANGE (600 satisfies a 600-1200 form); a file size
+      matches EXACTLY (a 10MB limit does not answer "resize to 240KB").
+
+ROUTING
+  [x] The country segment is now [slug]/[document] rather than
+      [country]/[document]. Next allows one dynamic segment name per depth, and
+      the size pages are single-segment routes that share the root with it. The
+      URLs are unchanged.
+
+TESTS
+  18 unit tests on the catalogue and the labels at 100% coverage, plus 7
+  Playwright specs: every size page renders, names countries, links only to
+  pages that exist, is linked back from them, and an unpublished size 404s.
+  SEO assertions now cover 10 routes, discovering the size pages from the build
+  output the same way they discover the country ones.
+
+NOTES
+  - The unit goes on the second number only: "2 × 2 in", not "2 in × 2 in".
+  - The checker on a size page carries every specification that uses the size,
+    so the picker is a real choice there — unlike a country page, where it is
+    hidden because there is only one answer.
+
+───────────────────────────────────────────────────────────────────────────────
+PR #30b — Problem route family
+Branch: feat/problem-pages             Depends on: #30a             Status: TODO
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
-  [ ] /2x2-inch-photo, /35x45mm-photo, /50x70mm-photo, /600x600-photo,
-      /resize-photo-to-240kb
-  [ ] /why-was-my-passport-photo-rejected, /passport-photo-checker,
-      /passport-photo-head-size, /passport-photo-background-check
-  [ ] Cross-linking between dimension pages and the countries that use them
+  [ ] /why-was-my-passport-photo-rejected, /passport-photo-head-size,
+      /passport-photo-background-check
+  [ ] The header and footer link to the rejected page again once it exists —
+      PR #29 removed the link because it pointed at a 404.
 EDGE CASES
-  [ ] One dimension serving many countries — list them, avoid thin content
-  [ ] Overlap with country pages must not create duplicate-content penalties
-  [ ] Reverse-mode ("why was I rejected") needs its own entry flow, not a redirect
+  [ ] Reverse mode needs its own entry flow, not a redirect: somebody arriving
+      there has a rejection letter, not a photo they are hopeful about.
+  [ ] Each page must say something the country pages do not, or it is a
+      duplicate with a different title.
 TESTS  Integration asserting cross-links and per-route metadata.
 
 

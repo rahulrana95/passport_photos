@@ -60,6 +60,19 @@ export const pixelsToMillimetres = (pixels: number, dpi: number): number =>
  */
 const SPELT_OUT_UNITS: readonly MeasurementUnit[] = ['month', 'year'];
 
+/**
+ * A number with no unit on it.
+ *
+ * For the first half of a pair — "2 × 2 in", "35 × 45 mm" — where repeating the
+ * unit on both sides is how a size gets written by a machine and never by a
+ * person. Still Intl rather than String(): the decimal separator is a comma in
+ * most of Europe.
+ */
+export const formatNumber = (value: number, locale: string): string =>
+  new Intl.NumberFormat(locale, {
+    maximumFractionDigits: MEASUREMENT_PRECISION_DIGITS,
+  }).format(value);
+
 export const formatMeasurement = (
   value: number,
   unit: MeasurementUnit,

@@ -9,7 +9,11 @@ import { RequirementsTable } from '@/components/content/RequirementsTable/Requir
 import { COUNTRY_NAMES } from '@/constants/country.constants';
 import { DEFAULT_LOCALE } from '@/constants/site.constants';
 import { DOCUMENT_TYPE_LABELS } from '@/constants/document-type.constants';
-import { ROUTE_SEGMENTS, countryDocumentRoute } from '@/constants/routes.constants';
+import {
+  ROUTE_SEGMENTS,
+  countryDocumentRoute,
+  dimensionFamilyRoute,
+} from '@/constants/routes.constants';
 import { SKIP_LINK_TARGET_ID } from '@/constants/navigation.constants';
 import { JsonLdScript } from '@/seo/JsonLdScript';
 import { buildFaqEntries } from '@/country-page/country-faq.utils';
@@ -17,6 +21,8 @@ import { buildMetadata } from '@/seo/metadata.utils';
 import { buildRequirementRows } from '@/country-page/requirement-rows.utils';
 import { documentFromSegment, segmentFromDocument } from '@/country-page/document-segment.utils';
 import { faqJsonLd, howToJsonLd } from '@/seo/structured-data.utils';
+import { familiesForSpec } from '@/dimension-page/size-family.utils';
+import { familyLabel } from '@/dimension-page/dimension-label.utils';
 import { findSpec, listServableSpecs } from '@/photo-spec/photo-spec.registry';
 import { getContent } from '@/content/content.registry';
 import { interpolate } from '@/content/interpolate.utils';
@@ -24,8 +30,16 @@ import { relatedCountries } from '@/country-page/related-countries.utils';
 import type { ResolvedPhotoSpec } from '@/photo-spec/photo-spec.types';
 import styles from './page.module.css';
 
+/**
+ * `slug` is the country here, and a dimension family one level up.
+ *
+ * Next allows exactly one dynamic segment name at a given depth, and the
+ * dimension pages — /2x2-inch-photo and the rest — are single-segment routes
+ * that have to share this one. So the folder is named for the shape of the URL
+ * rather than for what a country page reads out of it.
+ */
 interface CountryPageParams {
-  readonly country: string;
+  readonly slug: string;
   readonly document: string;
 }
 
@@ -46,7 +60,7 @@ interface CountryPageProps {
 // rejects a readonly array here.
 export const generateStaticParams = (): CountryPageParams[] =>
   listServableSpecs().map((spec) => ({
-    country: spec.country,
+    slug: spec.country,
     document: segmentFromDocument(spec.document),
   }));
 
@@ -63,7 +77,7 @@ const specFor = (params: CountryPageParams): ResolvedPhotoSpec => {
   const document = documentFromSegment(params.document);
   if (document === undefined) notFound();
 
-  const found = findSpec(params.country, document, new Date());
+  const found = findSpec(params.slug, document, new Date());
   if (!found.found) notFound();
 
   return found.spec;
@@ -151,6 +165,24 @@ const CountryDocumentPage = async ({ params }: CountryPageProps): Promise<React.
       </section>
 
       <FaqList heading={say(content.country.faqHeading)} entries={faqEntries} openFirst />
+
+      {/* Out to the pages that own the numbers. The two families cross-link in
+          both directions on purpose: this page owns the requirements and
+          points at the size; the size page owns "who else asks for this" and
+          points back. Without that they compete for the same reader while each
+          telling them less. */}
+      <nav className={styles['section']} aria-label={content.country.alsoKnownAsHeading}>
+        <h2>{content.country.alsoKnownAsHeading}</h2>
+        <ul className={styles['sizes']}>
+          {familiesForSpec(spec).map((family) => (
+            <li key={family.slug}>
+              <a href={dimensionFamilyRoute(family.slug)}>
+                {familyLabel(family, content, DEFAULT_LOCALE)}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
       <CountryLinkGrid
         heading={content.country.otherCountriesHeading}

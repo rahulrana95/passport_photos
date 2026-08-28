@@ -31,6 +31,16 @@ export const dimensionRoute = (widthMm: number, heightMm: number): string =>
   `/${widthMm}x${heightMm}mm-photo`;
 
 /**
+ * The URL a size family is published at.
+ *
+ * The slug is the phrase people search rather than a size this can compute:
+ * 50.8x50.8mm and "2x2 inch" are the same square, and only one of them is ever
+ * typed into a search box. So the catalogue owns the slug and this owns the
+ * shape of the URL around it.
+ */
+export const dimensionFamilyRoute = (slug: string): string => `/${slug}`;
+
+/**
  * Builds the absolute form used by canonical tags, Open Graph and the sitemap.
  *
  * `siteUrl` never ends in a slash (enforced in env.config.ts) and routes always
