@@ -68,6 +68,31 @@ test.describe('checker panel', () => {
     await expect(page.getByText(RESTART_LABEL)).toHaveCount(0);
   });
 
+  test('opens a live camera rather than a second file picker', async ({ page }) => {
+    // The bug this replaced: "Take a photo" was a file input carrying
+    // `capture`, an attribute every desktop browser ignores — so it opened the
+    // same picker as "Choose a photo" and appeared to do nothing at all.
+    await open(page);
+
+    await page.getByText('Take a photo').click();
+
+    // The preview element is attached but deliberately not visible until a
+    // stream is attached to it, so the visible proof is the camera's own
+    // controls standing where the dropzone was.
+    await expect(page.getByRole('button', { name: 'Use my camera' })).toBeVisible();
+    await expect(page.getByLabel('Camera preview')).toBeAttached();
+    await expect(page.getByText('Drop your photo here')).toHaveCount(0);
+  });
+
+  test('returns to the dropzone from the camera', async ({ page }) => {
+    await open(page);
+
+    await page.getByText('Take a photo').click();
+    await page.getByText('Upload a photo instead').click();
+
+    await expect(page.getByText('Drop your photo here')).toBeVisible();
+  });
+
   test('checks against the document the reader picked', async ({ page }) => {
     await open(page);
 

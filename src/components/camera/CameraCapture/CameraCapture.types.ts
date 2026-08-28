@@ -1,4 +1,5 @@
 import type { AnalysisResult } from '@/analysis/analysis-protocol.types';
+import type { CameraFailure } from '@/camera/camera-failure.types';
 import type { CameraEnvironment } from '@/camera/media-devices.types';
 import type { PixelBuffer } from '@/testing/fixtures/synthetic-head.types';
 import type { ResolvedPhotoSpec } from '@/photo-spec/photo-spec.types';
@@ -31,6 +32,15 @@ export interface CameraCaptureProps {
    * and a story would download fifteen megabytes to render a button.
    */
   readonly analyse: (frame: PixelBuffer) => Promise<AnalysisResult>;
+  /**
+   * Told when the camera could not be opened at all.
+   *
+   * So the caller can stop offering a control that cannot work. A browser with
+   * no getUserMedia — an in-app webview, a page served over plain http — will
+   * fail this way every time it is asked, and the reader should be handed the
+   * device's own camera app instead of the same dead button again.
+   */
+  readonly onUnavailable?: ((failure: CameraFailure) => void) | undefined;
   /** Defaults to the real navigator. Injected in tests and stories. */
   readonly environment?: CameraEnvironment | undefined;
   readonly intervalMs?: number;

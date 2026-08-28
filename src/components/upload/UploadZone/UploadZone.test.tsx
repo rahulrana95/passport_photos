@@ -56,6 +56,29 @@ describe('UploadZone', () => {
     expect(screen.getByText(content.takePhotoLabel)).toBeInTheDocument();
   });
 
+  it('opens a live camera when the caller has one, instead of a second file picker', async () => {
+    // The bug this replaced: `capture` is ignored by every desktop browser, so
+    // "Take a photo" opened the same picker as "Choose a photo" and appeared
+    // to do nothing at all.
+    const onUseCamera = vi.fn();
+    const { container } = renderZone({ onUseCamera });
+
+    await userEvent.click(screen.getByText(content.takePhotoLabel));
+
+    expect(onUseCamera).toHaveBeenCalledOnce();
+    expect(container.querySelectorAll('input[type="file"]')).toHaveLength(1);
+  });
+
+  it('falls back to the phone\u2019s own camera when the caller has none', () => {
+    // Not a downgrade on a phone: the camera app shoots at full sensor
+    // resolution, and it is the only thing that works in a webview with no
+    // getUserMedia.
+    const { container } = renderZone();
+
+    const [, capture] = [...container.querySelectorAll('input[type="file"]')];
+    expect(capture).toHaveAttribute('capture');
+  });
+
   it('keeps the file inputs focusable rather than hiding them from the keyboard', () => {
     const { container } = renderZone();
 

@@ -35,6 +35,7 @@ export const UploadZone = ({
   busy = false,
   failure: reportedFailure,
   onRejected,
+  onUseCamera,
 }: UploadZoneProps): React.JSX.Element => {
   const content = getContent();
   const [dragDepth, setDragDepth] = useState(0);
@@ -156,23 +157,44 @@ export const UploadZone = ({
           {content.upload.browseLabel}
         </label>
 
-        {/* A second input, and the separation is the point: putting `capture`
-            on the picker above would remove the option to choose an existing
-            photograph on a phone entirely, forcing somebody who already has a
-            good one to take a worse one on the spot. */}
-        <input
-          className={styles['input']}
-          id={CAPTURE_INPUT_ID}
-          type="file"
-          accept={UPLOAD_ACCEPT}
-          capture={CAPTURE_FACING}
-          onChange={(event) => {
-            void accept(filesFrom(event.target.files));
-          }}
-        />
-        <label className={styles['button']} htmlFor={CAPTURE_INPUT_ID}>
-          {content.upload.takePhotoLabel}
-        </label>
+        {/* Two ways to take a photograph, and which one is right depends on
+            the device rather than on us. A live camera can guide the framing
+            before the shutter, which is the whole point of this product — but
+            it needs getUserMedia. `capture` needs nothing and opens the
+            phone's own camera at full sensor resolution — but every desktop
+            browser ignores it, so the button becomes a second file picker
+            that appears to do nothing. The caller knows which it can offer.
+
+            Separate from the picker above either way: putting `capture` on
+            that one would remove the option to choose an existing photograph
+            on a phone entirely, forcing somebody who already has a good one to
+            take a worse one on the spot. */}
+        {onUseCamera === undefined ? (
+          <>
+            <input
+              className={styles['input']}
+              id={CAPTURE_INPUT_ID}
+              type="file"
+              accept={UPLOAD_ACCEPT}
+              capture={CAPTURE_FACING}
+              onChange={(event) => {
+                void accept(filesFrom(event.target.files));
+              }}
+            />
+            <label className={styles['button']} htmlFor={CAPTURE_INPUT_ID}>
+              {content.upload.takePhotoLabel}
+            </label>
+          </>
+        ) : (
+          <button
+            className={styles['button']}
+            type="button"
+            data-track="upload-use-camera"
+            onClick={onUseCamera}
+          >
+            {content.upload.takePhotoLabel}
+          </button>
+        )}
       </div>
 
       <p className={styles['hint']}>{content.upload.pasteHint}</p>

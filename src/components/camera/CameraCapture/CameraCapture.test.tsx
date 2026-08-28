@@ -1,10 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CHANNELS_PER_PIXEL } from '@/testing/fixtures/pixel-format.constants';
 import { getContent } from '@/content/content.registry';
 import { expectNoAxeViolations } from '@/testing/axe.utils';
 import { stubCameraEnvironment } from '@/testing/camera-environment.stub';
+import { withWorkingCanvas } from '@/testing/canvas.stub';
 import { CameraCapture } from './CameraCapture';
 import type { CameraCaptureProps } from './CameraCapture.types';
 import type { ResolvedPhotoSpec } from '@/photo-spec/photo-spec.types';
@@ -38,40 +38,6 @@ const renderCamera = (
 const SENSOR_WIDTH = 1_920;
 const SENSOR_HEIGHT = 1_080;
 const HAVE_CURRENT_DATA = 2;
-
-/**
- * Gives jsdom just enough camera to run the loop through.
- *
- * jsdom implements no canvas and no media element beyond the tag, so without
- * this the frame grab bails on the first line and the two paths that matter
- * most — the guidance loop and the capture itself — are never entered by any
- * test. Restored afterwards so a test that does not want a working canvas
- * still gets the project's null-returning stub.
- */
-const withWorkingCanvas = (): (() => void) => {
-  const realGetContext = window.HTMLCanvasElement.prototype.getContext;
-  const realToBlob = window.HTMLCanvasElement.prototype.toBlob;
-
-  window.HTMLCanvasElement.prototype.getContext = (() => ({
-    drawImage: () => undefined,
-    getImageData: (_sx: number, _sy: number, sw: number, sh: number) => ({
-      width: sw,
-      height: sh,
-      data: new Uint8ClampedArray(sw * sh * CHANNELS_PER_PIXEL),
-    }),
-  })) as unknown as HTMLCanvasElement['getContext'];
-
-  window.HTMLCanvasElement.prototype.toBlob = function toBlob(
-    callback: BlobCallback,
-  ): void {
-    callback(new Blob([new Uint8Array(1)], { type: 'image/jpeg' }));
-  };
-
-  return () => {
-    window.HTMLCanvasElement.prototype.getContext = realGetContext;
-    window.HTMLCanvasElement.prototype.toBlob = realToBlob;
-  };
-};
 
 /** Makes the preview element report a stream, which jsdom never does. */
 const primeVideo = (): void => {
@@ -340,6 +306,22 @@ describe('when the camera cannot be opened', () => {
     await userEvent.setup().click(screen.getByRole('button', { name: content.startLabel }));
 
     expect(await screen.findByText(content.failures['no-camera'].message)).toBeInTheDocument();
+  });
+
+  it('tells the caller it is unavailable, so a dead button is not offered twice', async () => {
+    // A browser with no getUserMedia fails this way every time it is asked.
+    // The caller uses this to hand the reader the device's own camera app
+    // instead of the same button that just did nothing.
+    const onUnavailable = vi.fn();
+    renderCamera({ environment: denied(), onUnavailable });
+
+    await userEvent.setup().click(screen.getByRole('button', { name: content.startLabel }));
+
+    await waitFor(() => {
+      expect(onUnavailable).toHaveBeenCalledWith(
+        expect.objectContaining({ code: 'permission-denied' }),
+      );
+    });
   });
 
   it('clears an old failure when the reader tries again', async () => {
