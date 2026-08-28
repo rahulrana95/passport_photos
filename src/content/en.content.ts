@@ -656,4 +656,94 @@ export const EN_CONTENT: ContentTree = {
       pixelSize: '{edge} × {edge} pixel',
     },
   },
+  problem: {
+    breadcrumbHome: 'Home',
+    rejected: {
+      title: 'Why was my passport photo rejected?',
+      metaTitle: 'Why was my passport photo rejected? Every reason, explained',
+      metaDescription:
+        'What each rejection reason actually means, what to change, and a free checker that measures your rejected photo against the published requirements in your browser.',
+      intro:
+        'A rejection notice tells you which rule you broke and almost never tells you by how much. Below is what each reason means in practice — and you can measure the photo that was rejected against the real requirements without uploading it anywhere.',
+      reasonsHeading: 'What the reason on your letter means',
+      checkHeading: 'Measure the photo that was rejected',
+      checkIntro:
+        'Add the photo they refused. Every requirement is measured on your own device and reported with the number that was measured, so you can see how far out it was rather than guessing.',
+      reasons: {
+        'single-subject':
+          'The photo has to show one face, and it has to be the applicant’s. A second person in the background — even out of focus — is enough, and so is a photo of a printed photo, which detectors read as a face inside a frame.',
+        'head-height':
+          'The most common rejection there is. Your head has to fill a published proportion of the frame, and authorities disagree about where the top of the head is: the United States measures to the top of your hair, the United Kingdom and the Schengen states to the crown of your skull beneath it. On a tall hairstyle that difference is most of the tolerance.',
+        'eye-line':
+          'Your eyes have to sit within a band measured up from the bottom edge. It fails when the crop is right in every other way but placed too high or too low in the frame.',
+        'horizontal-centring':
+          'Your head has to be centred left to right. Leaning towards the camera, or a crop taken by eye rather than measured, moves it further than it looks.',
+        'eye-distance':
+          'There has to be enough detail between your pupils for a border system to match your face. A photo can be the right pixel size overall and still fail this if you stood too far from the camera and it was cropped in afterwards.',
+        resolution:
+          'The file has to have enough pixels for the printed size. Cropping a small photo down to a square passes the shape and fails this.',
+        focus:
+          'The face has to be sharp. Phone portrait modes are the usual cause: they soften edges deliberately and blur the background, and both are rejected.',
+        exposure:
+          'The face has to be evenly lit, with nothing blown out and nothing lost in shadow. Overhead lighting and a window behind you are the two common causes.',
+        'background-colour':
+          'The background has to be the colour the authority publishes — and they do not all publish the same one. Off-white is accepted in some places and refused in others.',
+        'background-uniformity':
+          'The background has to be one flat colour. A textured wall, a gradient from a lamp, or a curtain fold is enough to fail it even where the colour is right.',
+        'background-shadow':
+          'Standing close to a wall throws a shadow onto it. Move a metre forward and it disappears; nothing about the lighting has to change.',
+        'head-tilt': 'Your head has to be level rather than tipped towards a shoulder.',
+        'head-turn':
+          'You have to face the camera squarely. Turning even slightly changes the width of your face in the frame, which is what the measurement sees.',
+        'head-pitch':
+          'Your chin has to be level. Looking up or down moves your eyes within the frame and shortens your face, so this often fails alongside the eye line.',
+        'eyes-open':
+          'Both eyes have to be open and visible, and not caught mid-blink. Heavy fringes and reflective lenses cause this as often as blinking does.',
+        'mouth-closed': 'Your mouth has to be closed, with teeth not showing.',
+        'neutral-expression':
+          'Most authorities ask for a neutral expression. A smile changes the shape of your face enough for a matching system to treat it as a different one.',
+        'head-covering-visible':
+          'A flat top to your silhouette usually means a hat. Where a covering is worn for religious reasons it is allowed, but the head height is then measured to the top of it, which is why photos with one so often fail on size.',
+        glasses:
+          'Several authorities now refuse glasses outright. Where they are allowed, your eyes have to be clearly visible and the lenses must carry no reflection — which is harder than it sounds under any ceiling light.',
+        'head-covering-policy':
+          'Hats are refused everywhere. Religious head coverings are accepted in most places as long as your face is visible from the bottom of your chin to your forehead.',
+        'veil-over-face': 'Nothing may cover your face itself, whatever the reason for wearing it.',
+        'hair-across-eyes':
+          'Hair may not cross your eyes. A fringe that sits above the eyebrows is fine; one that falls across an eyelid is not.',
+        'ink-or-crease':
+          'A printed photo has to be clean and flat. A crease from a wallet, a staple mark, or ink from a stamp on the back showing through are all refusals — and none of them is visible in the digital file you checked.',
+        'photo-age':
+          'The photo has to have been taken within a published window, and it has to still look like you. A photo that is inside the window but predates a significant change in appearance is refused on the second half of that rule.',
+      },
+    },
+    headSize: {
+      title: 'Passport photo head size, country by country',
+      metaTitle: 'Passport photo head size: the measurement that fails most photos',
+      metaDescription:
+        'How head height is measured for a passport photo, why authorities disagree about where the top of the head is, and what each country requires — with a free checker that measures yours.',
+      intro:
+        'Head height is the requirement most photos fail. It is not the size of your head in the photo as you would describe it: it is a measured distance from your chin to a point on your head that different authorities define differently.',
+      tableHeading: 'What each country requires',
+      tableCaption: 'Head height requirements by country',
+      whyHeading: 'Why the same photo passes in one country and fails in another',
+      whyBody:
+        'The United States measures to the top of your head including your hair. The United Kingdom and the Schengen states measure to the crown of your skull, underneath it. On anyone with volume those are several millimetres apart — and several millimetres is most of the tolerance on this rule. A photo cut to fill an American frame is routinely too large for a British one, and the person holding it can see nothing wrong.',
+      checkHeading: 'Measure your own',
+    },
+    background: {
+      title: 'Passport photo background rules, country by country',
+      metaTitle: 'Passport photo background: the colour, and why plain walls still fail',
+      metaDescription:
+        'Which background colour each country requires for a passport photo, why an even wall still fails, and a free checker that measures the background of your photo in your browser.',
+      intro:
+        'The background is the second most common reason a photo comes back. Getting the colour right is the easy half: most refusals are about shadow and unevenness on a wall the photographer would describe as plain.',
+      tableHeading: 'What each country requires',
+      tableCaption: 'Background requirements by country',
+      whyHeading: 'Why a plain wall is not a plain background',
+      whyBody:
+        'A wall lit from one side is a gradient, and a camera measures it as one even where an eye does not. Standing close to it throws your own shadow onto it. Both are refused, and both are fixed the same way: move a metre away from the wall, and light yourself from the front rather than from above or from one side. Nothing about the wall itself has to change.',
+      checkHeading: 'Measure your own',
+    },
+  },
 };

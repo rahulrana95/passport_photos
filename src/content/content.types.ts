@@ -373,6 +373,56 @@ export interface DimensionValueContent {
   readonly pixelSize: string;
 }
 
+/**
+ * The pages for a reader with a problem rather than a country.
+ *
+ * Three different problems, and they arrive in different states of mind. One
+ * has a rejection letter and wants a diagnosis. One has been told their head
+ * is the wrong size and does not know how it is measured. One has been told
+ * the background is wrong and is looking at a wall that seems fine.
+ */
+export interface ProblemPageContent {
+  readonly rejected: RejectedPageContent;
+  readonly headSize: TopicPageContent;
+  readonly background: TopicPageContent;
+  readonly breadcrumbHome: string;
+}
+
+export interface RejectedPageContent {
+  readonly title: string;
+  readonly metaTitle: string;
+  readonly metaDescription: string;
+  readonly intro: string;
+  readonly reasonsHeading: string;
+  readonly checkHeading: string;
+  readonly checkIntro: string;
+  /**
+   * What each rule means in the words of a rejection letter.
+   *
+   * Keyed by the engine's own rule ids, so a rule added without an explanation
+   * is a compile error rather than a page with a gap in it. This is the page's
+   * whole value: the letter says "head size incorrect" and says nothing about
+   * where the top of the head is measured from.
+   */
+  readonly reasons: Readonly<Record<RuleId, string>>;
+}
+
+/**
+ * A page about ONE requirement across every country, which is the mirror of a
+ * country page: all requirements for one country.
+ */
+export interface TopicPageContent {
+  readonly title: string;
+  readonly metaTitle: string;
+  readonly metaDescription: string;
+  readonly intro: string;
+  readonly tableHeading: string;
+  readonly tableCaption: string;
+  readonly whyHeading: string;
+  readonly whyBody: string;
+  readonly checkHeading: string;
+}
+
 export interface ContentTree {
   readonly common: CommonContent;
   readonly upload: UploadContent;
@@ -387,6 +437,7 @@ export interface ContentTree {
   readonly report: ReportContent;
   readonly country: CountryPageContent;
   readonly dimension: DimensionPageContent;
+  readonly problem: ProblemPageContent;
 }
 
 /**

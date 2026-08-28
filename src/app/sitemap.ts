@@ -35,6 +35,13 @@ const sitemap = (): MetadataRoute.Sitemap =>
   buildSitemap([
     { route: homeRoute(), changeFrequency: 'weekly', priority: PRIORITY_HOME },
     { route: ROUTE_SEGMENTS.checker, changeFrequency: 'weekly', priority: PRIORITY_PRIMARY },
+    { route: ROUTE_SEGMENTS.rejected, changeFrequency: 'monthly', priority: PRIORITY_PRIMARY },
+    { route: ROUTE_SEGMENTS.headSize, changeFrequency: 'monthly', priority: PRIORITY_SECONDARY },
+    {
+      route: ROUTE_SEGMENTS.backgroundCheck,
+      changeFrequency: 'monthly',
+      priority: PRIORITY_SECONDARY,
+    },
     ...listServableSpecs().map((spec) => ({
       route: countryDocumentRoute(spec.country, spec.document),
       lastModified: spec.lastVerified,

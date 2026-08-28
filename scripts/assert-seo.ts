@@ -103,6 +103,24 @@ const generatedRoutes = async (): Promise<readonly RouteExpectation[]> => {
 const ROUTES: readonly RouteExpectation[] = [
   { htmlPath: `${APP_DIR}/index.html`, label: '/' },
   { htmlPath: `${APP_DIR}/passport-photo-checker.html`, label: '/passport-photo-checker' },
+  {
+    htmlPath: `${APP_DIR}/why-was-my-passport-photo-rejected.html`,
+    label: '/why-was-my-passport-photo-rejected',
+    // The reasons are the page. If they arrived after hydration it would rank
+    // for nothing, and the reader who needs them most is the one who came from
+    // a search rather than from inside the site.
+    extra: [['every rejection reason in the HTML', /Head height[\s\S]*Glasses/i]],
+  },
+  {
+    htmlPath: `${APP_DIR}/passport-photo-head-size.html`,
+    label: '/passport-photo-head-size',
+    extra: [['the comparison table', /<table[\s\S]*?<\/table>/i]],
+  },
+  {
+    htmlPath: `${APP_DIR}/passport-photo-background-check.html`,
+    label: '/passport-photo-background-check',
+    extra: [['the comparison table', /<table[\s\S]*?<\/table>/i]],
+  },
   ...(await generatedRoutes()),
 ];
 
