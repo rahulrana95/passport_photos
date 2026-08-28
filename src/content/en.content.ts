@@ -514,4 +514,109 @@ export const EN_CONTENT: ContentTree = {
       'Open your browser’s developer tools and watch the Network tab while you run a check. You will not see your photo leave.',
     specVerifiedOn: 'Requirements last verified on',
   },
+  country: {
+    title: '{country} {document} photo requirements',
+    metaTitle: '{country} {document} photo: size, head height and rules',
+    metaDescription:
+      'The official {country} {document} photo requirements — size, head height, background and what is allowed — and a free checker that measures your photo against them in your browser.',
+    intro:
+      'Check your photo against the published {country} {document} requirements. Everything runs on your own device: the photo is never uploaded.',
+    requirementsHeading: 'What {country} requires',
+    requirementsCaption: '{country} {document} photo requirements',
+    faqHeading: 'Questions people ask about {country} {document} photos',
+    howToName: 'How to take a {country} {document} photo that will be accepted',
+    otherCountriesHeading: 'Other countries',
+    breadcrumbHome: 'Home',
+    breadcrumbChecker: 'Photo checker',
+    labels: {
+      printSize: 'Printed size',
+      digitalSize: 'Digital size',
+      fileSize: 'File',
+      headHeight: 'Head height',
+      eyeLine: 'Eye position',
+      background: 'Background',
+      glasses: 'Glasses',
+      headCovering: 'Head coverings',
+      expression: 'Expression',
+      photoAge: 'How recent',
+      aiEditing: 'Editing and AI',
+    },
+    values: {
+      backgroundColours: {
+        white: 'Plain white',
+        'off-white': 'Plain off-white',
+        'light-grey': 'Plain light grey',
+        cream: 'Plain cream',
+        'light-blue': 'Plain light blue',
+      },
+      glasses: {
+        prohibited: 'Not allowed — take them off for the photo',
+        'permitted-no-glare':
+          'Allowed, as long as your eyes are clearly visible and the lenses carry no reflection',
+        permitted: 'Allowed, as long as your eyes are clearly visible',
+      },
+      headCovering: {
+        prohibited: 'Not allowed',
+        'religious-only':
+          'Allowed for religious reasons, as long as your face is visible from chin to forehead',
+        permitted: 'Allowed, as long as your face is visible from chin to forehead',
+      },
+      expression: {
+        'neutral-mouth-closed': 'Neutral, mouth closed, looking straight at the camera',
+        'neutral-slight-smile-allowed':
+          'Neutral, looking straight at the camera; a slight smile is accepted',
+      },
+      aiEditing: {
+        prohibited:
+          'Not allowed. Photos showing signs of AI editing are flagged, so do not retouch or replace the background',
+        discouraged: 'Best avoided — retouching risks a rejection you cannot appeal',
+        allowed: 'Allowed, though the photo must still look like you on the day',
+      },
+      crown: {
+        'visible-top': 'measured to the top of your head including your hair',
+        skull: 'measured to the crown of your skull, not to the top of your hair',
+      },
+      printSize: '{width} × {height}',
+      printResolution: 'at {dpi} dots per inch',
+      range: '{min} to {max}',
+      minimumOnly: '{min} or more',
+      photoAge: 'Taken within the last {months}',
+      maxFileSize: 'Up to {size}',
+      fileFormat: '{format} file',
+      pixelRange: '{min} to {max} pixels on the longest edge',
+      pixelMinimum: 'At least {min} pixels on the longest edge',
+      alsoAccepted: 'Also accepted: {sizes}',
+      eyeLineNote: 'measured from the bottom edge of the photo',
+    },
+    faq: {
+      sizeQuestion: 'What size is a {country} {document} photo?',
+      sizeAnswer:
+        'A {country} {document} photo is {print}. Digitally it must be {digital}.',
+      headQuestion: 'How big should my head be in a {country} {document} photo?',
+      headAnswer:
+        'Your head must measure {head}, {crown}. That is {ratio} of the photo’s height.',
+      backgroundQuestion: 'What background does a {country} {document} photo need?',
+      backgroundAnswer:
+        '{background}. Stand far enough from the wall that you do not cast a shadow on it, and use even light.',
+      glassesQuestion: 'Can I wear glasses in a {country} {document} photo?',
+      smileQuestion: 'Can I smile in a {country} {document} photo?',
+      ageQuestion: 'How recent does a {country} {document} photo have to be?',
+      ageAnswer:
+        'It must have been taken within the last {months}, and it must still look like you.',
+      costQuestion: 'Does this checker cost anything?',
+      costAnswer:
+        'No. Every check runs in your own browser, so there is nothing to pay for and nothing to upload — your photo never leaves your device.',
+    },
+    steps: {
+      chooseName: 'Add your photo',
+      chooseText:
+        'Choose a photo you already have, or take one with your camera. Nothing is uploaded — the checks run on your device.',
+      checkName: 'Read the measurements',
+      checkText:
+        'Every requirement is measured against the published {country} specification and reported one by one, with the number that was measured.',
+      fixName: 'Fix and re-check',
+      fixText:
+        'Anything that falls outside the range comes with the correction to make. Take the photo again and check it once more before you pay for anything.',
+    },
+  },
 };

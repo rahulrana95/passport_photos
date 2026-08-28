@@ -2290,25 +2290,77 @@ TESTS
   the capture route assert a refusal it did not mean.
 
 PR #29 — Country page template and static generation
-Branch: feat/country-pages             Depends on: #28               Status: TODO
+Branch: feat/country-pages             Depends on: #28c              Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
 IMPLEMENTS
-  [ ] /[country]/[document] route with generateStaticParams over the registry
-  [ ] Checker above the fold; requirements table, sources, FAQ below
-  [ ] Per-page metadata and FAQ/HowTo/Breadcrumb JSON-LD
-  [ ] Visible "verified on <date>" with the source link
+  [x] /[country]/[document] route, generateStaticParams over the SERVABLE
+      registry. Four pages today; the same code serves forty.
+  [x] Checker above the fold, requirements table and FAQ below. The checker is
+      first because somebody searching "us passport photo size" has a photo in
+      their hand — the table is what they read when the answer surprises them.
+  [x] Per-page metadata, and FAQ/HowTo/Breadcrumb JSON-LD built from the same
+      arrays the page renders, so the structured data cannot promise text the
+      reader cannot see.
+  [x] "Requirements last verified on <date>" with the authority's own link,
+      part of the table component rather than a decoration beside it.
+
 EDGE CASES
-  [ ] Unknown country/document must 404 with a real status code
-  [ ] Requirements text must be in the server HTML, not injected on the client
-  [ ] Near-duplicate content across 40 countries — vary genuinely, canonicalise
-  [ ] Countries with several accepted sizes
-  [ ] ISR revalidation when a spec is updated
-  [ ] Long country names breaking the title-length guardrail
+  [x] Unknown country or document 404s with a real status. `dynamicParams =
+      false` means the router answers before the page runs — a soft 404 gets
+      indexed, competes with the real pages, and never goes away.
+  [x] Every requirement is in the server HTML. Asserted twice: once against the
+      built files in CI, once by crawling the running site.
+  [x] Near-duplicate content. THE FAQ ANSWERS ARE BUILT FROM THE
+      SPECIFICATION, so two countries never answer "what size is a passport
+      photo?" the same way. A test asserts the size and head-height answers are
+      distinct across every served spec — and deliberately does NOT demand that
+      every answer differ, because some requirements genuinely are identical
+      and inventing a difference would be worse than reporting the sameness.
+  [x] Several accepted sizes: alternativePrintSizes appears under the print
+      size, so nobody reprints a photo that was already acceptable.
+  [x] Long country names: metadata length is advisory rather than fatal, as
+      before. An over-long title is a writing problem, not a build failure.
+  [~] ISR revalidation is NOT implemented. Every page is statically generated
+      at build time and a spec change ships with a deploy, which is how the
+      registry already works — there is no runtime source to revalidate
+      against. Worth revisiting only if specs ever move out of the repository.
+
+FOUND WHILE CRAWLING — three broken links, on every page of the site
+  The e2e crawl asserts no link on a country page 404s. It failed three times,
+  each on something that had been shipping for weeks:
+  [x] The header and footer both linked /why-was-my-passport-photo-rejected,
+      which has no page. The sitemap had already dropped it for exactly that
+      reason and the navigation kept pointing at it.
+  [x] The footer linked Privacy and Terms, neither of which exists. The reader
+      who clicks Privacy on a page promising their photo never leaves their
+      device is the last reader who should meet a 404. The column is hidden
+      until the pages land, and the links are a prop so the column that will
+      hold them still renders and is still tested.
+  [x] The footer hard-coded every country link to `passport`, so Schengen —
+      which publishes a visa standard and no passport one — pointed at a page
+      that does not exist. Footer links now come from the registry.
+
 SEO
-  [ ] This is the primary ranking surface. CI asserts, per generated route:
-      title, description, canonical, JSON-LD, H1, and the requirements table
-      all present in the static HTML.
-TESTS  Unit on the template; integration crawling every generated route.
+  [x] scripts/assert-seo.ts DISCOVERS the generated pages from the build output
+      rather than listing them, so a country added tomorrow is asserted without
+      anyone remembering to add it. Per route: title, description, canonical,
+      H1, JSON-LD, the requirements table, the verification date, the source
+      link, and no unfilled copy placeholder.
+
+TESTS
+  36 unit tests across the four new builders at 100% coverage, plus 9 Playwright
+  specs that crawl every route in the sitemap: status, canonical, single H1,
+  requirements in the served HTML, real 404s for unknown countries and
+  documents, no broken link, and one that drives the real engine against a
+  country's own specification.
+
+NOTES
+  - The spec picker is hidden when there is one specification. A question with
+    one answer reads as though the page were unsure which country it is about.
+  - File sizes are decimal, not binary: the DS-160 publishes "240 KB" meaning
+    240,000 bytes, and 1024 would print 234 beside an official 240.
+  - Durations are spelt out. Intl's short form gives "6 mths", which reads as a
+    typo in a sentence about how recent a photograph must be.
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #30 — Dimension and problem route families

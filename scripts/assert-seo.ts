@@ -5,20 +5,72 @@
  * Runs against the build output rather than a dev server, so it fails for the
  * same reason a crawler would.
  */
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 interface RouteExpectation {
   readonly htmlPath: string;
   readonly label: string;
+  /** Extra patterns this kind of page must satisfy, beyond the shared set. */
+  readonly extra?: readonly (readonly [string, RegExp])[];
 }
 
+const APP_DIR = 'server/app';
+const DOCUMENT_SUFFIX = '-photo.html';
+
+/**
+ * Everything a country page has to carry, on top of the shared set.
+ *
+ * These are the page's reason for existing. A country page whose requirements
+ * arrived after hydration would rank for nothing, and one whose provenance line
+ * was missing would be asserting government requirements with no citation —
+ * which is the claim this product's credibility rests on.
+ */
+const COUNTRY_PATTERNS: readonly (readonly [string, RegExp])[] = [
+  ['the requirements table', /<table[\s\S]*?<\/table>/i],
+  ['a head-height row', /Head height/i],
+  ['the verification date', /Requirements last verified on/i],
+  ['a link to the issuing authority', /<a[^>]+href="https?:\/\/[^"]+"[^>]*rel="noreferrer/i],
+  ['FAQ structured data', /"@type":"FAQPage"/],
+  ['HowTo structured data', /"@type":"HowTo"/],
+  ['breadcrumb structured data', /"@type":"BreadcrumbList"/],
+  // The whole point of building the answers from the specification.
+  ['no unfilled copy placeholder', /^(?!.*\{(country|document|min|max)\}).*$/s],
+];
+
+/**
+ * Discovered from the build output rather than listed here.
+ *
+ * A hand-maintained list falls behind the day a country is added, and it falls
+ * behind silently: the new page simply is not checked. Reading the directory
+ * means every page the build produced is asserted, including ones nobody
+ * remembered to mention.
+ */
+const countryRoutes = async (): Promise<readonly RouteExpectation[]> => {
+  const entries = await readdir(join('.next', APP_DIR), { withFileTypes: true });
+  const routes: RouteExpectation[] = [];
+
+  for (const entry of entries) {
+    if (!entry.isDirectory() || entry.name.startsWith('[') || entry.name.startsWith('_')) continue;
+
+    const files = await readdir(join('.next', APP_DIR, entry.name));
+
+    for (const file of files.filter((name) => name.endsWith(DOCUMENT_SUFFIX))) {
+      routes.push({
+        htmlPath: join(APP_DIR, entry.name, file),
+        label: `/${entry.name}/${file.replace('.html', '')}`,
+        extra: COUNTRY_PATTERNS,
+      });
+    }
+  }
+
+  return routes;
+};
+
 const ROUTES: readonly RouteExpectation[] = [
-  { htmlPath: 'server/app/index.html', label: '/' },
-  {
-    htmlPath: 'server/app/passport-photo-checker.html',
-    label: '/passport-photo-checker',
-  },
+  { htmlPath: `${APP_DIR}/index.html`, label: '/' },
+  { htmlPath: `${APP_DIR}/passport-photo-checker.html`, label: '/passport-photo-checker' },
+  ...(await countryRoutes()),
 ];
 
 const REQUIRED_PATTERNS: readonly (readonly [string, RegExp])[] = [
@@ -51,6 +103,9 @@ for (const route of ROUTES) {
   }
 
   for (const [label, pattern] of REQUIRED_PATTERNS) {
+    if (!pattern.test(html)) failures.push(`${route.label}: missing ${label}`);
+  }
+  for (const [label, pattern] of route.extra ?? []) {
     if (!pattern.test(html)) failures.push(`${route.label}: missing ${label}`);
   }
   for (const [label, pattern] of FORBIDDEN_PATTERNS) {

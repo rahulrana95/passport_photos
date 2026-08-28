@@ -138,6 +138,18 @@ describe('CheckerPanel', () => {
     expect(screen.getByLabelText(optionLabel(TWO_SPECS[0] as ResolvedPhotoSpec))).toBeChecked();
   });
 
+  it('asks nothing when there is only one specification to check against', async () => {
+    // A country page carries exactly one. Asking "what are you applying for?"
+    // above a single radio reads as though the page were unsure which country
+    // it is about.
+    const only = TWO_SPECS[0] as ResolvedPhotoSpec;
+    render(<CheckerPanel specs={[only]} decoder={workingDecoder()} />);
+
+    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
+    expect(screen.queryByText(content.checker.specLegend)).not.toBeInTheDocument();
+    expect(screen.getByText(content.upload.dropzoneLabel)).toBeInTheDocument();
+  });
+
   it('turns a chosen photo into a report', async () => {
     // The whole product in one assertion: a file goes in, an answer comes out.
     // Nothing else in the suite covers the join between ingestion and analysis.

@@ -83,47 +83,41 @@ export const CheckerPanel = ({
     return analyseRef.current;
   };
 
-  const check = useCallback(
-    async (file: File, against: ResolvedPhotoSpec): Promise<void> => {
-      setRejected(undefined);
-      setState({ kind: 'analysing', stage: FIRST_STAGE, stageRatio: 0 });
+  const check = useCallback(async (file: File, against: ResolvedPhotoSpec): Promise<void> => {
+    setRejected(undefined);
+    setState({ kind: 'analysing', stage: FIRST_STAGE, stageRatio: 0 });
 
-      const ingested = await ingestImage(
-        new Uint8Array(await file.arrayBuffer()),
-        decodeWith(),
-      );
+    const ingested = await ingestImage(new Uint8Array(await file.arrayBuffer()), decodeWith());
 
-      if (!ingested.ok) {
-        // Back to waiting, with the refusal shown on the control that can fix
-        // it. An error where the answer goes would be in the wrong place.
-        setState({ kind: 'idle' });
-        setRejected(ingested.failure);
-        return;
-      }
+    if (!ingested.ok) {
+      // Back to waiting, with the refusal shown on the control that can fix
+      // it. An error where the answer goes would be in the wrong place.
+      setState({ kind: 'idle' });
+      setRejected(ingested.failure);
+      return;
+    }
 
-      try {
-        const result = await analyseWith()(ingested.image.working, {
-          onProgress: (stage, ratio) => {
-            setState({ kind: 'analysing', stage, stageRatio: ratio });
-          },
-        });
+    try {
+      const result = await analyseWith()(ingested.image.working, {
+        onProgress: (stage, ratio) => {
+          setState({ kind: 'analysing', stage, stageRatio: ratio });
+        },
+      });
 
-        setState({
-          kind: 'ready',
-          report: analysePhoto({ image: ingested.image, result, spec: against }),
-        });
-      } catch (error) {
-        // A code where there is one, 'unknown' where there is not. Every code
-        // has its own remedy, and inventing one for a stray exception would
-        // give the reader advice about a failure that did not happen.
-        setState({
-          kind: 'failed',
-          error: error instanceof AnalysisError ? error.code : 'unknown',
-        });
-      }
-    },
-    [],
-  );
+      setState({
+        kind: 'ready',
+        report: analysePhoto({ image: ingested.image, result, spec: against }),
+      });
+    } catch (error) {
+      // A code where there is one, 'unknown' where there is not. Every code
+      // has its own remedy, and inventing one for a stray exception would
+      // give the reader advice about a failure that did not happen.
+      setState({
+        kind: 'failed',
+        error: error instanceof AnalysisError ? error.code : 'unknown',
+      });
+    }
+  }, []);
 
   // A checker with nothing to check against is not a degraded checker; it is
   // not one. A dropzone that leads nowhere would invite a photograph and then
@@ -133,29 +127,38 @@ export const CheckerPanel = ({
 
   return (
     <div className={styles['checker']}>
-      <fieldset className={styles['specs']}>
-        <legend className={styles['legend']}>{content.checker.specLegend}</legend>
-        {specs.map((option, index) => (
-          <span key={`${option.country}:${option.document}`}>
-            <input
-              className={styles['radio']}
-              type="radio"
-              name="photo-spec"
-              id={`spec-${option.country}-${option.document}`}
-              checked={index === selected}
-              onChange={() => {
-                setSelected(index);
-              }}
-            />
-            <label className={styles['option']} htmlFor={`spec-${option.country}-${option.document}`}>
-              {interpolate(content.checker.specOption, {
-                country: COUNTRY_NAMES[option.country],
-                document: DOCUMENT_TYPE_LABELS[option.document],
-              })}
-            </label>
-          </span>
-        ))}
-      </fieldset>
+      {/* A picker is a question, and a question with one answer is a question
+          nobody should be asked. A country page carries exactly one
+          specification: the reader chose it by arriving there, and being asked
+          to confirm it reads as though the page were unsure. */}
+      {specs.length === 1 ? null : (
+        <fieldset className={styles['specs']}>
+          <legend className={styles['legend']}>{content.checker.specLegend}</legend>
+          {specs.map((option, index) => (
+            <span key={`${option.country}:${option.document}`}>
+              <input
+                className={styles['radio']}
+                type="radio"
+                name="photo-spec"
+                id={`spec-${option.country}-${option.document}`}
+                checked={index === selected}
+                onChange={() => {
+                  setSelected(index);
+                }}
+              />
+              <label
+                className={styles['option']}
+                htmlFor={`spec-${option.country}-${option.document}`}
+              >
+                {interpolate(content.checker.specOption, {
+                  country: COUNTRY_NAMES[option.country],
+                  document: DOCUMENT_TYPE_LABELS[option.document],
+                })}
+              </label>
+            </span>
+          ))}
+        </fieldset>
+      )}
 
       {camera ? (
         <CameraCapture

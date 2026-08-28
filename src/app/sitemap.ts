@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
-import { homeRoute, ROUTE_SEGMENTS } from '@/constants/routes.constants';
+import { countryDocumentRoute, homeRoute, ROUTE_SEGMENTS } from '@/constants/routes.constants';
 import { buildSitemap } from '@/seo/sitemap.utils';
+import { listServableSpecs } from '@/photo-spec/photo-spec.registry';
 import { PRIORITY_HOME, PRIORITY_PRIMARY } from '@/seo/sitemap.constants';
 
 /**
@@ -12,14 +13,25 @@ import { PRIORITY_HOME, PRIORITY_PRIMARY } from '@/seo/sitemap.constants';
  * an error against the domain, and the 404 page's own advice pointed readers
  * at the checker, which was itself one of them.
  *
- * Country and dimension routes join this list as their pages land, each
- * carrying its specification's lastVerified date as lastModified. A route
- * belongs here the day it renders and not before.
+ * The country pages come from the SERVABLE registry — the same list
+ * generateStaticParams builds pages from — so the sitemap and the router cannot
+ * disagree about which URLs exist. Each carries its specification's
+ * lastVerified date rather than the build date: telling crawlers that all forty
+ * pages changed every time anything is deployed makes the signal worthless.
+ *
+ * Dimension routes join this list as their pages land. A route belongs here the
+ * day it renders and not before.
  */
 const sitemap = (): MetadataRoute.Sitemap =>
   buildSitemap([
     { route: homeRoute(), changeFrequency: 'weekly', priority: PRIORITY_HOME },
     { route: ROUTE_SEGMENTS.checker, changeFrequency: 'weekly', priority: PRIORITY_PRIMARY },
+    ...listServableSpecs().map((spec) => ({
+      route: countryDocumentRoute(spec.country, spec.document),
+      lastModified: spec.lastVerified,
+      changeFrequency: 'monthly' as const,
+      priority: PRIORITY_PRIMARY,
+    })),
   ]);
 
 export default sitemap;
