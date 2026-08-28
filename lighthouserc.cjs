@@ -16,7 +16,24 @@ module.exports = {
     collect: {
       startServerCommand: 'npm run start',
       startServerReadyPattern: 'Ready in',
-      url: ['http://localhost:3000/'],
+      /**
+       * A representative page of each kind, not just the homepage.
+       *
+       * The homepage is the SIMPLEST page here — a heading and some links —
+       * and guarding only it means the budget passes while the pages that
+       * carry the product get slower. Each entry below is a different shape:
+       * a country page renders a requirements table and mounts the checker, a
+       * size page renders a country list, the rejection page renders
+       * twenty-four reasons and structured data, and the checker is the one
+       * that has fifteen megabytes of models waiting behind it.
+       */
+      url: [
+        'http://localhost:3000/',
+        'http://localhost:3000/passport-photo-checker',
+        'http://localhost:3000/us/passport-photo',
+        'http://localhost:3000/35x45mm-photo',
+        'http://localhost:3000/why-was-my-passport-photo-rejected',
+      ],
       // Three runs, median reported. A single run on a shared CI box is noise.
       numberOfRuns: 3,
       settings: {

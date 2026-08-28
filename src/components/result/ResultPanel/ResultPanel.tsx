@@ -65,10 +65,16 @@ const layout = (
   <>
     {parts.verdict}
     {parts.extra}
-    <h3 className={styles['heading']}>{content.result.resultsHeading}</h3>
+    {/* h2, not h3. These are top-level sections of the page's content — the
+        siblings of "What the United States requires" — and every other section
+        heading on every page that mounts this is an h2. Starting at h3 made
+        the heading order jump h1 to h3 on the checker page and on all forty
+        country pages, which is a real defect for anyone navigating by heading
+        and which the budget never saw while it only measured the homepage. */}
+    <h2 className={styles['heading']}>{content.result.resultsHeading}</h2>
     <div className={styles['rows']}>{parts.ruleRows}</div>
     <div className={styles['checklist']}>
-      <h3 className={styles['heading']}>{content.result.manualChecklistHeading}</h3>
+      <h2 className={styles['heading']}>{content.result.manualChecklistHeading}</h2>
       {parts.manualRows}
     </div>
   </>

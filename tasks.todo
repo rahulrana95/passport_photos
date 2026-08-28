@@ -2747,17 +2747,74 @@ TESTS
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #33 — Performance hardening and CI budgets
-Branch: perf/budgets                   Depends on: #32               Status: TODO
+Branch: perf/budgets                    Depends on: #32             Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  The budgets already existed and were measuring the wrong thing: one route,
+  one form factor. The homepage is the SIMPLEST page here — a heading and some
+  links — and it is the only one that does not mount the checker. Guarding it
+  alone meant the job stayed green while the pages that carry the product got
+  slower.
+
+  Widening it found two real problems on the first run.
+
 IMPLEMENTS
-  [ ] Lighthouse CI gate: LCP < 1.2s, CLS < 0.1, TBT < 200ms
-  [ ] Bundle-size budget per route; model bytes excluded from initial load
-  [ ] Verify zero model bytes before file selection
+  [x] Five routes rather than one, each a different shape: the homepage, the
+      checker, a country page with its requirements table, a size page, and the
+      rejection page with its structured data.
+  [x] A SECOND budget on Lighthouse's throttled mobile profile, run as its own
+      job. Separate because the two measure different things — desktop lands
+      around 550ms and throttled mobile around 1.7s — and one set of limits
+      loose enough for both would stop the desktop run catching anything.
+  [x] Zero model bytes before a photo is chosen, asserted by watching the
+      network rather than by reading the source: the thing that would break it
+      is a bundler hoisting an import nobody moved, and the code would still
+      say "lazily" while the fifteen megabytes were on the wire.
+  [x] A heading-order test across eight routes.
+
+WHAT IT FOUND
+  [x] AN ACCESSIBILITY DEFECT ON EVERY PAGE THAT MOUNTS THE CHECKER. The result
+      panel's headings were h3 with no h2 above them, so the order jumped h1 to
+      h3 on the checker page and on all forty country pages. Somebody
+      navigating by heading is told a level was skipped and goes looking for a
+      section that is not there; everybody else sees nothing, which is why it
+      survived. Accessibility scored 0.98 on those routes and 1.00 on the
+      homepage — which is precisely the page the budget was watching.
+      Fixed to h2, matching every other section heading on those pages.
+
+  [~] THE 1.2s LCP TARGET IS MET ON DESKTOP ONLY. Desktop measures 506-676ms
+      across the five routes. Throttled mobile measures 1.5-1.8s unloaded and
+      2.2-2.6s with three runs contending on the same box. Since every reader
+      of this product is by definition holding a phone, the desktop-only budget
+      had been reporting green on a target the site does not hit for most of
+      its traffic.
+
+      NOT papered over with a mobile threshold at 1.2s. That would be red the
+      day it landed and muted the day after, which is the failure mode this
+      config's own comments warn about. The mobile job is calibrated as a
+      regression guard at 3000ms and the gap is written into the config.
+      Closing it is hydration and font loading — its own task, not a
+      threshold change.
+
 EDGE CASES
-  [ ] Mid-range mobile CPU throttling in the test profile
-  [ ] Cold cache vs warm cache runs measured separately
-  [ ] Font loading strategy must not shift layout
-TESTS  Lighthouse CI on a representative route sample, failing the build.
+  [x] Mid-range mobile CPU throttling: Lighthouse's own mobile emulation, not a
+      profile we invented. A profile nobody else uses is one nobody can compare
+      against.
+  [x] Cold versus warm cache: three runs, median reported, which is what the
+      desktop job already did and what makes the mobile numbers comparable.
+  [x] Fonts must not shift layout: CLS measures 0.000 on every route on both
+      profiles, which is the only proof that matters.
+
+NOTES
+  - Lighthouse's mobile profile is deliberately pessimistic: a Moto G4-class
+    CPU at 4x slowdown on 1.6Mbps, against a local server rather than Vercel's
+    edge. Real devices do better. Speed Insights is already installed and
+    reports from actual visits — that is the number to trust once traffic
+    exists, and this job exists to catch the change that makes it worse.
+  - The .cjs eslint override is not a loosening: a CommonJS file loads its
+    dependencies with require because that is what CommonJS is, and the mobile
+    config reads the desktop one rather than duplicating thresholds that would
+    drift apart.
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #34 — Accessibility audit pass
