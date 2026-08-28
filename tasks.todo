@@ -2582,6 +2582,77 @@ TESTS
   if any unserved slug is ever linked.
 
 ───────────────────────────────────────────────────────────────────────────────
+PR #31c — HEIC photographs, decoded rather than refused
+Branch: feat/heic-decode                Depends on: #31a            Status: DONE
+───────────────────────────────────────────────────────────────────────────────
+UNPLANNED, and it should not have been. HEIC is how every iPhone saves a photo
+by default, and this product's whole audience is people photographing
+themselves with a phone.
+
+DESCRIPTION
+  The registry work turned this up sideways: Singapore's ICA lists heic and
+  heif among the file types it accepts, and we did not accept them at all.
+
+  What was there before recognised HEIC precisely so it could refuse it, with
+  instructions to go and convert the file by hand. That refusal was decided by
+  a fixed list of natively decodable formats — which meant it fired on EVERY
+  browser, including Safari and iOS, which open HEIC natively and are exactly
+  where iPhone photographs are. Those readers were told their browser could not
+  open their own camera roll.
+
+IMPLEMENTS
+  [x] Decodability is asked of the decoder rather than looked up in a list, so
+      Safari and iOS decode HEIC natively at a cost of nothing.
+  [x] A libheif WebAssembly fallback for browsers that genuinely cannot — the
+      Windows or Android reader who was SENT an iPhone photo.
+  [x] Native first, always. The fallback runs only after the browser has
+      refused, so the megabyte and a half never reaches the people most likely
+      to be holding a HEIC.
+  [x] NO TRANSCODE. The obvious build converts HEIC to JPEG and decodes that,
+      spending a whole lossy generation before the photo is even measured. This
+      decodes straight to RGBA and feeds the existing pipeline, so the only
+      lossy step is the export the reader submits — one generation, not two.
+
+EDGE CASES
+  [x] Orientation. A HEIC keeps its rotation in container boxes this pipeline
+      does not parse, not the JPEG EXIF block it does. HEIC alone asks the
+      browser to apply the file's own orientation; every other format still has
+      it applied once, by us. Getting this wrong lands portrait photos on their
+      side, or rotates them twice.
+  [x] A container holding several images — a thumbnail, the frames of a Live
+      Photo, the exposures of a burst. Taking the first would eventually hand
+      somebody their own thumbnail, upscaled, and every sharpness check would
+      fail on a photograph that was never blurry. Largest wins, ties to the
+      earliest, which is the primary item.
+  [x] Freeing every frame, not only the chosen one. libheif allocates on the
+      WebAssembly heap where the JavaScript collector cannot see it, and a
+      burst decoded and dropped leaks the lot — the SECOND upload of a session
+      is the one that runs out of memory.
+  [x] A corrupt file reporting a nonsense size: refused before anything is
+      allocated for it, rather than throwing on a negative array length.
+  [x] Both routes failing: still a refusal the reader can act on, not a crash.
+
+LICENSING
+  libheif is LGPL-3.0 and this was put to the architect before it was added.
+  Shipped as its own lazily loaded chunk, unmodified — the dynamic-linking case
+  the licence is friendliest to. Our own source is unaffected.
+
+TESTS
+  13 unit tests on the container decisions at 100% coverage, plus 4 Playwright
+  specs in a real browser. Two of those are the ones that matter: the decoder
+  chunk is ABSENT from the initial payload, and it IS fetched when a HEIC
+  arrives. That pair is what retires the bundler risk this project has already
+  been bitten by once — a feature that passed every unit test and was dead in
+  the browser because a module was not built the way the code assumed.
+
+NOT COVERED, and worth knowing
+  No automated test decodes a REAL HEIC. Every sample file findable from this
+  environment is a third-party photograph under unclear licensing, and one of
+  those does not belong in this repository for the sake of a fixture. The unit
+  tests use a fake container; the browser tests cover loading. A genuine iPhone
+  photograph against the deployed site is the missing confirmation.
+
+───────────────────────────────────────────────────────────────────────────────
 PR #31b.. — Registry expansion, remaining tranches
 Branch: feat/registry-<tranche>        Depends on: #31a             Status: TODO
 ───────────────────────────────────────────────────────────────────────────────

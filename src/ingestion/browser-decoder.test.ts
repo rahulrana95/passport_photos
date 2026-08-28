@@ -281,6 +281,92 @@ describe('when it cannot produce pixels', () => {
       createSurface: (w, h) => new RecordingDecodeSurface(w, h),
     }).decode({ bytes: jpegBytes(), format: 'jpeg', orientation: 1, maxEdgePx: 800 });
 
-    expect(createBitmap).toHaveBeenCalledWith(expect.any(Blob));
+    expect(createBitmap).toHaveBeenCalledWith(expect.any(Blob), false);
+  });
+
+  it('asks the browser to orient a HEIC, because nothing else here can', async () => {
+    // A HEIC keeps its rotation in container boxes this pipeline does not
+    // parse, not in the JPEG EXIF block it does. Told to ignore the file's own
+    // orientation, the browser hands back a portrait photograph on its side.
+    const createBitmap = vi.fn(async () => stubBitmap(800, 600));
+
+    await createBrowserDecoder({
+      createBitmap,
+      createSurface: (w, h) => new RecordingDecodeSurface(w, h),
+    }).decode({ bytes: jpegBytes(), format: 'heic', orientation: 1, maxEdgePx: 800 });
+
+    expect(createBitmap).toHaveBeenCalledWith(expect.any(Blob), true);
+  });
+});
+
+describe('a HEIC the browser cannot open', () => {
+  const heicRequest = { bytes: jpegBytes(), format: 'heic', orientation: 1, maxEdgePx: 800 } as const;
+
+  it('is decodable when a fallback exists, and not when none does', () => {
+    // The old answer was a fixed list that said no on every browser, including
+    // the ones that open HEIC natively.
+    const withFallback = createBrowserDecoder({
+      createBitmap: async () => stubBitmap(800, 600),
+      createSurface: (w, h) => new RecordingDecodeSurface(w, h),
+      decodeHeic: async () => stubBitmap(800, 600),
+    });
+    const without = createBrowserDecoder({
+      createBitmap: async () => stubBitmap(800, 600),
+      createSurface: (w, h) => new RecordingDecodeSurface(w, h),
+    });
+
+    expect(withFallback.canDecode('heic')).toBe(true);
+    expect(without.canDecode('heic')).toBe(false);
+  });
+
+  it('falls back only after the browser has refused', async () => {
+    // Native first is what keeps a megabyte of WebAssembly off the wire for
+    // the people most likely to be holding a HEIC: Safari and iOS open them.
+    const decodeHeic = vi.fn(async () => stubBitmap(800, 600));
+
+    await createBrowserDecoder({
+      createBitmap: async () => stubBitmap(800, 600),
+      createSurface: (w, h) => new RecordingDecodeSurface(w, h),
+      decodeHeic,
+    }).decode(heicRequest);
+
+    expect(decodeHeic).not.toHaveBeenCalled();
+  });
+
+  it('uses the fallback when the browser throws', async () => {
+    const decodeHeic = vi.fn(async () => stubBitmap(800, 600));
+
+    const decoded = await createBrowserDecoder({
+      createBitmap: async () => { throw new Error('unsupported'); },
+      createSurface: (w, h) => new RecordingDecodeSurface(w, h),
+      decodeHeic,
+    }).decode(heicRequest);
+
+    expect(decodeHeic).toHaveBeenCalledTimes(1);
+    expect(decoded).toBeDefined();
+  });
+
+  it('gives up rather than throwing when the fallback fails too', async () => {
+    const decoded = await createBrowserDecoder({
+      createBitmap: async () => { throw new Error('unsupported'); },
+      createSurface: (w, h) => new RecordingDecodeSurface(w, h),
+      decodeHeic: async () => { throw new Error('out of memory'); },
+    }).decode(heicRequest);
+
+    expect(decoded).toBeUndefined();
+  });
+
+  it('does not reach for the fallback on a format that is not HEIC', async () => {
+    // A truncated JPEG is a damaged JPEG, not something libheif can rescue.
+    const decodeHeic = vi.fn(async () => stubBitmap(800, 600));
+
+    const decoded = await createBrowserDecoder({
+      createBitmap: async () => { throw new Error('truncated'); },
+      createSurface: (w, h) => new RecordingDecodeSurface(w, h),
+      decodeHeic,
+    }).decode({ bytes: jpegBytes(), format: 'jpeg', orientation: 1, maxEdgePx: 800 });
+
+    expect(decodeHeic).not.toHaveBeenCalled();
+    expect(decoded).toBeUndefined();
   });
 });

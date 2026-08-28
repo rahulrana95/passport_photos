@@ -1,9 +1,11 @@
 /**
  * Image container formats this product can recognise.
  *
- * Recognising a format is not the same as being able to decode it. HEIC is
- * recognised precisely so it can be refused with useful instructions, which is
- * the difference between losing an iPhone user and keeping one.
+ * Recognising a format is not the same as being able to decode it, and for
+ * HEIC the answer now depends on the browser: Safari and iOS open one
+ * natively, everything else needs the libheif fallback in ingestion/heic.
+ * Which is why decodability is asked of the decoder rather than looked up in a
+ * list here.
  */
 export const IMAGE_FORMATS = [
   'jpeg',
@@ -20,6 +22,10 @@ export type ImageFormat = (typeof IMAGE_FORMATS)[number];
 
 /**
  * Formats every target browser can decode natively.
+ *
+ * HEIC is deliberately NOT here even though Safari and iOS decode it: this
+ * list means "every browser", and the one browser that cannot is the one whose
+ * user needs the fallback. Asking the decoder settles it per browser.
  *
  * GIF and BMP are decodable but deliberately absent from the accepted list —
  * see ACCEPTED_IMAGE_MIME_TYPES. A GIF passport photo is a screenshot or a
