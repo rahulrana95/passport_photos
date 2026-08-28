@@ -2680,16 +2680,70 @@ TESTS  Every spec parses; a snapshot test catches accidental edits.
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #32 — Analytics and event tracking
-Branch: feat/analytics                 Depends on: #31               Status: TODO
+Branch: feat/analytics                  Depends on: #31a            Status: DONE
 ───────────────────────────────────────────────────────────────────────────────
+DESCRIPTION
+  Custom events on the analytics that was already here. PR #12 chose Vercel
+  Analytics over a third-party stack because it is same-origin and cookieless —
+  a visitor watching the Network tab to check their photograph is not being
+  uploaded sees requests to our own host. Sending usage events anywhere else
+  would quietly undo that, so they go through the same channel.
+
 IMPLEMENTS
-  [ ] Page views, tool starts, per-rule failure rates, downloads, country mix
-  [ ] Traffic by country — the metric that decides whether ads work
+  [x] Country mix, tool starts, per-rule failure rates, verdicts, downloads,
+      and the format a photo arrived in.
+  [x] A CLOSED UNION of events rather than a record of arbitrary properties.
+      That is the safety mechanism, not a convention: there is no field
+      anywhere that can hold a number derived from pixels, and adding one means
+      editing a file the leak test enumerates.
+  [x] An allowlist of property keys as a second lock, exported and tested on
+      its own — nothing above can reach its rejecting branch, and the way to
+      know a backstop works is to try it rather than wait for the first lock to
+      fail.
+  [x] Tracking that can never break the product. Every failure is swallowed: a
+      blocked beacon, an ad blocker that removed the transport, a browser
+      offline. A reader finding out whether their photograph is acceptable does
+      not care that a metric did not send.
+
+THE RULE, stated once
+  Outcomes, never measurements. A failing rule's IDENTITY is a fact about
+  whether a photograph complies and it is the most valuable number this product
+  can collect — it says which requirement people actually get wrong, and
+  therefore what the guidance should explain first. The 34.2mm that rule
+  measured is a biometric measurement of somebody's head. One is analytics; the
+  other is the thing this product promises never to transmit.
+
 EDGE CASES
-  [ ] NEVER transmit the image, landmarks, or any biometric derivative
-  [ ] Consent gating for EU visitors before any non-essential tracking
-  [ ] Bot filtering; tracking failures must never break the app
-TESTS  Unit on the payload builder, asserting no image-derived field can leak.
+  [x] Never transmit the image, landmarks, or any biometric derivative —
+      enforced by construction, by an allowlist, and by a browser test that
+      watches every request made during a real check.
+  [x] Consent: nothing to gate. Vercel Analytics is cookieless and same-origin,
+      and these events carry no identifier, so no non-essential storage is
+      created that would need consent. #35 must still SAY so plainly; claiming
+      "nothing is collected" would be false.
+  [x] Bot filtering is Vercel's own, upstream of us.
+  [x] The manual checklist is excluded from failure counts. Those items appear
+      on every report ever produced, so folding them in would make every check
+      look identical and the rates would carry no information at all.
+  [x] The download event carries no country. The button sits three components
+      below the one that knows which specification was chosen, and threading it
+      down would put the result panel and the overlay in the business of
+      analytics to record one click. The country mix is already carried by the
+      events the check itself emits.
+
+TESTS
+  19 unit tests at 100% coverage, including one that builds every event in the
+  union and asserts no key matches a pattern that would mean a measurement had
+  escaped — plus a guard that fails if the union grows without the fixture list
+  growing with it.
+
+  2 Playwright specs that run a real check in a real browser and watch every
+  request: one asserts no field name from the analysis appears in any body or
+  query string, the other that nothing large enough to be a photograph is sent
+  at all. The first version of that test flagged /models/face_landmarker.task —
+  the model coming IN, the opposite of a leak. Narrowed to bodies and query
+  strings, because a path cannot carry data out and a privacy test that cries
+  wolf is one somebody disables.
 
 ───────────────────────────────────────────────────────────────────────────────
 PR #33 — Performance hardening and CI budgets

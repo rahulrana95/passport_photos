@@ -1,3 +1,4 @@
+import type { AnalyticsTransport } from '@/analytics/analytics-event.types';
 import type { AnnotatedExportTarget } from '@/overlay/download-annotated';
 import type { OverlayInstruction } from '@/overlay/overlay-instruction.types';
 import type { OverlaySize } from '@/overlay/overlay-transform.utils';
@@ -27,4 +28,14 @@ export interface AnnotatedPhotoDownloadProps {
    * all, so without this the only exercised branch would be the failure.
    */
   readonly createCanvas?: () => AnnotatedExportTarget;
+  /**
+   * Where the download event goes, defaulting to Vercel Analytics.
+   *
+   * Tracked here rather than passed down from the checker because the event is
+   * about this button: threading a callback through the result panel and the
+   * overlay to reach it would put three components in the business of
+   * analytics to record one click. The country is already carried by the
+   * events the check itself emits, so nothing is lost by not repeating it.
+   */
+  readonly track?: AnalyticsTransport | undefined;
 }
