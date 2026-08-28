@@ -1,3 +1,5 @@
+import { listServableSpecs } from '@/photo-spec/photo-spec.registry';
+import { footerCountryLinks } from './footer-links.utils';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { COUNTRY_NAMES } from '@/constants/country.constants';
@@ -9,15 +11,70 @@ import { SiteFooter } from './SiteFooter';
 
 const content = getContent();
 
+/** The countries that actually have a page, which is what the footer may link. */
+const servedCountries = (): ReadonlySet<string> =>
+  new Set(listServableSpecs().map((spec) => spec.country));
+
 describe('SiteFooter', () => {
-  it('links the featured countries through the route builder', () => {
+  it('links each featured country through the route builder', () => {
     render(<SiteFooter />);
 
-    for (const country of FOOTER_FEATURED_COUNTRIES) {
-      expect(screen.getByRole('link', { name: COUNTRY_NAMES[country] })).toHaveAttribute(
+    for (const link of footerCountryLinks()) {
+      expect(screen.getByRole('link', { name: COUNTRY_NAMES[link.country] })).toHaveAttribute(
         'href',
-        countryDocumentRoute(country, 'passport'),
+        countryDocumentRoute(link.country, link.document),
       );
+    }
+  });
+
+  it('links a country to a document it actually issues', () => {
+    // Every link used to be hard-coded to `passport`, so the Schengen entry
+    // pointed at a passport page that does not exist — the Schengen
+    // specification is a visa. A footer renders on every route, so that was a
+    // broken link on every page of the site.
+    render(<SiteFooter />);
+
+    for (const link of footerCountryLinks()) {
+      const href = screen
+        .getByRole('link', { name: COUNTRY_NAMES[link.country] })
+        .getAttribute('href');
+
+      expect(
+        listServableSpecs().some(
+          (spec) => href === countryDocumentRoute(spec.country, spec.document),
+        ),
+      ).toBe(true);
+    }
+  });
+
+  it('shows no legal column while there are no legal pages', () => {
+    // A heading with nothing under it reads as a rendering fault, and linking
+    // Privacy to a 404 from every page is worse than not linking it at all.
+    render(<SiteFooter legalLinks={[]} />);
+
+    expect(screen.queryByRole('heading', { name: 'Legal' })).not.toBeInTheDocument();
+  });
+
+  it('shows the legal column once there are pages to link', () => {
+    render(<SiteFooter legalLinks={[{ label: 'Privacy', href: '/privacy' }]} />);
+
+    expect(screen.getByRole('heading', { name: 'Legal' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Privacy' })).toHaveAttribute('href', '/privacy');
+  });
+
+  it('offers no country that has no page', () => {
+    // The footer renders on every route, so a featured country with no page is
+    // not one broken link — it is one on every page of the site. Four of the
+    // six were exactly that until a crawl of the country pages caught them.
+    render(<SiteFooter />);
+
+    const unserved = FOOTER_FEATURED_COUNTRIES.filter(
+      (country) => !servedCountries().has(country),
+    );
+    expect(unserved.length).toBeGreaterThan(0);
+
+    for (const country of unserved) {
+      expect(screen.queryByRole('link', { name: COUNTRY_NAMES[country] })).not.toBeInTheDocument();
     }
   });
 

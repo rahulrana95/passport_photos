@@ -14,7 +14,24 @@ import {
  * everywhere. Intl.NumberFormat handles both.
  */
 
-export type MeasurementUnit = 'millimeter' | 'inch' | 'percent' | 'degree';
+/**
+ * Every unit this product formats, and only units Intl sanctions.
+ *
+ * Wider than the geometry it started as, because a requirements table states a
+ * file-size ceiling and how recent a photograph must be, and those are
+ * measurements a reader compares against a number too. Hand-joining them —
+ * `${kb}KB`, `${months} months` — is the same mistake as `${mm}mm`: wrong
+ * separator, wrong spacing, and wrong word the moment there is one of them.
+ */
+export type MeasurementUnit =
+  | 'millimeter'
+  | 'inch'
+  | 'percent'
+  | 'degree'
+  | 'kilobyte'
+  | 'megabyte'
+  | 'month'
+  | 'year';
 
 export const roundMeasurement = (
   value: number,
@@ -34,6 +51,15 @@ export const millimetresToPixels = (millimetres: number, dpi: number): number =>
 export const pixelsToMillimetres = (pixels: number, dpi: number): number =>
   (pixels / dpi) * MM_PER_INCH;
 
+/**
+ * Spelt out for durations, abbreviated for everything else.
+ *
+ * 'short' turns a month into "mths", which nobody writes and which reads as a
+ * typo in a sentence about how recent a photograph must be. A millimetre is
+ * "mm" in prose and in a table alike, so it stays short.
+ */
+const SPELT_OUT_UNITS: readonly MeasurementUnit[] = ['month', 'year'];
+
 export const formatMeasurement = (
   value: number,
   unit: MeasurementUnit,
@@ -42,7 +68,7 @@ export const formatMeasurement = (
   new Intl.NumberFormat(locale, {
     style: 'unit',
     unit,
-    unitDisplay: 'short',
+    unitDisplay: SPELT_OUT_UNITS.includes(unit) ? 'long' : 'short',
     maximumFractionDigits:
       unit === 'percent' ? PERCENT_PRECISION_DIGITS : MEASUREMENT_PRECISION_DIGITS,
   }).format(unit === 'percent' ? value * PERCENT_SCALE : value);

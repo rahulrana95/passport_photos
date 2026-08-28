@@ -11,6 +11,14 @@ import type { IngestionMessageId } from '@/ingestion/ingestion-failure.types';
 import type { AnalysisErrorCode, AnalysisStage } from '@/analysis/analysis-protocol.types';
 import type { CameraFailureCode } from '@/camera/camera-failure.types';
 import type { RuleStatus } from '@/constants/rule-status.constants';
+import type { CrownDefinition } from '@/analysis/crown-detection.utils';
+import type {
+  AiEditingPolicy,
+  BackgroundColour,
+  ExpressionPolicy,
+  GlassesPolicy,
+  HeadCoveringPolicy,
+} from '@/photo-spec/photo-spec.constants';
 import type { GuidanceId } from '@/camera/guidance/guidance.types';
 
 /** The four answers the coverage map can give about a requirement. */
@@ -230,6 +238,107 @@ export interface ReportContent {
   readonly pageLabel: string;
 }
 
+/**
+ * A country page — the surface this product's search traffic arrives on.
+ *
+ * Templates rather than finished sentences, because forty of these pages will
+ * exist and every one of them must read as though it were written about that
+ * country. What varies is interpolated; what is genuinely the same everywhere
+ * is written once, here.
+ */
+export interface CountryPageContent {
+  /** Interpolated with {country} and {document}. */
+  readonly title: string;
+  readonly metaTitle: string;
+  readonly metaDescription: string;
+  readonly intro: string;
+  readonly requirementsHeading: string;
+  readonly requirementsCaption: string;
+  readonly faqHeading: string;
+  readonly howToName: string;
+  readonly otherCountriesHeading: string;
+  readonly breadcrumbHome: string;
+  readonly breadcrumbChecker: string;
+  /** Row labels for the requirements table. */
+  readonly labels: CountryRequirementLabels;
+  /** Values written as sentences rather than as enum names. */
+  readonly values: CountryRequirementValues;
+  readonly faq: CountryFaqContent;
+  readonly steps: CountryHowToContent;
+}
+
+export interface CountryRequirementLabels {
+  readonly printSize: string;
+  readonly digitalSize: string;
+  readonly fileSize: string;
+  readonly headHeight: string;
+  readonly eyeLine: string;
+  readonly background: string;
+  readonly glasses: string;
+  readonly headCovering: string;
+  readonly expression: string;
+  readonly photoAge: string;
+  readonly aiEditing: string;
+}
+
+export interface CountryRequirementValues {
+  readonly backgroundColours: Readonly<Record<BackgroundColour, string>>;
+  readonly glasses: Readonly<Record<GlassesPolicy, string>>;
+  readonly headCovering: Readonly<Record<HeadCoveringPolicy, string>>;
+  readonly expression: Readonly<Record<ExpressionPolicy, string>>;
+  readonly aiEditing: Readonly<Record<AiEditingPolicy, string>>;
+  /** How the top of the head is measured, which differs by authority. */
+  readonly crown: Readonly<Record<CrownDefinition, string>>;
+  /** Interpolated with {width} and {height}. */
+  readonly printSize: string;
+  /** Interpolated with {dpi}. */
+  readonly printResolution: string;
+  /** Interpolated with {min} and {max}. */
+  readonly range: string;
+  /** Interpolated with {min}. */
+  readonly minimumOnly: string;
+  /** Interpolated with {months}. */
+  readonly photoAge: string;
+  /** Interpolated with {size}. */
+  readonly maxFileSize: string;
+  /** Interpolated with {format}. */
+  readonly fileFormat: string;
+  /** Interpolated with {min} and {max} pixel edges. */
+  readonly pixelRange: string;
+  /** Interpolated with {min}. */
+  readonly pixelMinimum: string;
+  readonly alsoAccepted: string;
+  readonly eyeLineNote: string;
+}
+
+/**
+ * Question templates. The ANSWERS are built from the specification, so two
+ * countries never get the same answer to the same question.
+ */
+export interface CountryFaqContent {
+  readonly sizeQuestion: string;
+  readonly sizeAnswer: string;
+  readonly headQuestion: string;
+  readonly headAnswer: string;
+  readonly backgroundQuestion: string;
+  readonly backgroundAnswer: string;
+  readonly glassesQuestion: string;
+  readonly smileQuestion: string;
+  readonly ageQuestion: string;
+  readonly ageAnswer: string;
+  readonly costQuestion: string;
+  readonly costAnswer: string;
+}
+
+export interface CountryHowToContent {
+  readonly chooseName: string;
+  readonly chooseText: string;
+  readonly checkName: string;
+  readonly checkText: string;
+  readonly fixName: string;
+  readonly fixText: string;
+}
+
 export interface ContentTree {
   readonly common: CommonContent;
   readonly upload: UploadContent;
@@ -242,6 +351,7 @@ export interface ContentTree {
   readonly overlay: OverlayContent;
   readonly print: PrintContent;
   readonly report: ReportContent;
+  readonly country: CountryPageContent;
 }
 
 /**

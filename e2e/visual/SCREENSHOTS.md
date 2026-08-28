@@ -534,6 +534,20 @@ A change to any of these images is a change a reviewer must approve:
 
 ![Single Country — mobile-light](./story-screenshots.spec.ts-snapshots/layout-sitefooter/single-country-mobile-light-stories-linux.png)
 
+### With Legal Links
+
+**desktop-dark**
+
+![With Legal Links — desktop-dark](./story-screenshots.spec.ts-snapshots/layout-sitefooter/with-legal-links-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![With Legal Links — desktop-light](./story-screenshots.spec.ts-snapshots/layout-sitefooter/with-legal-links-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![With Legal Links — mobile-light](./story-screenshots.spec.ts-snapshots/layout-sitefooter/with-legal-links-mobile-light-stories-linux.png)
+
 ## Layout Siteheader
 
 ### Active Nav Item
@@ -1434,4 +1448,4 @@ A change to any of these images is a change a reviewer must approve:
 
 ---
 
-294 baselines across 26 components.
+297 baselines across 26 components.

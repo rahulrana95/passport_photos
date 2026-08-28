@@ -1,3 +1,4 @@
+import { countryDocumentRoute } from '@/constants/routes.constants';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { Prose } from './Prose';
 
@@ -31,7 +32,12 @@ export const Article: Story = {
           <li>Taken within the last six months</li>
         </ul>
         <p>
-          See the <a href="/us/passport-photo">full checklist</a> for the complete list.
+          {/* Built rather than written out, like every other internal link
+              here: a route literal in a story drifts from the real route the
+              moment one changes, and this one already had a trailing slash the
+              site does not serve. */}
+          See the <a href={countryDocumentRoute('us', 'passport')}>full checklist</a> for the
+          complete list.
         </p>
       </>
     ),
