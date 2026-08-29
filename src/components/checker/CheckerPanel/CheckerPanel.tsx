@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { COUNTRY_NAMES } from '@/constants/country.constants';
 import { DOCUMENT_TYPE_LABELS } from '@/constants/document-type.constants';
 import { createAnalysisClient } from '@/analysis/analysis-client';
@@ -16,11 +16,15 @@ import { ingestImage } from '@/ingestion/ingest-image';
 import { interpolate } from '@/content/interpolate.utils';
 import { AnalysisError } from '@/analysis/analysis-error.utils';
 import { CameraCapture } from '@/components/camera/CameraCapture/CameraCapture';
+import { PhotoOverlay } from '@/components/result/PhotoOverlay/PhotoOverlay';
 import { ResultPanel } from '@/components/result/ResultPanel/ResultPanel';
+import { browserObjectUrls } from '@/result/preview-object-url';
 import { UploadZone } from '@/components/upload/UploadZone/UploadZone';
 import type { AnalysisResult, AnalysisStage } from '@/analysis/analysis-protocol.types';
-import type { AnalysisState } from '@/result/analysis-state.types';
-import type { ImageDecoder } from '@/ingestion/image-decoder.types';
+import type { AnalysisState, PhotoPreview } from '@/result/analysis-state.types';
+import type { ObjectUrlPort } from '@/result/preview-object-url.types';
+import type { ImageDecoder, IngestedImage } from '@/ingestion/image-decoder.types';
+import type { OverlayInstruction } from '@/overlay/overlay-instruction.types';
 import type { IngestionFailure } from '@/ingestion/ingestion-failure.types';
 import type { PixelBuffer } from '@/testing/fixtures/synthetic-head.types';
 import type { ResolvedPhotoSpec } from '@/photo-spec/photo-spec.types';
@@ -55,6 +59,7 @@ export const CheckerPanel = ({
   decoder,
   analyse,
   cameraEnvironment,
+  objectUrls,
   track = vercelTransport,
 }: CheckerPanelProps): React.JSX.Element => {
   const content = getContent();
@@ -73,9 +78,74 @@ export const CheckerPanel = ({
   const [cameraUnavailable, setCameraUnavailable] = useState(false);
 
   const decoderRef = useRef<ImageDecoder | undefined>(decoder);
+  /**
+   * The object URL currently on screen, so it can be revoked when it is not.
+   *
+   * A ref rather than state: nothing renders from it, and reading it during
+   * cleanup must see the LATEST url rather than the one captured by whichever
+   * render registered the effect.
+   */
+  const previewUrlRef = useRef<string | undefined>(undefined);
+  const objectUrlsRef = useRef<ObjectUrlPort | undefined>(objectUrls);
   const analyseRef = useRef<CheckerPanelProps['analyse']>(analyse);
 
   const spec = specs[selected] ?? specs[0];
+
+  const urlsWith = (): ObjectUrlPort => {
+    objectUrlsRef.current ??= browserObjectUrls();
+    return objectUrlsRef.current;
+  };
+
+  /**
+   * Releases the photograph currently previewed, if there is one.
+   *
+   * Called before every replacement and once on unmount. Not calling it is not
+   * a visible bug — it is a decoded phone photograph, tens of megabytes, held
+   * for the lifetime of the document while the reader checks another five.
+   */
+  const releasePreview = useCallback((): void => {
+    const url = previewUrlRef.current;
+    if (url === undefined) return;
+
+    previewUrlRef.current = undefined;
+    urlsWith().revoke(url);
+    // No dependencies: everything read here is a ref, which is the point —
+    // the cleanup must see the URL as it is at unmount, not as it was when
+    // whichever render registered the effect captured it.
+  }, []);
+
+  useEffect(() => releasePreview, [releasePreview]);
+
+  /**
+   * Hands out the photograph to be previewed, and remembers it for release.
+   *
+   * The url is recorded in the ref in the same breath as it is created. Any
+   * gap between the two is a url nothing owns — and a url nothing owns is one
+   * nothing revokes.
+   */
+  const capturePreview = useCallback(
+    (
+      file: File,
+      image: IngestedImage,
+      instructions: readonly OverlayInstruction[],
+    ): PhotoPreview => {
+      const src = urlsWith().create(file);
+      previewUrlRef.current = src;
+
+      return {
+        src,
+        // The UPRIGHT size, which is the space the overlay's coordinates are in.
+        // The decoder applies EXIF orientation itself and reports the corrected
+        // dimensions; taking the stored ones would put every mark on a rotated
+        // photograph at ninety degrees to the face it is measuring.
+        widthPx: image.source.widthPx,
+        heightPx: image.source.heightPx,
+        instructions,
+      };
+      // Refs only, as with releasePreview: nothing here is a reactive value.
+    },
+    [],
+  );
 
   const decodeWith = (): ImageDecoder => {
     decoderRef.current ??= createBrowserDecoder(browserDecodeEnvironment());
@@ -87,51 +157,66 @@ export const CheckerPanel = ({
     return analyseRef.current;
   };
 
-  const check = useCallback(async (file: File, against: ResolvedPhotoSpec): Promise<void> => {
-    setRejected(undefined);
-    setState({ kind: 'analysing', stage: FIRST_STAGE, stageRatio: 0 });
+  const check = useCallback(
+    async (file: File, against: ResolvedPhotoSpec): Promise<void> => {
+      setRejected(undefined);
+      // Released at the START of the next check, not when its answer arrives.
+      // The photograph on screen belongs to the answer being replaced, and
+      // holding it until the replacement is ready would keep two full-size
+      // decodes alive at once on the device least able to afford it.
+      releasePreview();
+      setState({ kind: 'analysing', stage: FIRST_STAGE, stageRatio: 0 });
 
-    const identity = { country: against.country, document: against.document };
-    trackEvent({ name: 'check-started', spec: identity }, track);
+      const identity = { country: against.country, document: against.document };
+      trackEvent({ name: 'check-started', spec: identity }, track);
 
-    const ingested = await ingestImage(new Uint8Array(await file.arrayBuffer()), decodeWith());
+      const ingested = await ingestImage(new Uint8Array(await file.arrayBuffer()), decodeWith());
 
-    if (!ingested.ok) {
-      // Back to waiting, with the refusal shown on the control that can fix
-      // it. An error where the answer goes would be in the wrong place.
-      trackEvent({ name: 'photo-refused', reason: ingested.failure.code }, track);
-      setState({ kind: 'idle' });
-      setRejected(ingested.failure);
-      return;
-    }
+      if (!ingested.ok) {
+        // Back to waiting, with the refusal shown on the control that can fix
+        // it. An error where the answer goes would be in the wrong place.
+        trackEvent({ name: 'photo-refused', reason: ingested.failure.code }, track);
+        setState({ kind: 'idle' });
+        setRejected(ingested.failure);
+        return;
+      }
 
-    trackEvent({ name: 'photo-accepted', format: ingested.image.format }, track);
+      trackEvent({ name: 'photo-accepted', format: ingested.image.format }, track);
 
-    try {
-      const result = await analyseWith()(ingested.image.working, {
-        onProgress: (stage, ratio) => {
-          setState({ kind: 'analysing', stage, stageRatio: ratio });
-        },
-      });
+      try {
+        const result = await analyseWith()(ingested.image.working, {
+          onProgress: (stage, ratio) => {
+            setState({ kind: 'analysing', stage, stageRatio: ratio });
+          },
+        });
 
-      const report = analysePhoto({ image: ingested.image, result, spec: against });
+        const { report, overlay } = analysePhoto({ image: ingested.image, result, spec: against });
 
-      // One event per failing rule, plus the verdict. The per-rule events are
-      // what make a failure RATE possible, which is the number that says what
-      // the guidance should explain first.
-      for (const event of reportEvents(report, identity)) trackEvent(event, track);
+        // One event per failing rule, plus the verdict. The per-rule events are
+        // what make a failure RATE possible, which is the number that says what
+        // the guidance should explain first.
+        for (const event of reportEvents(report, identity)) trackEvent(event, track);
 
-      setState({ kind: 'ready', report });
-    } catch (error) {
-      // A code where there is one, 'unknown' where there is not. Every code
-      // has its own remedy, and inventing one for a stray exception would
-      // give the reader advice about a failure that did not happen.
-      setState({
-        kind: 'failed',
-        error: error instanceof AnalysisError ? error.code : 'unknown',
-      });
-    }
-  }, [track]);
+        // Created only once there is something to draw on it. A photograph
+        // nothing could be measured on is shown as a verdict and no picture,
+        // rather than a picture with no marks that looks like a pass.
+        const preview =
+          overlay === undefined ? undefined : capturePreview(file, ingested.image, overlay);
+
+        setState({ kind: 'ready', report, preview });
+      } catch (error) {
+        // A code where there is one, 'unknown' where there is not. Every code
+        // has its own remedy, and inventing one for a stray exception would
+        // give the reader advice about a failure that did not happen.
+        releasePreview();
+        setState({
+          kind: 'failed',
+          error: error instanceof AnalysisError ? error.code : 'unknown',
+        });
+      }
+    },
+    [capturePreview, releasePreview, track],
+  );
 
   // A checker with nothing to check against is not a degraded checker; it is
   // not one. A dropzone that leads nowhere would invite a photograph and then
@@ -196,6 +281,7 @@ export const CheckerPanel = ({
           type="button"
           data-track="checker-restart"
           onClick={() => {
+            releasePreview();
             setState({ kind: 'idle' });
           }}
         >
@@ -218,7 +304,16 @@ export const CheckerPanel = ({
         />
       )}
 
-      <ResultPanel state={state} spec={spec} />
+      <ResultPanel state={state} spec={spec}>
+        {state.kind === 'ready' && state.preview !== undefined ? (
+          <PhotoOverlay
+            imageSrc={state.preview.src}
+            sourceWidthPx={state.preview.widthPx}
+            sourceHeightPx={state.preview.heightPx}
+            instructions={state.preview.instructions}
+          />
+        ) : null}
+      </ResultPanel>
     </div>
   );
 };

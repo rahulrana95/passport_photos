@@ -98,7 +98,7 @@ describe('while analysing', () => {
 
 describe('when the checks are done', () => {
   it('leads with the verdict', () => {
-    renderPanel({ kind: 'ready', report: passingReport() });
+    renderPanel({ kind: 'ready', report: passingReport(), preview: undefined });
 
     expect(
       screen.getByText(verdictLabel(passingReport().overall, content)),
@@ -106,7 +106,7 @@ describe('when the checks are done', () => {
   });
 
   it('announces once, and says the wait is over as well as the answer', () => {
-    renderPanel({ kind: 'ready', report: passingReport() });
+    renderPanel({ kind: 'ready', report: passingReport(), preview: undefined });
 
     const live = screen.getAllByRole('status');
     expect(live).toHaveLength(1);
@@ -115,7 +115,7 @@ describe('when the checks are done', () => {
 
   it('renders one row per rule the specification states', () => {
     const report = passingReport();
-    renderPanel({ kind: 'ready', report });
+    renderPanel({ kind: 'ready', report, preview: undefined });
 
     for (const result of report.results) {
       const resolved = resolveRuleMessage(result, report.spec, content.rules);
@@ -127,7 +127,7 @@ describe('when the checks are done', () => {
     // Formatting a measurement twice, in two places, is how a report and a
     // screen end up disagreeing about the same photograph.
     const report = failingReport();
-    renderPanel({ kind: 'ready', report });
+    renderPanel({ kind: 'ready', report, preview: undefined });
 
     const failed = report.results.find((result) => result.status === 'fail');
     expect(failed).toBeDefined();
@@ -141,7 +141,7 @@ describe('when the checks are done', () => {
 
   it('gives every failure something to do about it', () => {
     const report = failingReport();
-    renderPanel({ kind: 'ready', report });
+    renderPanel({ kind: 'ready', report, preview: undefined });
 
     for (const result of report.results.filter((entry) => entry.status === 'fail')) {
       const resolved = resolveRuleMessage(result, report.spec, content.rules);
@@ -152,13 +152,13 @@ describe('when the checks are done', () => {
   });
 
   it('shows the manual checklist as its own list', () => {
-    renderPanel({ kind: 'ready', report: passingReport() });
+    renderPanel({ kind: 'ready', report: passingReport(), preview: undefined });
 
     expect(screen.getByText(content.result.manualChecklistHeading)).toBeInTheDocument();
   });
 
   it('renders whatever the page puts under the verdict', () => {
-    renderPanel({ kind: 'ready', report: passingReport() }, {
+    renderPanel({ kind: 'ready', report: passingReport(), preview: undefined }, {
       children: <p>Downloads go here</p>,
     });
 
@@ -166,7 +166,7 @@ describe('when the checks are done', () => {
   });
 
   it('drops the skeleton once there are real rows', () => {
-    const { container } = renderPanel({ kind: 'ready', report: passingReport() });
+    const { container } = renderPanel({ kind: 'ready', report: passingReport(), preview: undefined });
 
     expect(container.querySelectorAll('[data-placeholder="rule-row"]').length).toBeLessThan(
       reportShape(SPEC).ruleRows.length,
@@ -175,7 +175,7 @@ describe('when the checks are done', () => {
 
   it('reports a photo nothing could be measured on without claiming a pass', () => {
     const report = undetectableReport();
-    renderPanel({ kind: 'ready', report });
+    renderPanel({ kind: 'ready', report, preview: undefined });
 
     expect(report.results.some((result) => result.status === 'pass')).toBe(false);
     expect(screen.getByText(verdictLabel(report.overall, content))).toBeInTheDocument();
@@ -244,7 +244,7 @@ describe('accessibility', () => {
   });
 
   it('has no violations showing a full report', async () => {
-    const { container } = renderPanel({ kind: 'ready', report: failingReport() });
+    const { container } = renderPanel({ kind: 'ready', report: failingReport(), preview: undefined });
 
     await expectNoAxeViolations(container);
   });

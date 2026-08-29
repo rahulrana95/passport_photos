@@ -10,6 +10,7 @@ import { analysePhoto } from './analyse-photo';
 import { buildRuleInput } from './build-rule-input';
 import type { AnalysisResult } from '@/analysis/analysis-protocol.types';
 import type { IngestedImage } from '@/ingestion/image-decoder.types';
+import type { OverlayInstruction } from '@/overlay/overlay-instruction.types';
 import type { ComplianceReport, RuleInput } from '@/rules/rule.types';
 import type { SyntheticHeadSpec } from '@/testing/fixtures/synthetic-head.types';
 
@@ -86,18 +87,25 @@ const analysed = memoise(
 /** What production hands the rule engine, for the photograph above. */
 const measured = memoise(async (): Promise<RuleInput> => {
   const { image, result } = await analysed();
-  return buildRuleInput({ image, result, spec: SPEC });
+  return buildRuleInput({ image, result, spec: SPEC }).input;
 });
 
 /** The same photograph with the mask withheld, as a segmenter failure gives it. */
 const measuredWithoutMask = memoise(async (): Promise<RuleInput> => {
   const { image, result } = await analysed();
-  return buildRuleInput({ image, result: { ...result, segmentation: undefined }, spec: SPEC });
+  return buildRuleInput({ image, result: { ...result, segmentation: undefined }, spec: SPEC })
+    .input;
 });
 
 const reported = memoise(async (): Promise<ComplianceReport> => {
   const { image, result } = await analysed();
-  return analysePhoto({ image, result, spec: SPEC });
+  return analysePhoto({ image, result, spec: SPEC }).report;
+});
+
+/** The annotations for that same photograph, memoised for the same reason. */
+const annotated = memoise(async (): Promise<readonly OverlayInstruction[] | undefined> => {
+  const { image, result } = await analysed();
+  return analysePhoto({ image, result, spec: SPEC }).overlay;
 });
 
 /**
@@ -106,7 +114,7 @@ const reported = memoise(async (): Promise<ComplianceReport> => {
  * five-second timeout while the twelve behind it pass in milliseconds.
  */
 beforeAll(async () => {
-  await Promise.all([reported(), measured(), measuredWithoutMask()]);
+  await Promise.all([reported(), measured(), measuredWithoutMask(), annotated()]);
 }, SETUP_TIMEOUT_MS);
 
 describe('a photograph the models could read', () => {
@@ -183,7 +191,7 @@ describe('a photograph nothing could be found in', () => {
     // could not read must not come back looking acceptable.
     const { image } = await analysed();
 
-    const report = analysePhoto({ image, result: nothing, spec: SPEC });
+    const { report } = analysePhoto({ image, result: nothing, spec: SPEC });
 
     expect(report.results.some((row) => row.status === 'pass')).toBe(false);
   });
@@ -191,7 +199,7 @@ describe('a photograph nothing could be found in', () => {
   it('says a face could not be found rather than leaving it blank', async () => {
     const { image } = await analysed();
 
-    const input = buildRuleInput({ image, result: nothing, spec: SPEC });
+    const { input } = buildRuleInput({ image, result: nothing, spec: SPEC });
 
     expect(input.detection).toEqual({ ok: false, reason: 'no-face' });
   });
@@ -199,7 +207,7 @@ describe('a photograph nothing could be found in', () => {
   it('measures nothing at all', async () => {
     const { image } = await analysed();
 
-    const input = buildRuleInput({ image, result: nothing, spec: SPEC });
+    const { input } = buildRuleInput({ image, result: nothing, spec: SPEC });
 
     // Undefined, not a default. The engine reads undefined as "not measured"
     // and a default as "measured, and fine".
@@ -220,7 +228,7 @@ describe('a photograph nothing could be found in', () => {
           : { ...result.landmarks, points: result.landmarks.points.slice(0, 1) },
     };
 
-    expect(buildRuleInput({ image, result: truncated, spec: SPEC }).detection).toEqual({
+    expect(buildRuleInput({ image, result: truncated, spec: SPEC }).input.detection).toEqual({
       ok: false,
       reason: 'no-face',
     });
@@ -244,5 +252,60 @@ describe('a photograph the segmenter could not read', () => {
 
     expect(input.crown).toBeUndefined();
     expect(input.background).toBeUndefined();
+  });
+});
+
+describe('the annotations that go over the photograph', () => {
+  it('draws the crop the report was measured against, not a second opinion', async () => {
+    const overlay = await annotated();
+    const input = await measured();
+
+    // The frame drawn on screen has to be the crop the verdict came from. If
+    // these were derived independently they could differ by a pixel or two of
+    // crown estimate, and the picture would quietly contradict the row above
+    // it — the reader would be looking at a band their head clears while
+    // being told it does not.
+    const frame = overlay?.find((instruction) => instruction.role === 'crop');
+    expect(input.geometry?.ok).toBe(true);
+    expect(frame).toBeDefined();
+  });
+
+  it('annotates in the source pixels the preview is shown in', async () => {
+    const { image } = await analysed();
+    const overlay = await annotated();
+
+    // Every coordinate must sit inside the upright source, because that is the
+    // space CheckerPanel hands the overlay as the image's size. A mark outside
+    // it is a mark the reader never sees, and a sign the two spaces have been
+    // mixed.
+    const coordinates = (overlay ?? []).flatMap((instruction) =>
+      instruction.kind === 'line'
+        ? [
+            { x: instruction.fromX, y: instruction.fromY },
+            { x: instruction.toX, y: instruction.toY },
+          ]
+        : [],
+    );
+
+    expect(coordinates.length).toBeGreaterThan(0);
+    for (const point of coordinates) {
+      expect(point.x).toBeGreaterThanOrEqual(0);
+      expect(point.y).toBeGreaterThanOrEqual(0);
+      expect(point.x).toBeLessThanOrEqual(image.source.widthPx);
+      expect(point.y).toBeLessThanOrEqual(image.source.heightPx);
+    }
+  });
+
+  it('has nothing to draw on a photograph with no face in it', async () => {
+    const { image } = await analysed();
+    const unreadable: AnalysisResult = { landmarks: undefined, segmentation: undefined };
+
+    const { report, overlay } = analysePhoto({ image, result: unreadable, spec: SPEC });
+
+    // Undefined rather than an empty array, and the verdict still stands. An
+    // empty overlay would render a frame with no marks in it, which reads as
+    // "we checked and found nothing wrong".
+    expect(overlay).toBeUndefined();
+    expect(report.results.some((row) => row.status === 'pass')).toBe(false);
   });
 });

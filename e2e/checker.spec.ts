@@ -20,6 +20,9 @@ import { expect, test, type Page } from '@playwright/test';
 
 const PAGE_PATH = '/passport-photo-checker';
 
+/** The reader's own photograph, shown back with the measurements over it. */
+const PHOTO_ALT = 'Your photo, with the crop and the measurements marked on it';
+
 /** Model download plus a WebAssembly runtime, on a cold cache. */
 const ENGINE_TIMEOUT_MS = 120_000;
 
@@ -98,6 +101,16 @@ test.describe('photo checker page', () => {
     for (const failure of ENGINE_FAILURES) {
       await expect(page.getByText(failure)).toHaveCount(0);
     }
+
+    // NO annotated photo, because nothing on this one could be measured.
+    //
+    // The positive case cannot be reached here: making the real landmark model
+    // find a face needs a real face, and no licence-clean photograph of one
+    // lives in this repository. What IS worth guarding is this half — an empty
+    // frame with no marks in it, shown beside a verdict, reads as "we looked
+    // and found nothing wrong", which is the exact opposite of what a
+    // photograph we could not read means.
+    await expect(page.getByAltText(PHOTO_ALT)).toHaveCount(0);
   });
 
   test('offers a live camera, not a file picker wearing a camera label', async ({ page }) => {

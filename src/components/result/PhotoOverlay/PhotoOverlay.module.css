@@ -1,4 +1,19 @@
 .figure {
+  /* How tall the photograph is allowed to get.
+     
+     A phone photograph is portrait, so left to its own aspect ratio it fills
+     the column and pushes the failing rows a whole screen below the fold —
+     which defeats the point of showing it. The reader needs the marks and the
+     row explaining them in view at once.
+     
+     Capping the BOX is safe because nothing here depends on the box matching
+     the photograph's shape: the <img> is object-fit: contain and the canvas is
+     painted through the same contain arithmetic, so both letterbox identically
+     and the marks stay on the face. And because the cap is a fraction of the
+     viewport rather than of the image, the space is still reserved exactly
+     before the photograph decodes — no shift when it arrives. */
+  --overlay-max-block-size: 60svh;
+
   display: flex;
   flex-direction: column;
   gap: var(--tk-space-xs);
@@ -14,6 +29,7 @@
   inline-size: 100%;
   max-inline-size: 100%;
   aspect-ratio: var(--overlay-aspect);
+  max-block-size: var(--overlay-max-block-size);
   overflow: hidden;
   border: 1px solid var(--tk-border-default);
   border-radius: var(--tk-radius-md);
@@ -24,6 +40,13 @@
   inline-size: 100%;
   block-size: 100%;
   object-fit: contain;
+
+  /* Stated rather than relied upon. The decoder applies EXIF orientation
+     itself and reports the corrected dimensions, so every annotation is in
+     upright coordinates; the browser must rotate this <img> to match. It is
+     already the initial value, but a photograph shown at ninety degrees to
+     the marks measuring it is too quiet a failure to leave to a default. */
+  image-orientation: from-image;
 }
 
 /* Stretched over the photograph in CSS pixels. Its backing store is sized
