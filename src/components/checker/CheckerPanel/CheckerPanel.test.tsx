@@ -127,6 +127,20 @@ const MEASURABLE_RESULT: AnalysisResult = {
   },
 };
 
+/**
+ * The one test below that checks TWO photographs end to end gets its own
+ * budget.
+ *
+ * Every other test here drives a single check and finishes in well under a
+ * second; this one ingests, analyses and renders twice, which fits the default
+ * five seconds on a developer machine and does not on a CI runner under
+ * coverage instrumentation. Raising it for this test alone is the honest fix:
+ * the work is genuinely double, and the assertion — that a second photograph
+ * gets its own url and the first one's is released — is exactly the leak this
+ * feature could introduce.
+ */
+const TWO_CHECKS_TIMEOUT_MS = 30_000;
+
 /** Object URLs jsdom does not have, with every handout and release recorded. */
 const recordingUrls = (): ObjectUrlPort & {
   readonly created: string[];
@@ -585,7 +599,7 @@ describe('the photograph shown back with its measurements on it', () => {
     // all five at once.
     expect(urls.created).toHaveLength(2);
     expect(urls.revoked).toContain(urls.created[0]);
-  });
+  }, TWO_CHECKS_TIMEOUT_MS);
 
   it('releases the photograph when the panel goes away', async () => {
     const urls = recordingUrls();
