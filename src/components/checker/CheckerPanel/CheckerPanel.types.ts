@@ -3,6 +3,7 @@ import type { CameraEnvironment } from '@/camera/media-devices.types';
 import type { ImageDecoder } from '@/ingestion/image-decoder.types';
 import type { PixelBuffer } from '@/testing/fixtures/synthetic-head.types';
 import type { AnalyticsTransport } from '@/analytics/analytics-event.types';
+import type { ObjectUrlPort } from '@/result/preview-object-url.types';
 import type { ResolvedPhotoSpec } from '@/photo-spec/photo-spec.types';
 
 export interface AnalyseOptions {
@@ -34,6 +35,15 @@ export interface CheckerPanelProps {
    * produces reaching the analysis — is reachable only in a real browser.
    */
   readonly cameraEnvironment?: CameraEnvironment | undefined;
+  /**
+   * Where the preview's object URL comes from, defaulting to the browser's.
+   *
+   * Injected for the same reason the camera is: jsdom implements neither
+   * createObjectURL nor revokeObjectURL, so without a seam the branch that
+   * shows a reader their own annotated photograph could not be tested at all —
+   * and neither could the revocation that stops it leaking.
+   */
+  readonly objectUrls?: ObjectUrlPort | undefined;
   /**
    * Where usage events go, defaulting to Vercel Analytics.
    *

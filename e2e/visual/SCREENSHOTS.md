@@ -1158,6 +1158,20 @@ A change to any of these images is a change a reviewer must approve:
 
 ![Waiting — mobile-light](./story-screenshots.spec.ts-snapshots/result-resultpanel/waiting-mobile-light-stories-linux.png)
 
+### With Annotated Photo
+
+**desktop-dark**
+
+![With Annotated Photo — desktop-dark](./story-screenshots.spec.ts-snapshots/result-resultpanel/with-annotated-photo-desktop-dark-stories-linux.png)
+
+**desktop-light**
+
+![With Annotated Photo — desktop-light](./story-screenshots.spec.ts-snapshots/result-resultpanel/with-annotated-photo-desktop-light-stories-linux.png)
+
+**mobile-light**
+
+![With Annotated Photo — mobile-light](./story-screenshots.spec.ts-snapshots/result-resultpanel/with-annotated-photo-mobile-light-stories-linux.png)
+
 ## Result Resultverdict
 
 ### Every Status
@@ -1492,4 +1506,4 @@ A change to any of these images is a change a reviewer must approve:
 
 ---
 
-306 baselines across 27 components.
+309 baselines across 27 components.

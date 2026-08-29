@@ -18,6 +18,7 @@ import { CheckerPanel } from './CheckerPanel';
 import type { AnalysisResult } from '@/analysis/analysis-protocol.types';
 import type { DecodedImage, ImageDecoder } from '@/ingestion/image-decoder.types';
 import type { PixelBuffer } from '@/testing/fixtures/synthetic-head.types';
+import type { ObjectUrlPort } from '@/result/preview-object-url.types';
 import type { ResolvedPhotoSpec } from '@/photo-spec/photo-spec.types';
 import type { CheckerPanelProps } from './CheckerPanel.types';
 
@@ -68,6 +69,99 @@ const failingDecoder = (): ImageDecoder => ({
 });
 
 const NO_RESULT: AnalysisResult = { landmarks: undefined, segmentation: undefined };
+
+/*
+ * A photograph that can actually be measured, so the preview path is reachable.
+ *
+ * Hand-placed rather than generated, because what is being tested here is the
+ * wiring — that a measurable photo produces a preview and that its object URL
+ * is released — and a generator would put a second thing in the way of a
+ * failure. The numbers only have to survive the crop planner: a head near the
+ * middle of the permitted band, far enough inside a 960px frame that the crop
+ * it implies fits.
+ */
+const CHIN_Y_PX = 700;
+const CROWN_Y_PX = 288;
+const EYE_Y_PX = 480;
+const LEFT_EYE_X_PX = 430;
+const RIGHT_EYE_X_PX = 530;
+const MASK_SUBJECT = 255;
+
+/*
+ * In SOURCE pixels, because that is the space the mask is read in here.
+ *
+ * The working size is planned from the source and capped at 1600px, and this
+ * fixture's source is smaller than the cap — so nothing is downscaled and the
+ * scale factor is 1. Sizing the mask to the stub decoder's smaller buffer
+ * instead put the crown at half its true row and the face centre outside the
+ * mask entirely, which reads as "segmentation found nothing".
+ */
+const subjectMask = (): Uint8ClampedArray => {
+  const mask = new Uint8ClampedArray(SOURCE_EDGE_PX * SOURCE_EDGE_PX);
+
+  for (let y = CROWN_Y_PX; y < CHIN_Y_PX; y += 1) {
+    for (let x = LEFT_EYE_X_PX; x < RIGHT_EYE_X_PX; x += 1) mask[y * SOURCE_EDGE_PX + x] = MASK_SUBJECT;
+  }
+  return mask;
+};
+
+const MEASURABLE_RESULT: AnalysisResult = {
+  landmarks: {
+    // Chin, left iris, right iris — the order the shared index constants fix.
+    points: [
+      { x: 0.5, y: CHIN_Y_PX / SOURCE_EDGE_PX },
+      { x: LEFT_EYE_X_PX / SOURCE_EDGE_PX, y: EYE_Y_PX / SOURCE_EDGE_PX },
+      { x: RIGHT_EYE_X_PX / SOURCE_EDGE_PX, y: EYE_Y_PX / SOURCE_EDGE_PX },
+    ],
+    confidence: 0.95,
+    rollDegrees: 0,
+    yawDegrees: 0,
+    pitchDegrees: 0,
+    blendshapes: {},
+  },
+  segmentation: {
+    width: SOURCE_EDGE_PX,
+    height: SOURCE_EDGE_PX,
+    mask: subjectMask(),
+    confidence: 0.9,
+  },
+};
+
+/**
+ * The one test below that checks TWO photographs end to end gets its own
+ * budget.
+ *
+ * Every other test here drives a single check and finishes in well under a
+ * second; this one ingests, analyses and renders twice, which fits the default
+ * five seconds on a developer machine and does not on a CI runner under
+ * coverage instrumentation. Raising it for this test alone is the honest fix:
+ * the work is genuinely double, and the assertion — that a second photograph
+ * gets its own url and the first one's is released — is exactly the leak this
+ * feature could introduce.
+ */
+const TWO_CHECKS_TIMEOUT_MS = 30_000;
+
+/** Object URLs jsdom does not have, with every handout and release recorded. */
+const recordingUrls = (): ObjectUrlPort & {
+  readonly created: string[];
+  readonly revoked: string[];
+} => {
+  const created: string[] = [];
+  const revoked: string[] = [];
+
+  return {
+    created,
+    revoked,
+    create: () => {
+      const url = `blob:preview-${created.length}`;
+      created.push(url);
+      return url;
+    },
+    revoke: (url) => {
+      revoked.push(url);
+    },
+  };
+};
 
 const JPEG_BODY_BYTES = 64;
 
@@ -454,5 +548,79 @@ describe('the decoded photo it analyses', () => {
     const [passed] = analyse.mock.calls[0] as unknown as readonly [PixelBuffer];
     expect(passed.width).toBe(WORKING_EDGE_PX);
     expect(passed.width).not.toBe(SOURCE_EDGE_PX);
+  });
+});
+
+describe('the photograph shown back with its measurements on it', () => {
+  const measurable = (): Partial<CheckerPanelProps> => ({
+    analyse: vi.fn(async (): Promise<AnalysisResult> => await Promise.resolve(MEASURABLE_RESULT)),
+  });
+
+  it('shows the reader their own photo, annotated, once it has been measured', async () => {
+    const urls = recordingUrls();
+    renderPanel({ ...measurable(), objectUrls: urls });
+
+    dropFile(jpegFile());
+    await reportOnScreen();
+
+    // The <img> is the point of the whole feature: a list of failed rules
+    // tells somebody their head is too large, and the picture tells them by
+    // how much and in which direction.
+    const photo = await screen.findByAltText(content.overlay.photoAlt);
+    expect(photo).toHaveAttribute('src', urls.created[0]);
+    expect(urls.created).toHaveLength(1);
+  });
+
+  it('shows no photo when nothing on it could be measured', async () => {
+    const urls = recordingUrls();
+    renderPanel({ objectUrls: urls });
+
+    dropFile(jpegFile());
+    await reportOnScreen();
+
+    // A frame with no marks in it reads as "we looked and found nothing
+    // wrong", which is the opposite of what an unreadable photograph means.
+    expect(screen.queryByAltText(content.overlay.photoAlt)).toBeNull();
+    expect(urls.created).toHaveLength(0);
+  });
+
+  it('releases the previous photograph when another is checked', async () => {
+    const urls = recordingUrls();
+    renderPanel({ ...measurable(), objectUrls: urls });
+
+    dropFile(jpegFile());
+    await reportOnScreen();
+    fireEvent.click(screen.getByText(content.checker.startOver));
+    dropFile(jpegFile('second.jpg'));
+    await reportOnScreen();
+
+    // Without this the first decode stays pinned in memory for the life of
+    // the document, and the reader checking five photos on a phone pays for
+    // all five at once.
+    expect(urls.created).toHaveLength(2);
+    expect(urls.revoked).toContain(urls.created[0]);
+  }, TWO_CHECKS_TIMEOUT_MS);
+
+  it('releases the photograph when the panel goes away', async () => {
+    const urls = recordingUrls();
+    const { unmount } = renderPanel({ ...measurable(), objectUrls: urls });
+
+    dropFile(jpegFile());
+    await reportOnScreen();
+    unmount();
+
+    expect(urls.revoked).toEqual(urls.created);
+  });
+
+  it('keeps no photograph on screen after starting over', async () => {
+    const urls = recordingUrls();
+    renderPanel({ ...measurable(), objectUrls: urls });
+
+    dropFile(jpegFile());
+    await reportOnScreen();
+    fireEvent.click(screen.getByText(content.checker.startOver));
+
+    expect(screen.queryByAltText(content.overlay.photoAlt)).toBeNull();
+    expect(urls.revoked).toContain(urls.created[0]);
   });
 });

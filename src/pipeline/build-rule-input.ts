@@ -28,6 +28,22 @@ export interface BuildRuleInputOptions {
 }
 
 /**
+ * The engine's input, and the subject it was measured from.
+ *
+ * The subject is returned rather than recomputed by whoever wants to draw it.
+ * Deriving it a second time would mean estimating the crown twice, and two
+ * estimates of the top of a head can differ — which would put the annotation a
+ * few pixels away from the measurement it claims to illustrate.
+ *
+ * Undefined where no face was found: there is nothing to annotate, and the
+ * report already says so.
+ */
+export interface RuleInputBundle {
+  readonly input: RuleInput;
+  readonly subject: SubjectGeometry | undefined;
+}
+
+/**
  * Everything the rule engine needs, assembled from one analysed photograph.
  *
  * The join nothing else made. Every stage below already existed and had been
@@ -46,12 +62,12 @@ export interface BuildRuleInputOptions {
  * full-resolution original the reader downloads. The mask and the pixels are
  * in WORKING space, because that is what the detector was given.
  */
-export const buildRuleInput = (options: BuildRuleInputOptions): RuleInput => {
+export const buildRuleInput = (options: BuildRuleInputOptions): RuleInputBundle => {
   const { image, result, spec } = options;
   const { landmarks, segmentation } = result;
 
   if (landmarks === undefined || landmarks.points.length < REQUIRED_LANDMARK_POINTS) {
-    return NOTHING_MEASURED;
+    return { input: NOTHING_MEASURED, subject: undefined };
   }
 
   const toSource = (index: number): SourcePoint => {
@@ -103,7 +119,7 @@ export const buildRuleInput = (options: BuildRuleInputOptions): RuleInput => {
     heightPx: millimetresToPixels(spec.print.heightMm, dpi),
   };
 
-  return {
+  const input: RuleInput = {
     detection: { ok: true, hadOtherFaces: false },
     geometry,
     crown,
@@ -132,6 +148,8 @@ export const buildRuleInput = (options: BuildRuleInputOptions): RuleInput => {
       segmentation: segmentation?.confidence,
     },
   };
+
+  return { input, subject };
 };
 
 /**

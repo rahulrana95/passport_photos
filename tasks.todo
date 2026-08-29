@@ -2948,6 +2948,78 @@ NOT DONE, and it needs a person
   carrying real traffic is a question for somebody qualified to answer it.
 
 ───────────────────────────────────────────────────────────────────────────────
+PR #37 — Show the photograph back, with the errors marked on it
+Branch: feat/annotated-preview          Depends on: #35            Status: DONE
+───────────────────────────────────────────────────────────────────────────────
+UNPLANNED, and the gap it closed was embarrassing. A reader uploaded a photo
+and got a LIST OF WORDS. Their own photograph was never shown back to them at
+all — not the crop, not the head band, not the eye line. Being told "your head
+is 12mm, it needs 25.4 to 34.9" without a picture is a number without a
+direction: it does not tell you to move the camera closer, it tells you that
+something you cannot see is wrong.
+
+WHAT WAS ALREADY THERE, AND UNREACHABLE
+  PhotoOverlay, OverlayLegend, AnnotatedPhotoDownload, buildOverlay,
+  drawOverlay, paintCanvas, legendItemsFor, exportAnnotatedPng — all built,
+  all tested, none of them mounted by anything. ResultPanel even carried a
+  `children` prop whose doc comment reads "Rendered under the verdict — the
+  annotated photo and the downloads", and nothing had ever passed it a child.
+  PR #23 built the renderer and PR #27 built the panel; nobody joined them.
+  This is the third time in this project that finished, tested code turned out
+  to have no caller — encodePhoto and buildSheet are STILL in that state, and
+  are recorded below as the next one to close.
+
+IMPLEMENTS
+  [x] buildRuleInput returns the subject it measured, so the overlay is drawn
+      from the SAME geometry the verdict came from rather than a second
+      derivation of it. Two independent crown estimates can differ by a few
+      pixels, which would put a band on screen that contradicts the row above
+      it — the picture arguing against the text.
+  [x] analysePhoto returns { report, overlay }; the join it always was.
+  [x] The ready state carries ONE preview object — url, size and instructions
+      together — so a half-applied update cannot paint one photo's marks over
+      another's face.
+  [x] Object URL lifecycle: created only when there is something to draw,
+      revoked when another photo is checked, on start-over, on analysis
+      failure, and on unmount.
+  [x] The preview is capped at 60svh. Mounting the component for the first
+      time is what surfaced this: a portrait phone photo left to its own
+      aspect ratio filled the column and pushed the failing rows a screen
+      below the fold, which defeats the entire point of showing it.
+  [x] image-orientation: from-image stated rather than relied upon.
+
+EDGE CASES
+  [x] No face found -> no picture at all. An empty frame beside a verdict
+      reads as "we looked and found nothing wrong", which is the opposite of
+      what an unreadable photograph means.
+  [x] Crop could not be planned -> same, for the same reason.
+  [x] A second photo checked before the first is released.
+  [x] EXIF-rotated source: the decoder works in upright coordinates and turns
+      the browser's own orientation handling off, so the preview must be
+      pinned to upright or every mark sits at ninety degrees to the face.
+  [x] The overlay's coordinates are asserted to lie inside the upright source,
+      which is the check that catches the two spaces being mixed.
+
+TESTS
+  11 new unit tests (3282 total, 100% coverage), 3 new story screenshots, and
+  an e2e assertion that the no-face path shows NO annotated photo.
+
+NOT DONE, and it needs a person
+  The positive e2e path — a real face, detected by the real model, annotated in
+  a real browser — is not covered, because it needs a photograph of an actual
+  person and no licence-clean one belongs in this repository. The unit tests
+  drive it with hand-placed landmarks and the story screenshots render the real
+  component; what is missing is the same confirmation the HEIC work is missing,
+  and it is the same photograph that would provide both.
+
+NEXT, and it is the same defect one layer down
+  encodePhoto and buildSheet have no caller either. The reader still cannot
+  download a passport-sized photograph or a print sheet, though the crop
+  planner, the mozjpeg byte-budget encoder, the resampler, the metadata
+  stripper and the sheet layout are all written and green. That is a wiring
+  PR, not a building one.
+
+───────────────────────────────────────────────────────────────────────────────
 PR #36 — Ads integration and launch checklist
 Branch: chore/launch                   Depends on: #35            Status: BLOCKED
 ───────────────────────────────────────────────────────────────────────────────
